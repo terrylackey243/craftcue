@@ -47,8 +47,9 @@ export async function saveAssortment(d: AssortmentDraft): Promise<Supply[]> {
   const unitCost = costPerUnit(colors, d.packPrice)
   const packs = Math.max(1, d.packs || 1)
   return saveSupplies(
-    colors.map((c) => ({
+    colors.map((c, i) => ({
       ...d.base,
+      packOrder: i,
       name: d.base.name.trim(),
       color: c.color,
       quantity: roundQty(c.count * packs),
@@ -70,12 +71,13 @@ export async function addAnotherPack(existing: Supply[], colors: PackColor[], pa
   const now = new Date().toISOString()
   const updates: Supply[] = []
   const creates: SupplyInput[] = []
+  let nextOrder = Math.max(-1, ...existing.map((s) => s.packOrder ?? -1)) + 1
   for (const c of cleanColors(colors)) {
     const hit = byColor.get(c.color.toLowerCase())
     if (hit) updates.push({ ...hit, quantity: roundQty(hit.quantity + c.count * packs), packSize: c.count, updatedAt: now })
     else if (template) {
       const { id: _id, createdAt: _c, updatedAt: _u, thumbnail: _t, ...rest } = template
-      creates.push({ ...rest, color: c.color, quantity: roundQty(c.count * packs), packSize: c.count })
+      creates.push({ ...rest, color: c.color, quantity: roundQty(c.count * packs), packSize: c.count, packOrder: nextOrder++ })
     }
   }
   if (updates.length) {
@@ -88,7 +90,10 @@ export async function addAnotherPack(existing: Supply[], colors: PackColor[], pa
 
 /** The colors (and per-pack counts) of an existing set, for sharing or re-buying. */
 export function colorsOf(set: Supply[]): PackColor[] {
-  return set.filter((s) => s.color).map((s) => ({ color: s.color!, count: s.packSize ?? s.quantity }))
+  return [...set]
+    .sort((a, b) => (a.packOrder ?? Infinity) - (b.packOrder ?? Infinity))
+    .filter((s) => s.color)
+    .map((s) => ({ color: s.color!, count: s.packSize ?? s.quantity }))
 }
 
 /** Group supplies for display: sets become one group, everything else stays single. */
@@ -110,6 +115,8 @@ export function groupStash(supplies: Supply[]): StashEntry[] {
     }
     g.items.push(s)
   }
-  for (const g of sets.values()) g.items.sort((a, b) => (a.color ?? '').localeCompare(b.color ?? ''))
+  // Colors keep the order printed on the pack; older entries without one fall back to A–Z.
+  for (const g of sets.values())
+    g.items.sort((a, b) => (a.packOrder ?? Infinity) - (b.packOrder ?? Infinity) || (a.color ?? '').localeCompare(b.color ?? ''))
   return out
 }

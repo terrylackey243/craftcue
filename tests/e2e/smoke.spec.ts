@@ -139,3 +139,54 @@ test('a mixed-color pack is saved per color and grouped in My stash', async ({ p
   await expect(page.getByText('Moss', { exact: true })).toBeVisible()
   await expect(page.getByText('Cherry', { exact: true })).toHaveCount(0)
 })
+
+test('colors in a mixed pack can be dragged into the order printed on the pack', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: "Let's start" }).click()
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+  await page.getByRole('button', { name: 'Maybe later' }).click()
+  await page.getByRole('button', { name: /Add supplies now/ }).click()
+  await page.getByRole('link', { name: /Type it in/ }).click()
+  await page.getByRole('button', { name: 'A pack with several colors' }).click()
+  await page.getByLabel('What is one sheet? (without the color)').fill('Test cardstock')
+  // Typing then Enter moves straight to the next color.
+  await page.getByLabel('Color 1', { exact: true }).fill('Blue')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('Green')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('Red')
+  const order = () => page.locator('input[id^="color-"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value))
+  expect(await order()).toEqual(['Blue', 'Green', 'Red'])
+
+  // Keyboard: pick Red up, move it to the top.
+  // Like a person: pick it up, wait until it shows as picked up, then move it.
+  await page.getByRole('button', { name: 'Drag to reorder Red' }).focus()
+  await page.keyboard.press('Space')
+  await expect(page.locator('li.ring-brand-500')).toHaveCount(1)
+  await page.waitForTimeout(300) // dnd-kit measures the rows right after pick-up
+  for (let i = 0; i < 2; i++) {
+    await page.keyboard.press('ArrowUp')
+    await page.waitForTimeout(250)
+  }
+  await page.keyboard.press('Space')
+  await expect.poll(order).toEqual(['Red', 'Blue', 'Green'])
+
+  // Mouse / finger: drag Green above Blue.
+  const green = page.getByRole('button', { name: 'Drag to reorder Green' })
+  const blue = page.getByRole('button', { name: 'Drag to reorder Blue' })
+  const from = (await green.boundingBox())!
+  const to = (await blue.boundingBox())!
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(from.x + from.width / 2, from.y - 10, { steps: 5 })
+  await page.mouse.move(to.x + to.width / 2, to.y + 4, { steps: 10 })
+  await page.mouse.up()
+  await expect.poll(order).toEqual(['Red', 'Green', 'Blue'])
+
+  // The saved pack keeps that order in My stash.
+  await page.getByRole('button', { name: /Save 3 colors/ }).click()
+  await page.goto('/#/inventory')
+  await page.getByRole('button', { name: /Test cardstock/ }).click()
+  const names = await page.locator('li li a span.font-semibold').allTextContents()
+  expect(names).toEqual(['Red', 'Green', 'Blue'])
+})

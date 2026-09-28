@@ -1,4 +1,7 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useCategories, useSetup } from '../hooks'
 import { cleanColors, costPerUnit, saveAssortment, totalCount } from '../lib/assortment'
 import { formatMoney, parseMoney } from '../lib/money'
@@ -64,6 +67,20 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
   const many = unitLabel(f.unit)
 
   const setRow = (key: number, patch: Partial<PackColor>) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)))
+
+  // Drag handles: finger (iPad), mouse, or keyboard (space to pick up, arrows to move).
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }))
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return
+    setRows((rs) => arrayMove(rs, rs.findIndex((r) => r.key === active.id), rs.findIndex((r) => r.key === over.id)))
+  }
+  const labelOf = (r: Row, i: number) => r.color || `color ${i + 1}`
+  const [focusKey, setFocusKey] = useState<number | null>(null)
+  const addAfter = (i: number, count: number) => {
+    const key = ++rowKey
+    setRows((rs) => [...rs.slice(0, i + 1), { color: '', count, key }, ...rs.slice(i + 1)])
+    setFocusKey(key)
+  }
 
   async function readPhoto(file: File | undefined) {
     if (!file || !setup) return
@@ -202,33 +219,38 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
             Apply to all
           </Button>
         </div>
-        <ul className="flex flex-col gap-2">
-          {rows.map((r, i) => (
-            <li key={r.key} className="flex flex-wrap items-center gap-2">
-              <label htmlFor={`color-${r.key}`} className="sr-only">
-                Color {i + 1}
-              </label>
-              <input
-                id={`color-${r.key}`}
-                className={`${fieldClass} min-w-40 flex-1`}
-                placeholder="Color name, e.g. Rocket Red"
-                value={r.color}
-                onChange={(e) => setRow(r.key, { color: e.target.value })}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    setRows((rs) => [...rs, { color: '', count: r.count, key: ++rowKey }])
-                  }
-                }}
-              />
-              <Stepper label={`how many ${r.color || `color ${i + 1}`}`} value={r.count} onChange={(n) => setRow(r.key, { count: n })} />
-              <button type="button" aria-label={`Remove ${r.color || `color ${i + 1}`}`} className="min-h-11 min-w-11 rounded-full text-xl text-stone-500 hover:bg-stone-100" onClick={() => setRows((rs) => rs.filter((x) => x.key !== r.key))}>
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-        <Button variant="ghost" className="self-start" onClick={() => setRows((rs) => [...rs, { color: '', count: rs.at(-1)?.count ?? 1, key: ++rowKey }])}>
+        <p className="text-sm text-stone-600">Drag ⠿ to put the colors in the same order as the list on the pack. It makes checking them much easier.</p>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+          accessibility={{
+            announcements: {
+              onDragStart: ({ active }) => `Picked up ${labelOf(rows.find((r) => r.key === active.id)!, rows.findIndex((r) => r.key === active.id))}.`,
+              onDragOver: ({ over }) => (over ? `Moving to position ${rows.findIndex((r) => r.key === over.id) + 1} of ${rows.length}.` : ''),
+              onDragEnd: ({ over }) => (over ? `Dropped at position ${rows.findIndex((r) => r.key === over.id) + 1}.` : 'Dropped.'),
+              onDragCancel: () => 'Move cancelled.',
+            },
+          }}
+        >
+          <SortableContext items={rows.map((r) => r.key)} strategy={verticalListSortingStrategy}>
+            <ul className="flex flex-col gap-2">
+              {rows.map((r, i) => (
+                <ColorRow
+                  key={r.key}
+                  row={r}
+                  index={i}
+                  label={labelOf(r, i)}
+                  onChange={(patch) => setRow(r.key, patch)}
+                  onRemove={() => setRows((rs) => rs.filter((x) => x.key !== r.key))}
+                  onEnter={() => addAfter(i, r.count)}
+                  autoFocus={focusKey === r.key}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
+        <Button variant="ghost" className="self-start" onClick={() => addAfter(rows.length - 1, rows.at(-1)?.count ?? 1)}>
           + Add a color
         </Button>
         <p className="font-semibold" aria-live="polite">
@@ -279,3 +301,53 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
 }
 
 const roundTotal = (n: number) => Math.round(n * 1000) / 1000
+
+function ColorRow({ row, index, label, onChange, onRemove, onEnter, autoFocus }: { row: Row; index: number; label: string; onChange: (p: Partial<PackColor>) => void; onRemove: () => void; onEnter: () => void; autoFocus: boolean }) {
+  const input = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    if (autoFocus) input.current?.focus()
+  }, [autoFocus])
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: row.key })
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`flex flex-wrap items-center gap-2 rounded-xl ${isDragging ? 'relative z-10 bg-brand-50 shadow-lg ring-2 ring-brand-500' : ''}`}
+    >
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        {...attributes}
+        {...listeners}
+        aria-label={`Drag to reorder ${label}`}
+        className="flex min-h-12 min-w-11 cursor-grab touch-none items-center justify-center rounded-lg text-2xl text-stone-500 hover:bg-stone-100 active:cursor-grabbing"
+      >
+        ⠿
+      </button>
+      <span className="w-6 text-right text-sm font-semibold text-stone-500" aria-hidden>
+        {index + 1}
+      </span>
+      <label htmlFor={`color-${row.key}`} className="sr-only">
+        Color {index + 1}
+      </label>
+      <input
+        id={`color-${row.key}`}
+        ref={input}
+        className={`${fieldClass} min-w-40 flex-1`}
+        placeholder="Color name, e.g. Rocket Red"
+        value={row.color}
+        onChange={(e) => onChange({ color: e.target.value })}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            onEnter()
+          }
+        }}
+      />
+      <Stepper label={`how many ${label}`} value={row.count} onChange={(n) => onChange({ count: n })} />
+      <button type="button" aria-label={`Remove ${label}`} className="min-h-11 min-w-11 rounded-full text-xl text-stone-500 hover:bg-stone-100" onClick={onRemove}>
+        ×
+      </button>
+    </li>
+  )
+}

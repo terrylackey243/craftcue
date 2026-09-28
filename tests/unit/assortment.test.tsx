@@ -41,6 +41,7 @@ describe('mixed-color packs', () => {
     const plum = all.find((s) => s.color === 'Plum')!
     expect(plum.quantity).toBe(2)
     expect(plum.setId).toBe(first[0].setId)
+    expect(plum.packOrder).toBe(3) // a new color goes after the existing ones
     expect(all).toHaveLength(4)
   })
 
@@ -56,7 +57,8 @@ describe('mixed-color packs', () => {
     const entries = groupStash([loose, ...saved])
     expect(entries.map((e) => e.kind)).toEqual(['single', 'set'])
     const set = entries[1] as Extract<(typeof entries)[number], { kind: 'set' }>
-    expect(set.items.map((s) => s.color)).toEqual(['Cosmic Orange', 'Gamma Green', 'Lunar Blue', 'Rocket Red', 'Solar Yellow'])
+    // Colors keep the pack's printed order, not A–Z.
+    expect(set.items.map((s) => s.color)).toEqual(['Rocket Red', 'Solar Yellow', 'Lunar Blue', 'Gamma Green', 'Cosmic Orange'])
     expect(colorsOf(set.items)).toHaveLength(5)
   })
 })

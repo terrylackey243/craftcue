@@ -38,6 +38,8 @@ export interface Supply extends Timestamps {
   /** Colors from the same mixed-color pack share a set id and name. */
   setId?: string
   setName?: string
+  /** Position of this color in the pack's printed list, so it can be checked against the pack. */
+  packOrder?: number
   location?: string
   thumbnail?: string // data URL, ~400px JPEG
   notes?: string
