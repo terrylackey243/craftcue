@@ -1,0 +1,40 @@
+{
+  "id": "cricut-maker-4",
+  "brand": "Cricut",
+  "name": "Maker 4",
+  "cutWidthIn": 11.7,
+  "maxMatlessLengthIn": 144,
+  "maxMaterialThicknessMm": 2.4,
+  "matlessSmartMaterials": true,
+  "printThenCut": true,
+  "compatibleTools": [
+    "fine-point-blade",
+    "deep-point-blade",
+    "bonded-fabric-blade",
+    "rotary-blade",
+    "knife-blade",
+    "scoring-stylus",
+    "scoring-wheel",
+    "double-scoring-wheel",
+    "debossing-tip",
+    "engraving-tool",
+    "perforation-blade",
+    "wavy-blade",
+    "foil-transfer-tool",
+    "pen-holder",
+    "deep-cut-tool"
+  ],
+  "defaultTools": [
+    "fine-point-blade"
+  ],
+  "notes": [
+    "Knife Blade cuts dense materials up to 3/32 in (2.4 mm).",
+    "QuickSwap tips need the QuickSwap housing."
+  ],
+  "verified": true,
+  "sourceUrls": [
+    "https://help.cricut.com/hc/en-us/articles/28450495457559-Cricut-Maker-4-Quick-Start-Guide",
+    "https://help.cricut.com/hc/en-us/articles/360009432294-All-About-Cricut-Blades-and-Machine-Tools",
+    "https://help.cricut.com/hc/en-us/articles/360009431954-All-about-Cricut-Knife-Blade"
+  ]
+}

@@ -1,0 +1,212 @@
+[
+  {
+    "id": "fine-point-cutting-tool",
+    "name": "Fine-point cutting tool (Maker 5 one-piece)",
+    "enables": ["cut-vinyl", "cut-iron-on", "cut-paper", "cut-cardstock", "cut-sticker-paper", "cut-infusible-ink", "cut-bonded-fabric"],
+    "plainDescription": "The everyday blade. Cuts vinyl, iron-on, paper, cardstock and sticker paper."
+  },
+  {
+    "id": "fine-point-blade",
+    "name": "Premium fine-point blade + housing",
+    "enables": ["cut-vinyl", "cut-iron-on", "cut-paper", "cut-cardstock", "cut-sticker-paper", "cut-infusible-ink", "cut-bonded-fabric"],
+    "plainDescription": "The everyday blade. Cuts vinyl, iron-on, paper, cardstock and sticker paper."
+  },
+  {
+    "id": "deep-cut-tool",
+    "name": "Deep cutting tool",
+    "enables": ["cut-thick-cardstock", "cut-foam", "cut-magnet", "cut-thin-leather", "cut-thin-chipboard", "cut-stiff-felt"],
+    "plainDescription": "For thicker things like foam, magnet sheets, poster board and thin leather."
+  },
+  {
+    "id": "deep-point-blade",
+    "name": "Deep-point blade + housing",
+    "enables": ["cut-thick-cardstock", "cut-foam", "cut-magnet", "cut-thin-leather", "cut-thin-chipboard", "cut-stiff-felt"],
+    "plainDescription": "For thicker things like foam, magnet sheets, poster board and thin leather."
+  },
+  {
+    "id": "bonded-fabric-blade",
+    "name": "Bonded-fabric blade + housing",
+    "enables": ["cut-bonded-fabric"],
+    "plainDescription": "Cuts fabric that has an iron-on backing (like Heat n Bond) stuck to it."
+  },
+  {
+    "id": "rotary-blade",
+    "name": "Rotary blade",
+    "enables": ["cut-fabric-unbonded", "cut-felt", "cut-crepe-paper"],
+    "plainDescription": "Cuts fabric without backing — great for quilting and felt projects."
+  },
+  {
+    "id": "knife-blade",
+    "name": "Knife blade",
+    "enables": ["cut-wood-up-to-3mm", "cut-chipboard", "cut-thick-leather"],
+    "plainDescription": "Cuts thin wood, chipboard and thick leather slowly and carefully. Pieces should be at least 3/4 inch."
+  },
+  {
+    "id": "scoring-tool",
+    "name": "Scoring tool (Maker 5 one-piece)",
+    "enables": ["score"],
+    "plainDescription": "Presses fold lines into paper and cardstock so cards and boxes fold neatly."
+  },
+  {
+    "id": "scoring-stylus",
+    "name": "Scoring stylus",
+    "enables": ["score"],
+    "plainDescription": "Presses fold lines into paper and cardstock so cards and boxes fold neatly."
+  },
+  {
+    "id": "scoring-wheel",
+    "name": "Scoring wheel (QuickSwap)",
+    "enables": ["score", "score-thick"],
+    "plainDescription": "A stronger fold-line tool for cardstock and poster board. Needs the QuickSwap housing."
+  },
+  {
+    "id": "double-scoring-wheel",
+    "name": "Double scoring wheel (QuickSwap)",
+    "enables": ["score", "score-thick"],
+    "plainDescription": "Makes deep fold lines in thick or coated cardstock without cracking. Needs the QuickSwap housing."
+  },
+  {
+    "id": "debossing-tip",
+    "name": "Debossing tip (QuickSwap)",
+    "enables": ["deboss"],
+    "plainDescription": "Presses raised-looking designs into paper, cardstock and faux leather. Needs the QuickSwap housing."
+  },
+  {
+    "id": "engraving-tool",
+    "name": "Engraving tool or tip",
+    "enables": ["engrave-metal", "engrave-acrylic", "engrave-leather"],
+    "plainDescription": "Scratches designs and words into soft metal blanks, acrylic and leather."
+  },
+  {
+    "id": "perforation-blade",
+    "name": "Perforation blade (QuickSwap)",
+    "enables": ["perforate"],
+    "plainDescription": "Makes tear-off lines, like for tickets, coupons and tear-out pages."
+  },
+  {
+    "id": "wavy-blade",
+    "name": "Wavy blade (QuickSwap)",
+    "enables": ["cut-wavy"],
+    "plainDescription": "Cuts with a wavy edge instead of a straight one — fun for tags and borders."
+  },
+  {
+    "id": "foil-transfer-tool",
+    "name": "Foil transfer tool",
+    "enables": ["foil"],
+    "plainDescription": "Presses shiny foil onto paper and cardstock for fancy lettering."
+  },
+  {
+    "id": "pen-holder",
+    "name": "Pens and markers (pen holder)",
+    "enables": ["draw"],
+    "plainDescription": "Lets the machine write and draw with compatible pens and markers."
+  },
+  {
+    "id": "joy-fine-point-blade",
+    "name": "Joy premium fine-point blade + housing",
+    "enables": ["cut-vinyl", "cut-iron-on", "cut-paper", "cut-cardstock", "cut-sticker-paper", "cut-infusible-ink"],
+    "plainDescription": "The Joy's everyday blade. Cuts vinyl, iron-on, paper and cardstock."
+  },
+  {
+    "id": "joy-foil-transfer-tool",
+    "name": "Joy foil transfer tool",
+    "enables": ["foil"],
+    "plainDescription": "Presses shiny foil onto paper and cardstock on the Joy machines."
+  },
+  {
+    "id": "joy-pens",
+    "name": "Joy pens and markers",
+    "enables": ["draw"],
+    "plainDescription": "Lets the Joy machines write and draw with Joy-size pens."
+  },
+  {
+    "id": "silhouette-autoblade",
+    "name": "AutoBlade",
+    "enables": ["cut-vinyl", "cut-iron-on", "cut-paper", "cut-cardstock", "cut-sticker-paper", "cut-infusible-ink"],
+    "plainDescription": "The everyday Silhouette blade. It sets its own depth for vinyl, iron-on, paper and cardstock."
+  },
+  {
+    "id": "silhouette-kraft-blade",
+    "name": "Kraft blade (2 mm / 3 mm)",
+    "enables": ["cut-thick-cardstock", "cut-foam", "cut-thin-chipboard", "cut-thin-leather", "cut-chipboard"],
+    "plainDescription": "For thick materials like chipboard, craft foam and leather."
+  },
+  {
+    "id": "silhouette-rotary-blade",
+    "name": "Rotary blade (Silhouette)",
+    "enables": ["cut-fabric-unbonded", "cut-felt"],
+    "plainDescription": "Cuts fabric and felt without backing."
+  },
+  {
+    "id": "silhouette-sketch-pens",
+    "name": "Sketch pens",
+    "enables": ["draw"],
+    "plainDescription": "Lets the machine write and draw."
+  },
+  {
+    "id": "silhouette-heat-pen",
+    "name": "Heat pen",
+    "enables": ["foil"],
+    "plainDescription": "Applies heat-transfer foil for shiny lines and lettering."
+  },
+  {
+    "id": "brother-auto-blade",
+    "name": "Auto blade (ScanNCut DX)",
+    "enables": ["cut-vinyl", "cut-iron-on", "cut-paper", "cut-cardstock", "cut-sticker-paper", "cut-bonded-fabric", "cut-felt", "cut-foam", "cut-thick-cardstock"],
+    "plainDescription": "Senses the material thickness itself. Cuts paper, vinyl, thick fabric, felt and foam."
+  },
+  {
+    "id": "brother-thin-fabric-blade",
+    "name": "Thin fabric auto blade (ScanNCut DX)",
+    "enables": ["cut-fabric-unbonded"],
+    "plainDescription": "Cuts quilting fabric without a fusible backing — great for quilt blocks and appliqué."
+  },
+  {
+    "id": "brother-pens",
+    "name": "Pen holder and pens (ScanNCut)",
+    "enables": ["draw"],
+    "plainDescription": "Lets the machine draw and write."
+  },
+  {
+    "id": "generic-blade",
+    "name": "Standard blade",
+    "enables": ["cut-vinyl", "cut-iron-on", "cut-paper", "cut-cardstock", "cut-sticker-paper"],
+    "plainDescription": "The blade that came with your machine. Cuts vinyl, iron-on, paper and cardstock."
+  },
+  {
+    "id": "generic-deep-blade",
+    "name": "Deep-cut blade",
+    "enables": ["cut-thick-cardstock", "cut-foam", "cut-magnet", "cut-thin-leather"],
+    "plainDescription": "For thicker things like foam, magnet sheets and thin leather."
+  },
+  {
+    "id": "generic-fabric-blade",
+    "name": "Fabric / rotary blade",
+    "enables": ["cut-fabric-unbonded", "cut-felt"],
+    "plainDescription": "Cuts fabric and felt without backing."
+  },
+  {
+    "id": "generic-pen",
+    "name": "Pen holder",
+    "enables": ["draw"],
+    "plainDescription": "Lets the machine write and draw."
+  },
+  {
+    "id": "generic-scoring",
+    "name": "Scoring tool",
+    "enables": ["score"],
+    "plainDescription": "Presses fold lines into paper and cardstock."
+  },
+  {
+    "id": "generic-engraving",
+    "name": "Engraving tool",
+    "enables": ["engrave-metal", "engrave-acrylic"],
+    "plainDescription": "Scratches designs into soft metal and acrylic."
+  },
+  {
+    "id": "generic-foil",
+    "name": "Foil tool",
+    "enables": ["foil"],
+    "plainDescription": "Applies shiny foil to paper and cardstock."
+  }
+]

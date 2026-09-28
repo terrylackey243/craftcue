@@ -1,0 +1,27 @@
+{
+  "id": "brother-scanncut-dx",
+  "brand": "Brother",
+  "name": "ScanNCut DX",
+  "cutWidthIn": 11.7,
+  "maxMaterialThicknessMm": 3,
+  "matlessSmartMaterials": false,
+  "printThenCut": true,
+  "compatibleTools": [
+    "brother-auto-blade",
+    "brother-thin-fabric-blade",
+    "brother-pens"
+  ],
+  "defaultTools": [
+    "brother-auto-blade"
+  ],
+  "notes": [
+    "Has a built-in scanner: you can scan a drawing or printout and cut around it.",
+    "The auto blade senses material thickness itself."
+  ],
+  "verified": false,
+  "sourceUrls": [
+    "https://help.brother-usa.com/app/answers/detail/a_id/129108/~/maximum-thickness-that-can-be-cut",
+    "https://www.brother-usa.com/products/cadxbld1",
+    "https://www.brother-usa.com/products/cadxbldq1"
+  ]
+}

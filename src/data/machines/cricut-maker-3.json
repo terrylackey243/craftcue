@@ -1,0 +1,39 @@
+{
+  "id": "cricut-maker-3",
+  "brand": "Cricut",
+  "name": "Maker 3",
+  "cutWidthIn": 11.7,
+  "maxMatlessLengthIn": 144,
+  "maxMaterialThicknessMm": 2.4,
+  "matlessSmartMaterials": true,
+  "printThenCut": true,
+  "compatibleTools": [
+    "fine-point-blade",
+    "deep-point-blade",
+    "bonded-fabric-blade",
+    "rotary-blade",
+    "knife-blade",
+    "scoring-stylus",
+    "scoring-wheel",
+    "double-scoring-wheel",
+    "debossing-tip",
+    "engraving-tool",
+    "perforation-blade",
+    "wavy-blade",
+    "foil-transfer-tool",
+    "pen-holder",
+    "deep-cut-tool"
+  ],
+  "defaultTools": [
+    "fine-point-blade"
+  ],
+  "notes": [
+    "Smart Materials cut up to 12 ft long without a mat.",
+    "QuickSwap tips need the QuickSwap housing."
+  ],
+  "verified": true,
+  "sourceUrls": [
+    "https://help.cricut.com/hc/en-us/articles/1500005490542-Cricut-Maker-3-Quick-Start-Guide",
+    "https://help.cricut.com/hc/en-us/articles/360009432294-All-About-Cricut-Blades-and-Machine-Tools"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "silhouette-cameo-5",
+  "brand": "Silhouette",
+  "name": "Cameo 5",
+  "cutWidthIn": 12,
+  "maxMaterialThicknessMm": 3,
+  "matlessSmartMaterials": false,
+  "printThenCut": true,
+  "compatibleTools": [
+    "silhouette-autoblade",
+    "silhouette-kraft-blade",
+    "silhouette-rotary-blade",
+    "silhouette-sketch-pens",
+    "silhouette-heat-pen"
+  ],
+  "defaultTools": [
+    "silhouette-autoblade"
+  ],
+  "notes": [
+    "The Cameo 5 Plus cuts up to 15 in wide \u2014 set the width in Settings if you have one.",
+    "The standard blade handles up to about 2 mm; thicker needs the Kraft blade.",
+    "Print & Cut is Silhouette's name for print-then-cut."
+  ],
+  "verified": false,
+  "sourceUrls": [
+    "https://www.silhouetteamerica.com/tool-compatibility",
+    "https://www.silhouetteamerica.com/cameo-5"
+  ]
+}

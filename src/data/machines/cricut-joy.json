@@ -1,0 +1,28 @@
+{
+  "id": "cricut-joy",
+  "brand": "Cricut",
+  "name": "Joy",
+  "cutWidthIn": 4.5,
+  "maxMatlessLengthIn": 48,
+  "maxMaterialThicknessMm": 2.0,
+  "matlessSmartMaterials": true,
+  "printThenCut": false,
+  "compatibleTools": [
+    "joy-fine-point-blade",
+    "joy-foil-transfer-tool",
+    "joy-pens"
+  ],
+  "defaultTools": [
+    "joy-fine-point-blade"
+  ],
+  "notes": [
+    "Cuts up to 4.5 in wide \u2014 best for small decals, labels and cards.",
+    "No Print Then Cut on the original Joy.",
+    "Smart Materials: one shape up to 4 ft long, repeated shapes up to 20 ft."
+  ],
+  "verified": true,
+  "sourceUrls": [
+    "https://help.cricut.com/hc/en-us/articles/360042981173-Cricut-Joy-Quick-Start-Guide",
+    "https://help.cricut.com/hc/en-us/articles/360009429814-How-large-can-I-Print-Then-Cut"
+  ]
+}

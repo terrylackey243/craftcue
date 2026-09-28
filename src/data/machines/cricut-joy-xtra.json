@@ -1,0 +1,28 @@
+{
+  "id": "cricut-joy-xtra",
+  "brand": "Cricut",
+  "name": "Joy Xtra",
+  "cutWidthIn": 8.5,
+  "maxMatlessLengthIn": 48,
+  "maxMaterialThicknessMm": 2.0,
+  "matlessSmartMaterials": true,
+  "printThenCut": true,
+  "compatibleTools": [
+    "joy-fine-point-blade",
+    "joy-foil-transfer-tool",
+    "joy-pens"
+  ],
+  "defaultTools": [
+    "joy-fine-point-blade"
+  ],
+  "notes": [
+    "Cuts up to 8.5 in wide.",
+    "Smart Materials: one shape up to 4 ft long, repeated shapes up to 20 ft.",
+    "Uses Joy-size pens, blades and foil tool only."
+  ],
+  "verified": true,
+  "sourceUrls": [
+    "https://help.cricut.com/hc/en-us/articles/26308155935895-Cricut-Joy-Xtra-Quick-Start-Guide",
+    "https://help.cricut.com/hc/en-us/articles/360009504773-Which-materials-can-I-cut-with-my-Cricut-smart-cutting-machine"
+  ]
+}

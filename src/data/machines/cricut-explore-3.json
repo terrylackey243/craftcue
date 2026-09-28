@@ -1,0 +1,31 @@
+{
+  "id": "cricut-explore-3",
+  "brand": "Cricut",
+  "name": "Explore 3",
+  "cutWidthIn": 11.7,
+  "maxMatlessLengthIn": 144,
+  "maxMaterialThicknessMm": 2.0,
+  "matlessSmartMaterials": true,
+  "printThenCut": true,
+  "compatibleTools": [
+    "fine-point-blade",
+    "deep-point-blade",
+    "bonded-fabric-blade",
+    "deep-cut-tool",
+    "scoring-stylus",
+    "foil-transfer-tool",
+    "pen-holder"
+  ],
+  "defaultTools": [
+    "fine-point-blade"
+  ],
+  "notes": [
+    "No rotary blade, knife blade, engraving or debossing \u2014 those need a Maker.",
+    "Deep cutting tool handles materials up to 1.5 mm."
+  ],
+  "verified": true,
+  "sourceUrls": [
+    "https://help.cricut.com/hc/en-us/articles/1500005393621-Cricut-Explore-3-Quick-Start-Guide",
+    "https://help.cricut.com/hc/en-us/articles/360009504773-Which-materials-can-I-cut-with-my-Cricut-smart-cutting-machine"
+  ]
+}

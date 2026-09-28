@@ -1,0 +1,4 @@
+{
+  "_comment": "Bundled barcode → product lookups (spec 8.1). Only add UPCs confirmed from the physical package or a retailer listing that shows the barcode; never guess. Quantity/location/cost are not stored here. See CONTRIBUTING.md.",
+  "entries": []
+}

@@ -1,0 +1,30 @@
+{
+ "id": "setup",
+ "machineId": "cricut-maker-5",
+ "ownedToolIds": [
+  "fine-point-cutting-tool",
+  "scoring-tool"
+ ],
+ "equipment": [
+  "inkjet-printer",
+  "household-iron"
+ ],
+ "equipmentOther": "",
+ "skillLevel": "comfortable",
+ "interests": [
+  "home decor",
+  "teachers"
+ ],
+ "aiEnabled": true,
+ "quality": "standard",
+ "upcLookupEnabled": false,
+ "backupReminder": {
+  "enabled": true,
+  "afterChanges": 50,
+  "afterDays": 14
+ },
+ "fontScale": 1,
+ "setupComplete": true,
+ "createdAt": "2026-09-01T00:00:00.000Z",
+ "updatedAt": "2026-09-01T00:00:00.000Z"
+}

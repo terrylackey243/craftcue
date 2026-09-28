@@ -1,0 +1,27 @@
+{
+  "id": "generic",
+  "brand": "Other",
+  "name": "Another cutting machine",
+  "cutWidthIn": 12,
+  "maxMaterialThicknessMm": 2,
+  "matlessSmartMaterials": false,
+  "printThenCut": false,
+  "compatibleTools": [
+    "generic-blade",
+    "generic-deep-blade",
+    "generic-fabric-blade",
+    "generic-pen",
+    "generic-scoring",
+    "generic-engraving",
+    "generic-foil"
+  ],
+  "defaultTools": [
+    "generic-blade"
+  ],
+  "notes": [
+    "You set the cut width and thickest material yourself."
+  ],
+  "verified": true,
+  "sourceUrls": [],
+  "userDefined": true
+}

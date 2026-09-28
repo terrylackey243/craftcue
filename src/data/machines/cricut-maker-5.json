@@ -1,0 +1,45 @@
+{
+  "id": "cricut-maker-5",
+  "brand": "Cricut",
+  "name": "Maker 5",
+  "cutWidthIn": 12,
+  "matCutWidthIn": 11.5,
+  "maxMatlessLengthIn": 144,
+  "maxMaterialThicknessMm": 3,
+  "matlessSmartMaterials": true,
+  "printThenCut": true,
+  "compatibleTools": [
+    "fine-point-cutting-tool",
+    "deep-cut-tool",
+    "scoring-tool",
+    "engraving-tool",
+    "rotary-blade",
+    "knife-blade",
+    "scoring-wheel",
+    "double-scoring-wheel",
+    "debossing-tip",
+    "perforation-blade",
+    "wavy-blade",
+    "foil-transfer-tool",
+    "pen-holder",
+    "fine-point-blade",
+    "deep-point-blade",
+    "bonded-fabric-blade"
+  ],
+  "defaultTools": [
+    "fine-point-cutting-tool",
+    "pen-holder"
+  ],
+  "notes": [
+    "Older Maker pens are not compatible with the Maker 5 pen holder \u2014 use pens marked as Maker 5 compatible.",
+    "Up to 12 in wide with Smart Materials; 11.5 in on a 12 in mat.",
+    "Some materials up to 1/8 in (3 mm) are for engraving only, not cutting.",
+    "QuickSwap tips (scoring wheel, debossing, perforation, wavy, engraving tip) need the QuickSwap housing."
+  ],
+  "verified": true,
+  "sourceUrls": [
+    "https://help.cricut.com/hc/en-us/articles/42865107739287-Cricut-Maker-5-specifications-and-requirements",
+    "https://help.cricut.com/hc/en-us/articles/42954507197463-Cricut-Maker-5-compatible-tool-accessories-and-materials",
+    "https://help.cricut.com/hc/en-us/articles/42954702029207-Cricut-Maker-5-frequently-asked-questions"
+  ]
+}

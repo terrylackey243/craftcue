@@ -1,0 +1,13 @@
+node_modules
+dist
+dev-dist
+coverage
+playwright-report
+test-results
+*.local
+.env
+.env.*
+# Personal deployment overrides live outside the public repo's concerns
+compose.yml
+compose.override.yml
+deploy/local/

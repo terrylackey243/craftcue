@@ -1,0 +1,6 @@
+{
+  "_comment": "Which Claude model each feature uses. 'standard' and 'best' match the Quality setting. Change these when newer models ship; no code changes needed.",
+  "recommend": { "standard": "claude-sonnet-5", "best": "claude-opus-5" },
+  "vision": { "standard": "claude-haiku-4-5", "best": "claude-sonnet-5" },
+  "testKey": "claude-haiku-4-5"
+}
