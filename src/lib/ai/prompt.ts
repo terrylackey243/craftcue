@@ -1,6 +1,7 @@
 // Builds what the recommendation model sees (spec 9.2 / 9.4). Pure functions — unit tested.
 import { LARGE_INVENTORY } from '../../config'
 import { effectiveMachine, getTool, machineLabel } from '../../data'
+import { formatMoney } from '../money'
 import { EQUIPMENT, type Category, type GoalRequest, type Person, type Supply, type UserSetup } from '../../types'
 
 export const SYSTEM_RULES = `You are CraftCue, a friendly helper for people who make things with a home cutting machine (like a Cricut). You suggest projects the crafter can make using the supplies, tools and equipment they already own.
@@ -28,7 +29,8 @@ function fmtQty(n: number): string {
 
 export function supplyLine(s: Supply, catName: string): string {
   const parts = [s.id, s.name, catName, s.color || '-', `${fmtQty(s.quantity)} ${s.unit}`, s.dimensions || '-']
-  const extra = [s.subtype, s.finish, s.adhesive && s.adhesive !== 'none' ? s.adhesive : '', s.brand].filter(Boolean).join(', ')
+  const cost = s.unitCost !== undefined ? `cost ${formatMoney(s.unitCost)}/${s.unit}` : ''
+  const extra = [s.subtype, s.finish, s.adhesive && s.adhesive !== 'none' ? s.adhesive : '', s.brand, cost].filter(Boolean).join(', ')
   return parts.join(' | ') + (extra ? ` | ${extra}` : '')
 }
 

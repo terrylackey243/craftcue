@@ -125,7 +125,7 @@ export function roundQty(n: number): number {
 export async function cacheUpc(upc: string, proposed: Partial<Supply>): Promise<void> {
   const existing = await db.upcCache.get(upc)
   // Only the product description is cached; quantity, location, cost and photo are per-purchase.
-  const { quantity: _q, location: _l, unitCost: _c, thumbnail: _t, notes: _n, id: _i, createdAt: _ca, updatedAt: _ua, source: _s, ...product } = proposed
+  const { quantity: _q, location: _l, unitCost: _c, packPrice: _pp, thumbnail: _t, notes: _n, id: _i, createdAt: _ca, updatedAt: _ua, source: _s, ...product } = proposed
   const entry: UpcCacheEntry = {
     upc,
     proposedSupply: product,

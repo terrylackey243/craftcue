@@ -5,6 +5,7 @@ import { makeThumbnail } from '../lib/images'
 import { ADHESIVES, UNITS, type Supply } from '../types'
 import { Button, Chip, Field, Notice, Stepper, fieldClass, inputClass } from './ui'
 import { guessCategory } from '../lib/guessCategory'
+import { formatMoney, parseMoney, perUnitFromPack } from '../lib/money'
 
 export type SupplyDraft = Partial<Supply> & { name: string; category: string; quantity: number; unit: Supply['unit'] }
 
@@ -52,7 +53,7 @@ export default function SupplyForm({
 }) {
   const categories = useCategories()
   const [d, setD] = useState<SupplyDraft>(initial)
-  const [more, setMore] = useState(Boolean(initial.brand || initial.location || initial.unitCost || initial.notes || initial.upc))
+  const [more, setMore] = useState(Boolean(initial.brand || initial.location || initial.notes || initial.upc))
   const [error, setError] = useState('')
   const [newCat, setNewCat] = useState('')
   const [saving, setSaving] = useState(false)
@@ -231,9 +232,23 @@ export default function SupplyForm({
               </option>
             ))}
           </select>
+          {d.packSize && d.packSize > 0 && d.unit !== 'pack' ? (
+            <Button
+              variant="secondary"
+              onClick={() => {
+                // A new item starts at 1; if the count hasn't been touched, the first pack replaces it.
+                const base = touched.has('quantity') || initial.id ? d.quantity : 0
+                set('quantity', Math.round((base + d.packSize!) * 1000) / 1000)
+              }}
+            >
+              +1 pack ({d.packSize})
+            </Button>
+          ) : null}
         </div>
         {flag('quantity') && <p className="text-sm font-medium text-amber-900">⚠ {flag('quantity')}</p>}
       </div>
+
+      <CostFields draft={d} onChange={(patch) => setD((prev) => ({ ...prev, ...patch }))} />
 
       <Field label="Adhesive / backing">
         {(id) => (
@@ -265,7 +280,7 @@ export default function SupplyForm({
       </div>
 
       <button type="button" className="self-start font-semibold text-brand-700 underline" onClick={() => setMore(!more)} aria-expanded={more}>
-        {more ? 'Fewer details' : 'More details (brand, where it is, cost…)'}
+        {more ? 'Fewer details' : 'More details (brand, where it is, barcode…)'}
       </button>
 
       {more && (
@@ -275,17 +290,6 @@ export default function SupplyForm({
           </Field>
           <Field label="Where it's kept" hint="e.g. craft room, bin 3">
             {(id) => <input id={id} className={inputClass} value={d.location ?? ''} onChange={(e) => set('location', e.target.value || undefined)} />}
-          </Field>
-          <Field label={`Cost per ${d.unit === 'other' ? 'unit' : d.unit} ($)`}>
-            {(id) => (
-              <input
-                id={id}
-                inputMode="decimal"
-                className={inputClass}
-                value={d.unitCost ?? ''}
-                onChange={(e) => set('unitCost', e.target.value === '' ? undefined : Number(e.target.value))}
-              />
-            )}
           </Field>
           <Field label="Warn me when I'm down to" hint="Shows a “low” badge and adds it to the shopping list.">
             {(id) => (
@@ -326,5 +330,130 @@ export default function SupplyForm({
         )}
       </div>
     </form>
+  )
+}
+
+/**
+ * "What did it cost?" Either a price per piece, or a pack price plus how many are in the pack,
+ * from which the per-piece cost is worked out automatically.
+ */
+function CostFields({ draft, onChange }: { draft: SupplyDraft; onChange: (p: Partial<SupplyDraft>) => void }) {
+  const one = unitLabel(draft.unit, 1) === 'other' ? 'unit' : unitLabel(draft.unit, 1)
+  const many = draft.unit === 'other' ? 'units' : unitLabel(draft.unit)
+  const countsPacks = draft.unit === 'pack'
+  const [mode, setMode] = useState<'pack' | 'each'>(draft.packPrice !== undefined || (draft.unitCost === undefined && !countsPacks) ? 'pack' : 'each')
+  // Keep what's typed as text so "1." or "0.0" can be typed without being rewritten.
+  const [packPrice, setPackPrice] = useState(draft.packPrice?.toString() ?? '')
+  const [packSize, setPackSize] = useState(draft.packSize?.toString() ?? '')
+  const [each, setEach] = useState(draft.packPrice === undefined && draft.unitCost !== undefined ? draft.unitCost.toString() : '')
+
+  const updatePack = (priceText: string, sizeText: string) => {
+    const price = parseMoney(priceText)
+    const size = Number(sizeText)
+    const packSizeNum = sizeText.trim() && Number.isFinite(size) && size > 0 ? size : undefined
+    onChange({ packPrice: price, packSize: packSizeNum, unitCost: perUnitFromPack(price, packSizeNum) })
+  }
+
+  if (countsPacks) {
+    return (
+      <Field label="Price per pack ($) (optional)">
+        {(id) => (
+          <input
+            id={id}
+            inputMode="decimal"
+            className={inputClass}
+            value={each}
+            placeholder="e.g. 1.26"
+            onChange={(e) => {
+              setEach(e.target.value)
+              onChange({ unitCost: parseMoney(e.target.value), packPrice: undefined })
+            }}
+          />
+        )}
+      </Field>
+    )
+  }
+
+  return (
+    <fieldset className="flex flex-col gap-3">
+      <legend className="mb-2 font-semibold">What did it cost? (optional)</legend>
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="How you know the price">
+        {(
+          [
+            ['pack', 'Price per pack'],
+            ['each', `Price per ${one}`],
+          ] as const
+        ).map(([m, label]) => (
+          <Chip
+            key={m}
+            selected={mode === m}
+            onClick={() => {
+              setMode(m)
+              if (m === 'each') onChange({ packPrice: undefined, unitCost: parseMoney(each) })
+              else updatePack(packPrice, packSize)
+            }}
+          >
+            {label}
+          </Chip>
+        ))}
+      </div>
+      {mode === 'pack' ? (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Price for the pack ($)">
+              {(id) => (
+                <input
+                  id={id}
+                  inputMode="decimal"
+                  className={inputClass}
+                  value={packPrice}
+                  placeholder="e.g. 1.26"
+                  onChange={(e) => {
+                    setPackPrice(e.target.value)
+                    updatePack(e.target.value, packSize)
+                  }}
+                />
+              )}
+            </Field>
+            <Field label={`How many ${many} in a pack`}>
+              {(id) => (
+                <input
+                  id={id}
+                  inputMode="decimal"
+                  className={inputClass}
+                  value={packSize}
+                  placeholder="e.g. 80"
+                  onChange={(e) => {
+                    setPackSize(e.target.value)
+                    updatePack(packPrice, e.target.value)
+                  }}
+                />
+              )}
+            </Field>
+          </div>
+          {draft.unitCost !== undefined && draft.packSize ? (
+            <p className="rounded-xl bg-leaf-50 px-3 py-2 font-semibold text-leaf-600" aria-live="polite">
+              That's {formatMoney(draft.unitCost)} per {one}.
+            </p>
+          ) : null}
+        </>
+      ) : (
+        <Field label={`Price per ${one} ($)`}>
+          {(id) => (
+            <input
+              id={id}
+              inputMode="decimal"
+              className={inputClass}
+              value={each}
+              placeholder="e.g. 0.50"
+              onChange={(e) => {
+                setEach(e.target.value)
+                onChange({ unitCost: parseMoney(e.target.value), packPrice: undefined })
+              }}
+            />
+          )}
+        </Field>
+      )}
+    </fieldset>
   )
 }

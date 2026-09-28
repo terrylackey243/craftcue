@@ -29,7 +29,12 @@ export interface Supply extends Timestamps {
   lowAt?: number
   adhesive?: Adhesive
   upc?: string
+  /** Cost of one unit (one piece, sheet, foot…). Filled in from the pack price when one is given. */
   unitCost?: number
+  /** What a whole pack cost, if bought by the pack. */
+  packPrice?: number
+  /** How many units come in one pack. */
+  packSize?: number
   location?: string
   thumbnail?: string // data URL, ~400px JPEG
   notes?: string
