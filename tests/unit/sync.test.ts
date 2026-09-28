@@ -130,7 +130,9 @@ describe('two devices, one account', () => {
     expect((await b.supplies.get('s1'))?.quantity).toBe(7)
   })
 
-  it('an edit made while a push is in flight is not lost', async () => {
+  it('an edit made while a push is in flight is not lost, even in the same millisecond', async () => {
+    const realNow = Date.now
+    Date.now = () => 1_790_000_000_000 // freeze the clock: both edits share one timestamp
     await a.supplies.put(supply('s1', { quantity: 1 }))
     const realPush = server.push.bind(server)
     server.push = async (changes) => {
@@ -140,6 +142,7 @@ describe('two devices, one account', () => {
     }
     await syncA.sync()
     server.push = realPush
+    Date.now = realNow
     expect(await a.outbox.count()).toBe(1)
     await syncA.sync()
     await syncB.sync()

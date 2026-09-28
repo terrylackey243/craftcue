@@ -27,6 +27,8 @@ export interface OutboxEntry {
   collection: SyncedCollection
   id: string
   queuedAt: number
+  /** Unique per change. Two edits in the same millisecond still differ, so none is lost. */
+  rev?: string
 }
 
 /** Tables that sync to the user's account (and go into backups). Order = restore order. */
@@ -89,6 +91,11 @@ export function markRemote(tx: { idbtrans: IDBTransaction }): void {
 
 export const outboxKey = (collection: string, id: string) => `${collection}\u0000${id}`
 
+let revCounter = 0
+const revPrefix = Math.random().toString(36).slice(2, 8)
+/** A token that is different for every queued change, even within one millisecond. */
+export const nextRev = () => `${revPrefix}-${Date.now()}-${++revCounter}`
+
 /** Called after a local change is queued for sync (used to schedule a push). */
 export const outboxListeners = new Set<() => void>()
 
@@ -126,7 +133,7 @@ function outboxMiddleware() {
               const now = Date.now()
               const values = keys
                 .filter((k, i) => k !== undefined && !(res.failures && res.failures[i]))
-                .map((k) => ({ key: outboxKey(tableName, String(k)), collection: tableName, id: String(k), queuedAt: now }))
+                .map((k) => ({ key: outboxKey(tableName, String(k)), collection: tableName, id: String(k), queuedAt: now, rev: nextRev() }))
               if (values.length) {
                 await down.table('outbox').mutate({ type: 'put', trans: req.trans, values })
                 outboxListeners.forEach((l) => l())

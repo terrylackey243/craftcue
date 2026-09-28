@@ -1,7 +1,7 @@
 // Offline-first sync: the device's IndexedDB is the working copy; changes are pushed from the
 // outbox and pulled by version. Last edit wins, by when the edit was made on the device.
 import type { CraftCueDB, OutboxEntry, SyncedCollection } from '../../db'
-import { SYNCED_COLLECTIONS, markRemote, outboxKey } from '../../db'
+import { SYNCED_COLLECTIONS, markRemote, nextRev, outboxKey } from '../../db'
 import type { PushChange, RemoteRow, SyncServer } from './server'
 
 const PUSH_BATCH = 200
@@ -101,7 +101,7 @@ export class SyncEngine {
       await this.db.transaction('rw', this.db.outbox, async () => {
         for (const e of entries) {
           const current = await this.db.outbox.get(e.key)
-          if (current && current.queuedAt === e.queuedAt) await this.db.outbox.delete(e.key)
+          if (current && current.rev === e.rev && current.queuedAt === e.queuedAt) await this.db.outbox.delete(e.key)
         }
       })
       total += entries.length
@@ -235,7 +235,7 @@ export class SyncEngine {
           const edited = Date.parse(String(r.updatedAt ?? r.confirmedAt ?? r.checkedAt ?? r.timestamp ?? ''))
           const id = String(r[key])
           const existing = await this.db.outbox.get(outboxKey(collection, id))
-          await this.db.outbox.put({ key: outboxKey(collection, id), collection, id, queuedAt: Math.max(existing?.queuedAt ?? 0, Number.isFinite(edited) ? edited : 0) })
+          await this.db.outbox.put({ key: outboxKey(collection, id), collection, id, queuedAt: Math.max(existing?.queuedAt ?? 0, Number.isFinite(edited) ? edited : 0), rev: nextRev() })
           n++
         }
       }
