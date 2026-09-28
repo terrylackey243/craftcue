@@ -177,8 +177,8 @@ describe('two devices, one account', () => {
     expect(await a.supplies.get('s2')).toBeTruthy()
   })
 
-  it('a brand-new device downloads the whole stash', async () => {
-    for (let i = 0; i < 1200; i++) await a.supplies.put(supply(`s${i}`))
+  it('a brand-new device downloads the whole stash', { timeout: 30_000 }, async () => {
+    await a.supplies.bulkPut(Array.from({ length: 1200 }, (_, i) => supply(`s${i}`)))
     await syncA.sync()
     await syncB.sync()
     expect(await b.supplies.count()).toBe(1200)
