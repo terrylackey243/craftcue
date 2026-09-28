@@ -33,8 +33,11 @@ export interface Supply extends Timestamps {
   unitCost?: number
   /** What a whole pack cost, if bought by the pack. */
   packPrice?: number
-  /** How many units come in one pack. */
+  /** How many units come in one pack. For one color of a mixed pack: how many of that color. */
   packSize?: number
+  /** Colors from the same mixed-color pack share a set id and name. */
+  setId?: string
+  setName?: string
   location?: string
   thumbnail?: string // data URL, ~400px JPEG
   notes?: string
@@ -124,9 +127,16 @@ export interface UserSetup {
   updatedAt: string
 }
 
+/** One color in a mixed-color pack, e.g. { color: 'Rocket Red', count: 3 }. */
+export interface PackColor {
+  color: string
+  count: number
+}
+
 export interface UpcCacheEntry {
   upc: string // primary key
-  proposedSupply: Partial<Supply>
+  /** For a mixed-color pack, includes `colors` and the set's shared details. */
+  proposedSupply: Partial<Supply> & { colors?: PackColor[] }
   confirmedAt: string
   timesUsed: number
 }

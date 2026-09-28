@@ -163,6 +163,19 @@ describe('shared barcode catalog', () => {
     expect(subs[0].data).toEqual({ name: 'Wiggly eyes' })
   })
 
+  it('keeps a mixed pack’s color breakdown, cleaned and capped', async () => {
+    const upc = '036000291452'
+    const colors = [{ color: 'Rocket Red', count: 3 }, { color: ' Solar Yellow ', count: 3 }, { color: '', count: 3 }, { color: 'Blank', count: 0 }, { color: 'Nope', count: 'x' }]
+    const C = await user('crafter-colors')
+    await C.sb.rpc('submit_product', { p_upc: upc, p_data: { name: 'Astrobrights cardstock', setName: 'Spectrum', packSize: 6, colors } })
+    const sub = (await C.sb.from('product_submissions').select('data').eq('upc', upc)).data![0]
+    expect(sub.data).toEqual({ name: 'Astrobrights cardstock', setName: 'Spectrum', packSize: 6, colors: [{ color: 'Rocket Red', count: 3 }, { color: 'Solar Yellow', count: 3 }] })
+    const many = Array.from({ length: 150 }, (_, i) => ({ color: `c${i}`, count: 1 }))
+    await C.sb.rpc('submit_product', { p_upc: upc, p_data: { name: 'Big pack', colors: many } })
+    const big = (await C.sb.from('product_submissions').select('data').eq('upc', upc)).data![0]
+    expect(big.data.colors).toHaveLength(100)
+  })
+
   it('treats EAN-13 with a leading zero as the same product', async () => {
     const r = await A.sb.rpc('submit_product', { p_upc: '0036000291452', p_data: vinyl })
     expect(r.data.upc).toBe(UPC)

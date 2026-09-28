@@ -6,7 +6,7 @@ import type { Compressed } from '../images'
 import { AiResponseError, checkStop, firstText, getAiClient, logUsage } from './aiClient'
 import { supportsEffort, visionModel } from './models'
 import { isValidUpc, normalizeUpc } from '../upc'
-import { visionBulkSchema, visionSingleSchema, wire, type VisionItem } from './schemas'
+import { assortmentSchema, visionBulkSchema, visionSingleSchema, wire, type AssortmentReading, type VisionItem } from './schemas'
 
 export type PhotoKind = 'package' | 'loose' | 'bulk'
 
@@ -124,4 +124,25 @@ export async function readBulkPhoto(image: Compressed, categories: Category[], q
   const prompt = `${PROMPTS.bulk}\n\nCategories:\n${categoryList(categories)}`
   const out = await callVision<{ items: VisionItem[] }>(format, prompt, image, quality, 8000)
   return out.items.map((i) => toProposed(i, 'vision'))
+}
+
+const ASSORTMENT_PROMPT = `This is a photo of a craft supply pack that contains several colors (for example an assorted cardstock or vinyl pack).
+List the color names that are PRINTED AND READABLE on the pack (often along an edge or on a color key), in the order printed, with how many pieces of each color the pack holds.
+Strict rules:
+- Only include a color name you can actually read in the photo. Never guess or invent names from the colors you see, and never fill in names you only know from memory of the product. If the names aren't readable, return an empty colors list and set colorsReadable to false.
+- Only give a per-color count if it is printed, or if the pack prints a total and says the colors are equal amounts (then divide). Otherwise use 0 and set countsConfident to false.
+"name" describes a single piece without its color, e.g. "Astrobrights cardstock". Dimensions like "8.5 x 11 in". totalCount is the printed total, 0 if not printed.
+If you can read barcode digits, put them in upcDigits, otherwise an empty string.`
+
+/** Read a mixed-color pack: the shared details plus each color and its count. */
+export async function readAssortmentPhoto(image: Compressed, categories: Category[], quality: Quality): Promise<AssortmentReading> {
+  const format = zodOutputFormat(assortmentSchema(categories.map((c) => c.id)))
+  const prompt = `${ASSORTMENT_PROMPT}\n\nCategories:\n${categoryList(categories)}\nUnits: sheet, roll, ft, yd, piece, pack, blank, bottle, other.`
+  const out = await callVision<AssortmentReading>(format, prompt, image, quality, 4000)
+  const read = out.upcDigits.replace(/\D/g, '')
+  // Don't take the model's word for it: counts must add up to the printed total.
+  const sum = out.colors.reduce((n, c) => n + (c.count > 0 ? c.count : 0), 0)
+  const addsUp = out.totalCount <= 0 || Math.abs(sum - out.totalCount) < 0.001
+  const colors = out.colorsReadable ? out.colors : []
+  return { ...out, colors, countsConfident: out.countsConfident && addsUp && colors.length > 0, upcDigits: read && isValidUpc(read) ? normalizeUpc(read) : '' }
 }

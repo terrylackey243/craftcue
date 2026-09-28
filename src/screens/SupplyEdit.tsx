@@ -3,6 +3,9 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { db } from '../db'
 import SupplyForm, { emptyDraft } from '../components/SupplyForm'
+import AssortmentForm from '../components/AssortmentForm'
+import { Chip } from '../components/ui'
+import { Link } from 'react-router-dom'
 import { Button, Notice, PageHeader, Spinner } from '../components/ui'
 import { deleteSupply } from '../lib/repo'
 
@@ -15,6 +18,8 @@ export default function SupplyEdit() {
   const [savedName, setSavedName] = useState('')
   const [formKey, setFormKey] = useState(0)
   const [lastCategory, setLastCategory] = useState('adhesive-vinyl')
+  const [mixed, setMixed] = useState(false)
+  const siblings = useLiveQuery(async () => (existing?.setId ? db.supplies.where('id').notEqual(existing.id).filter((s) => s.setId === existing.setId).toArray() : []), [existing?.setId, existing?.id]) ?? []
 
   if (id && existing === undefined) return <Spinner />
   if (id && existing === null) return <Notice tone="error">That supply wasn't found. It may have been deleted.</Notice>
@@ -23,6 +28,29 @@ export default function SupplyEdit() {
     return (
       <div className="mx-auto max-w-2xl">
         <PageHeader title="Edit supply" />
+        {existing.setId && (
+          <div className="mb-4 flex flex-col gap-2 rounded-2xl bg-white p-4 ring-1 ring-stone-200">
+            <p>
+              Part of <strong>{existing.setName}</strong>, a pack with {siblings.length + 1} colors.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/inventory" className="font-semibold text-brand-700 underline">
+                See all its colors in My stash
+              </Link>
+            </div>
+            <Button
+              variant="danger"
+              className="self-start"
+              onClick={async () => {
+                if (!window.confirm(`Delete all ${siblings.length + 1} colors of “${existing.setName}” from your stash?`)) return
+                await db.supplies.bulkDelete([existing.id, ...siblings.map((s) => s.id)])
+                navigate('/inventory', { replace: true })
+              }}
+            >
+              Delete the whole pack
+            </Button>
+          </div>
+        )}
         <SupplyForm
           initial={existing}
           onSaved={() => navigate(-1)}
@@ -41,6 +69,24 @@ export default function SupplyEdit() {
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader title="Type it in" />
+      <div className="mb-4 flex flex-wrap gap-2" role="radiogroup" aria-label="What are you adding?">
+        <Chip selected={!mixed} onClick={() => setMixed(false)}>
+          One item
+        </Chip>
+        <Chip selected={mixed} onClick={() => setMixed(true)}>
+          A pack with several colors
+        </Chip>
+      </div>
+      {mixed && (
+        <AssortmentForm
+          onSaved={(saved) => {
+            setSavedName(`${saved[0]?.setName ?? 'pack'} (${saved.length} colors)`)
+            setMixed(false)
+            window.scrollTo(0, 0)
+          }}
+          onCancel={() => setMixed(false)}
+        />
+      )}
       {savedName && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <Notice tone="success">Saved “{savedName}”. Add another?</Notice>
@@ -49,7 +95,7 @@ export default function SupplyEdit() {
           </Button>
         </div>
       )}
-      <SupplyForm
+      {!mixed && <SupplyForm
         key={formKey}
         initial={emptyDraft(lastCategory)}
         saveLabel="Save and add another"
@@ -61,7 +107,7 @@ export default function SupplyEdit() {
           window.scrollTo(0, 0)
         }}
         onCancel={() => navigate(-1)}
-      />
+      />}
     </div>
   )
 }

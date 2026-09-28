@@ -101,3 +101,41 @@ test('AI buttons without a key open the friendly setup panel, never an error', a
   await expect(page.getByRole('dialog', { name: /quick one-time setup/ })).toBeVisible()
   await expect(page.getByRole('link', { name: /step by step/ })).toBeVisible()
 })
+
+test('a mixed-color pack is saved per color and grouped in My stash', async ({ page }, testInfo) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: "Let's start" }).click()
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+  await page.getByRole('button', { name: 'Maybe later' }).click()
+  await page.getByRole('button', { name: /Add supplies now/ }).click()
+  await page.getByRole('link', { name: /Type it in/ }).click()
+  await page.getByRole('button', { name: 'A pack with several colors' }).click()
+  await page.getByLabel('What is one sheet? (without the color)').fill('Bright cardstock')
+  await page.getByLabel('Pack name (optional)').fill('Rainbow pack')
+  for (const [i, c] of ['Cherry', 'Lemon', 'Sky', 'Moss'].entries()) {
+    await page.getByLabel(`Color ${i + 1}`, { exact: true }).fill(c)
+    if (i < 3) await page.getByLabel(`Color ${i + 1}`, { exact: true }).press('Enter')
+  }
+  await page.getByRole('button', { name: 'Apply to all' }).click()
+  await page.getByLabel('Price for one pack ($) (optional)').fill('6')
+  await expect(page.getByText("That's $0.50 per sheet, for every color.")).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('mixed-form.png'), fullPage: true })
+  await page.getByRole('button', { name: /Save 4 colors/ }).click()
+  await expect(page.getByText('Saved “Rainbow pack (4 colors)”')).toBeVisible()
+
+  await page.goto('/#/inventory')
+  const group = page.getByRole('button', { name: /Rainbow pack/ })
+  await expect(group).toContainText('4 colors')
+  await expect(group).toContainText('12 sheets')
+  await expect(page.getByText('Cherry', { exact: true })).toHaveCount(0) // closed until tapped
+  await group.click()
+  await expect(page.getByText('Cherry', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Use one Bright cardstock' }).first().click()
+  await page.screenshot({ path: testInfo.outputPath('mixed-stash.png'), fullPage: true })
+  // Searching a color finds it inside the pack.
+  await page.goto('/#/')
+  await page.goto('/#/inventory')
+  await page.getByLabel('Search your stash').fill('moss')
+  await expect(page.getByText('Moss', { exact: true })).toBeVisible()
+  await expect(page.getByText('Cherry', { exact: true })).toHaveCount(0)
+})

@@ -6,7 +6,7 @@ import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { describe, it } from 'vitest'
 import { makeAnthropicClient, setAiClientForTests, type AiClient } from '../../src/lib/ai/aiClient'
 import { buildRecommendParams, recommend } from '../../src/lib/ai/recommend'
-import { readBulkPhoto, readSinglePhoto } from '../../src/lib/ai/vision'
+import { readAssortmentPhoto, readBulkPhoto, readSinglePhoto } from '../../src/lib/ai/vision'
 import { costOf } from '../../src/lib/ai/models'
 import { SEED_CATEGORIES } from '../../src/data/categories'
 import type { GoalRequest, Supply, UserSetup } from '../../src/types'
@@ -74,6 +74,21 @@ run('record live fixtures', () => {
       const cost = costOf({ timestamp: '', feature: 'vision-intake', model: m.model, inputTokens: m.usage.input_tokens, outputTokens: m.usage.output_tokens })
       console.log(`[vision ${kind}] ${m.model} in=${m.usage.input_tokens} out=${m.usage.output_tokens} cost=$${cost.toFixed(4)}`)
       console.log(JSON.stringify(out, null, 1).slice(0, 1500))
+    })
+  }
+
+  // Mixed-color packs. EXTRA_MIXED_PHOTO lets you try a real pack photo locally without saving it.
+  const mixed = [['mixed', 'tests/fixtures/photos/mixed.jpg', true], ['extra', process.env.EXTRA_MIXED_PHOTO ?? '', false]] as const
+  for (const [name, path, save] of mixed) {
+    it.runIf(Boolean(path) && existsSync(path))(`vision: mixed pack (${name})`, { timeout: 120_000 }, async () => {
+      const sink: unknown[] = []
+      setAiClientForTests(recordingClient(makeAnthropicClient(key!), sink))
+      const img = { dataUrl: '', base64: readFileSync(path).toString('base64'), mediaType: (path.endsWith('.png') ? 'image/png' : 'image/jpeg') as 'image/jpeg', width: 0, height: 0 }
+      const out = await readAssortmentPhoto(img, SEED_CATEGORIES, 'standard')
+      if (save) writeFileSync('tests/fixtures/vision-mixed.json', JSON.stringify(sink.at(-1), null, 1))
+      const m = sink.at(-1) as { usage: Record<string, number>; model: string }
+      const cost = costOf({ timestamp: '', feature: 'vision-intake', model: m.model, inputTokens: m.usage.input_tokens, outputTokens: m.usage.output_tokens })
+      console.log(`[vision mixed ${name}] cost=$${cost.toFixed(4)}`, JSON.stringify({ ...out, colors: out.colors.map((c) => `${c.color}:${c.count}`) }))
     })
   }
 })

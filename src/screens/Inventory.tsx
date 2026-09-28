@@ -7,6 +7,7 @@ import { Badge, ButtonLink, EmptyState, PageHeader, Spinner, inputClass } from '
 import { unitLabel } from '../components/SupplyForm'
 import type { Supply } from '../types'
 import { categoryIcon } from '../data/categories'
+import { groupStash, type StashEntry } from '../lib/assortment'
 
 export function filterSupplies(supplies: Supply[], q: string, category: string, location: string, categoryName: (id: string) => string): Supply[] {
   const words = q.toLowerCase().split(/\s+/).filter(Boolean)
@@ -14,7 +15,7 @@ export function filterSupplies(supplies: Supply[], q: string, category: string, 
     if (category && s.category !== category) return false
     if (location && (s.location ?? '') !== location) return false
     if (!words.length) return true
-    const hay = [s.name, s.color, s.brand, s.subtype, s.finish, s.dimensions, s.location, s.notes, categoryName(s.category)].join(' ').toLowerCase()
+    const hay = [s.name, s.setName, s.color, s.brand, s.subtype, s.finish, s.dimensions, s.location, s.notes, categoryName(s.category)].join(' ').toLowerCase()
     return words.every((w) => hay.includes(w))
   })
 }
@@ -54,12 +55,75 @@ function QuickQty({ s }: { s: Supply }) {
   )
 }
 
+function SupplyRow({ s, catName, indent = false }: { s: Supply; catName: (id: string) => string; indent?: boolean }) {
+  return (
+    <li className={`flex flex-wrap items-center gap-3 p-3 ${indent ? 'bg-stone-50 pl-8' : ''}`}>
+      {s.thumbnail ? (
+        <img src={s.thumbnail} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+      ) : (
+        <span aria-hidden className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-2xl">
+          {indent ? '🎨' : categoryIcon(s.category)}
+        </span>
+      )}
+      <Link to={`/supply/${s.id}`} className="min-w-40 flex-1">
+        <span className="block font-semibold text-stone-900 underline-offset-2 hover:underline">{indent ? s.color || s.name : s.name}</span>
+        <span className="block text-sm text-stone-600">
+          {(indent ? [s.dimensions, s.subtype] : [catName(s.category), s.color, s.dimensions, s.location]).filter(Boolean).join(' · ')}
+        </span>
+      </Link>
+      <LevelBadge s={s} />
+      <QuickQty s={s} />
+    </li>
+  )
+}
+
+/** A mixed-color pack: one row that opens to show each color. */
+function SetRow({ entry, open, onToggle, catName }: { entry: Extract<StashEntry, { kind: 'set' }>; open: boolean; onToggle: () => void; catName: (id: string) => string }) {
+  const first = entry.items[0]
+  const total = Math.round(entry.items.reduce((n, s) => n + s.quantity, 0) * 1000) / 1000
+  const low = entry.items.filter((s) => stockLevel(s) !== 'ok').length
+  return (
+    <li>
+      <button type="button" aria-expanded={open} onClick={onToggle} className="flex w-full flex-wrap items-center gap-3 p-3 text-left hover:bg-stone-50">
+        <span aria-hidden className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-2xl">
+          {categoryIcon(first.category)}
+        </span>
+        <span className="min-w-40 flex-1">
+          <span className="block font-semibold text-stone-900">{entry.name}</span>
+          <span className="block text-sm text-stone-600">
+            {[catName(first.category), `${entry.items.length} colors`, `${total} ${unitLabel(first.unit, total)}`, first.dimensions].filter(Boolean).join(' · ')}
+          </span>
+        </span>
+        {low > 0 && <Badge tone="warn">{low} low</Badge>}
+        <span aria-hidden className={`text-2xl text-stone-400 transition ${open ? 'rotate-90' : ''}`}>
+          ›
+        </span>
+      </button>
+      {open && (
+        <ul className="divide-y divide-stone-100 border-t border-stone-100">
+          {entry.items.map((s) => (
+            <SupplyRow key={s.id} s={s} catName={catName} indent />
+          ))}
+        </ul>
+      )}
+    </li>
+  )
+}
+
 export default function Inventory() {
   const supplies = useSupplies()
   const cats = useCategoryMap()
   const [q, setQ] = useState('')
   const [category, setCategory] = useState('')
   const [location, setLocation] = useState('')
+  const [openSets, setOpenSets] = useState<Set<string>>(new Set())
+  const toggleSet = (id: string) =>
+    setOpenSets((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
   const [view, setView] = useState<'list' | 'grid'>(() => {
     try {
       return (localStorage.getItem('cc-inventory-view') as 'list' | 'grid') || 'list'
@@ -135,23 +199,13 @@ export default function Inventory() {
             <EmptyState title="Nothing matches">Try a different word or clear the filters.</EmptyState>
           ) : view === 'list' ? (
             <ul className="divide-y divide-stone-200 overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200">
-              {shown.map((s) => (
-                <li key={s.id} className="flex flex-wrap items-center gap-3 p-3">
-                  {s.thumbnail ? (
-                    <img src={s.thumbnail} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
-                  ) : (
-                    <span aria-hidden className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-2xl">
-                      {categoryIcon(s.category)}
-                    </span>
-                  )}
-                  <Link to={`/supply/${s.id}`} className="min-w-40 flex-1">
-                    <span className="block font-semibold text-stone-900 underline-offset-2 hover:underline">{s.name}</span>
-                    <span className="block text-sm text-stone-600">{[catName(s.category), s.color, s.dimensions, s.location].filter(Boolean).join(' · ')}</span>
-                  </Link>
-                  <LevelBadge s={s} />
-                  <QuickQty s={s} />
-                </li>
-              ))}
+              {groupStash(shown).map((entry) =>
+                entry.kind === 'single' ? (
+                  <SupplyRow key={entry.supply.id} s={entry.supply} catName={catName} />
+                ) : (
+                  <SetRow key={entry.setId} entry={entry} open={Boolean(q.trim()) || openSets.has(entry.setId)} onToggle={() => toggleSet(entry.setId)} catName={catName} />
+                ),
+              )}
             </ul>
           ) : (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

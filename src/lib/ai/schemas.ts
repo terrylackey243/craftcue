@@ -81,3 +81,24 @@ export type VisionItem = z.infer<ReturnType<typeof visionItemSchema>>
 export function wire<T extends { type: 'json_schema'; schema: Record<string, unknown> }>(f: T) {
   return { type: f.type, schema: f.schema }
 }
+
+// ----- Mixed-color packs -----
+
+export function assortmentSchema(categoryIds: string[]) {
+  return z.object({
+    name: z.string().describe('What every sheet is, without the colors, e.g. "Astrobrights cardstock"'),
+    setName: z.string().describe('The pack name as printed, e.g. "Astrobrights Spectrum assortment"'),
+    brand: z.string(),
+    category: z.enum(categoryIds as [string, ...string[]]),
+    subtype: z.string().describe('Weight or kind, e.g. "65 lb"'),
+    dimensions: z.string(),
+    unit: z.enum(UNITS),
+    totalCount: z.number().describe('Total pieces in the pack, 0 if not printed'),
+    colors: z.array(z.object({ color: z.string(), count: z.number().describe('How many of this color; 0 if unknown') })),
+    colorsReadable: z.boolean().describe('false if the color names are not printed legibly in the photo'),
+    countsConfident: z.boolean().describe('true only if the count per color is printed or clearly implied'),
+    upcDigits: z.string(),
+  })
+}
+
+export type AssortmentReading = z.infer<ReturnType<typeof assortmentSchema>>

@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { setAiClientForTests } from '../../src/lib/ai/aiClient'
-import { readBulkPhoto, readSinglePhoto } from '../../src/lib/ai/vision'
+import { readAssortmentPhoto, readBulkPhoto, readSinglePhoto } from '../../src/lib/ai/vision'
 import { SEED_CATEGORIES } from '../../src/data/categories'
 import { db } from '../../src/db'
 import { saveSetup, setApiKey } from '../../src/lib/repo'
@@ -49,6 +49,36 @@ describe('photo reading from recorded responses', () => {
     const items = await readBulkPhoto(img, SEED_CATEGORIES, 'standard')
     expect(items).toHaveLength(5)
     expect(items.map((i) => i.supply.category).sort()).toEqual(['blanks-drinkware', 'cardstock-paper', 'felt', 'iron-on', 'transfer-tape-mats'])
+  })
+})
+
+describe('mixed-color pack photos', () => {
+  const withReading = (reading: object): Anthropic.Message => {
+    const base = fixture('mixed')
+    return { ...base, content: [{ type: 'text', text: JSON.stringify(reading), citations: null }] as Anthropic.Message['content'] }
+  }
+  const reading = { name: 'Cardstock', setName: 'Mix', brand: 'X', category: 'cardstock-paper', subtype: '', dimensions: '', unit: 'sheet', upcDigits: '' }
+
+  it('reads every printed color and count (recorded response)', async () => {
+    setAiClientForTests({ createMessage: async () => fixture('mixed') })
+    const r = await readAssortmentPhoto(img, SEED_CATEGORIES, 'standard')
+    expect(r.colors.map((c) => c.color)).toEqual(['Cherry Pop', 'Sunbeam', 'Lagoon', 'Fern', 'Tangerine', 'Grape Soda', 'Bubblegum', 'Midnight'])
+    expect(r.colors.every((c) => c.count === 5)).toBe(true)
+    expect(r.countsConfident).toBe(true)
+  })
+
+  it('never keeps colors the model says it could not read', async () => {
+    setAiClientForTests({ createMessage: async () => withReading({ ...reading, totalCount: 75, colors: [{ color: 'Rocket Red', count: 5 }], colorsReadable: false, countsConfident: true }) })
+    const r = await readAssortmentPhoto(img, SEED_CATEGORIES, 'standard')
+    expect(r.colors).toEqual([])
+    expect(r.countsConfident).toBe(false)
+  })
+
+  it('flags counts that do not add up to the printed total, whatever the model claims', async () => {
+    setAiClientForTests({ createMessage: async () => withReading({ ...reading, totalCount: 75, colors: [{ color: 'A', count: 5 }, { color: 'B', count: 5 }], colorsReadable: true, countsConfident: true }) })
+    const r = await readAssortmentPhoto(img, SEED_CATEGORIES, 'standard')
+    expect(r.colors).toHaveLength(2)
+    expect(r.countsConfident).toBe(false)
   })
 })
 

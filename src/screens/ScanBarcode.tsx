@@ -8,6 +8,10 @@ import { makeThumbnail, makeVisionImage } from '../lib/images'
 import { readSinglePhoto } from '../lib/ai/vision'
 import { friendlyError } from '../lib/ai/aiClient'
 import SupplyForm, { emptyDraft, type SupplyDraft } from '../components/SupplyForm'
+import AssortmentForm, { type AssortmentInitial } from '../components/AssortmentForm'
+import { addAnotherPack } from '../lib/assortment'
+import { db } from '../db'
+import { totalCount } from '../lib/assortment'
 import { useAiGate } from '../components/useAiGate'
 import { Button, Notice, PageHeader, Spinner, inputClass } from '../components/ui'
 import type { Supply } from '../types'
@@ -19,6 +23,8 @@ type Phase =
   | { k: 'reading'; upc: string }
   | { k: 'form'; upc: string; draft: SupplyDraft; uncertain: Partial<Record<keyof Supply, string>>; from: string }
   | { k: 'saved'; name: string }
+  | { k: 'mixed'; upc: string; initial: AssortmentInitial; from: string }
+  | { k: 'another'; upc: string; existing: Supply[]; initial: AssortmentInitial }
 
 export default function ScanBarcode() {
   const navigate = useNavigate()
@@ -36,6 +42,15 @@ export default function ScanBarcode() {
     const upc = normalizeUpc(raw)
     setPhase({ k: 'looking', upc })
     const hit = await lookupUpc(upc, { onlineEnabled: !!setup?.upcLookupEnabled })
+    const colors = (hit?.supply as { colors?: { color: string; count: number }[] } | undefined)?.colors
+    if (hit && colors?.length) {
+      // A mixed-color pack. Already have it? Offer to add another pack to each color.
+      const initial: AssortmentInitial = { ...(hit.supply as AssortmentInitial), colors, upc }
+      const existing = await db.supplies.where('upc').equals(upc).toArray()
+      if (existing.length) setPhase({ k: 'another', upc, existing, initial })
+      else setPhase({ k: 'mixed', upc, initial, from: hit.from === 'cache' ? "Found it — you've scanned this pack before." : 'Found this pack. Please check the colors.' })
+      return
+    }
     if (hit) {
       const unconfirmed = hit.from === 'shared' && hit.status !== 'confirmed'
       const from =
@@ -170,6 +185,9 @@ export default function ScanBarcode() {
           >
             Type the details instead
           </Button>
+          <Button variant="secondary" onClick={() => setPhase({ k: 'mixed', upc: phase.upc, initial: { upc: phase.upc }, from: '' })}>
+            It's a pack with several colors
+          </Button>
           <Button variant="ghost" onClick={() => setPhase({ k: 'scan' })}>
             Scan a different one
           </Button>
@@ -193,6 +211,33 @@ export default function ScanBarcode() {
             }}
             onCancel={() => setPhase({ k: 'scan' })}
           />
+        </div>
+      )}
+
+      {phase.k === 'mixed' && (
+        <div className="flex flex-col gap-4">
+          {phase.from && <Notice tone="success">{phase.from}</Notice>}
+          <AssortmentForm initial={phase.initial} onSaved={(saved) => setPhase({ k: 'saved', name: `${saved[0]?.setName ?? 'Pack'} (${saved.length} colors)` })} onCancel={() => setPhase({ k: 'scan' })} />
+        </div>
+      )}
+
+      {phase.k === 'another' && (
+        <div className="flex flex-col gap-4">
+          <Notice tone="success">
+            You already have this pack: <strong>{phase.existing[0].setName ?? phase.existing[0].name}</strong> ({phase.existing.length} colors).
+          </Notice>
+          <Button
+            className="min-h-14 text-lg"
+            onClick={async () => {
+              await addAnotherPack(phase.existing, phase.initial.colors ?? [])
+              setPhase({ k: 'saved', name: `another pack of ${phase.existing[0].setName ?? phase.existing[0].name}` })
+            }}
+          >
+            ➕ Add another pack (+{totalCount(phase.initial.colors ?? [])} across {phase.initial.colors?.length} colors)
+          </Button>
+          <Button variant="secondary" onClick={() => setPhase({ k: 'mixed', upc: phase.upc, initial: phase.initial, from: '' })}>
+            Enter it as a separate pack
+          </Button>
         </div>
       )}
 

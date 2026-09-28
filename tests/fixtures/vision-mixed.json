@@ -1,0 +1,30 @@
+{
+ "model": "claude-haiku-4-5-20251001",
+ "id": "msg_011CfWPUXWbWu4f79cBn9q2J",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "text",
+   "text": "{\"name\":\"Cardstock\",\"setName\":\"Bright Mix Assortment\",\"brand\":\"Maple Lane Crafts\",\"category\":\"cardstock-paper\",\"subtype\":\"65 lb\",\"dimensions\":\"8.5 x 11 in\",\"unit\":\"sheet\",\"totalCount\":40,\"colors\":[{\"color\":\"Cherry Pop\",\"count\":5},{\"color\":\"Sunbeam\",\"count\":5},{\"color\":\"Lagoon\",\"count\":5},{\"color\":\"Fern\",\"count\":5},{\"color\":\"Tangerine\",\"count\":5},{\"color\":\"Grape Soda\",\"count\":5},{\"color\":\"Bubblegum\",\"count\":5},{\"color\":\"Midnight\",\"count\":5}],\"colorsReadable\":true,\"countsConfident\":true,\"upcDigits\":\"\"}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2280,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 182,
+  "service_tier": "standard",
+  "inference_geo": "not_available"
+ },
+ "diagnostics": null,
+ "parsed_output": null
+}

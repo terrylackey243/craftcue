@@ -7,11 +7,12 @@ import { friendlyError } from '../lib/ai/aiClient'
 import { cacheUpc } from '../lib/repo'
 import { isValidUpc, normalizeUpc } from '../lib/upc'
 import SupplyForm, { emptyDraft, type SupplyDraft } from '../components/SupplyForm'
+import AssortmentForm from '../components/AssortmentForm'
 import { useAiGate } from '../components/useAiGate'
 import { Button, Notice, PageHeader, Spinner } from '../components/ui'
 import type { Quality, Supply } from '../types'
 
-type Kind = 'package' | 'loose'
+type Kind = 'package' | 'loose' | 'mixed'
 
 export default function PhotoAdd() {
   const setup = useSetup()
@@ -33,7 +34,7 @@ export default function PhotoAdd() {
     setError('')
     try {
       const [img, thumb] = await Promise.all([makeVisionImage(f), makeThumbnail(f)])
-      const r = await readSinglePhoto(kind, img, categories, quality)
+      const r = await readSinglePhoto(kind === 'mixed' ? 'package' : kind, img, categories, quality)
       setResult({ draft: { ...emptyDraft(), ...r.supply, thumbnail: thumb.dataUrl } as SupplyDraft, uncertain: r.uncertain, triedHarder: quality === 'best' })
       setFormKey((k) => k + 1)
     } catch (e) {
@@ -64,11 +65,12 @@ export default function PhotoAdd() {
         <div className="flex flex-col gap-4">
           <fieldset>
             <legend className="mb-2 font-semibold">What are you photographing?</legend>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2 sm:grid-cols-3">
               {(
                 [
                   ['package', 'A package with a label', 'Best results. We read the brand, size and count.'],
                   ['loose', 'A loose item, no label', "We'll guess the type, color and size. You'll check how much you have."],
+                  ['mixed', 'A pack with several colors', 'Like an assorted cardstock pack. Each color is saved separately.'],
                 ] as const
               ).map(([k, title, help]) => (
                 <label key={k} className={`flex min-h-16 cursor-pointer gap-3 rounded-2xl border-2 p-3 ${kind === k ? 'border-brand-600 bg-brand-50' : 'border-stone-200 bg-white'}`}>
@@ -81,9 +83,13 @@ export default function PhotoAdd() {
               ))}
             </div>
           </fieldset>
-          <Button className="min-h-16 text-lg" onClick={() => guard(() => input.current?.click())}>
-            📷 Take or choose a photo
-          </Button>
+          {kind === 'mixed' ? (
+            <AssortmentForm onSaved={(saved) => setSavedName(`${saved[0]?.setName ?? 'Pack'} (${saved.length} colors)`)} onCancel={() => navigate('/add')} />
+          ) : (
+            <Button className="min-h-16 text-lg" onClick={() => guard(() => input.current?.click())}>
+              📷 Take or choose a photo
+            </Button>
+          )}
           <p className="text-sm text-stone-600">Only a small copy of the photo is kept on this device. The larger copy is sent to Claude to read, then thrown away.</p>
         </div>
       )}
