@@ -2,6 +2,8 @@ import { lazy, useEffect, useState } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { useSetup } from './hooks'
 import { firstRunInit } from './lib/storage'
+import { initAccount } from './lib/cloud/account'
+import { useAccount } from './hooks'
 import Layout from './components/Layout'
 import { Spinner } from './components/ui'
 import Wizard from './screens/Wizard'
@@ -29,15 +31,18 @@ export default function App() {
   const setup = useSetup()
   const [justCompleted, setJustCompleted] = useState(false)
 
+  const account = useAccount()
+
   useEffect(() => {
     void firstRunInit()
+    void initAccount()
   }, [])
 
   useEffect(() => {
     if (setup) document.documentElement.style.setProperty('--cc-font-scale', String(setup.fontScale || 1))
   }, [setup])
 
-  if (!setup) {
+  if (!setup || !account.ready) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
         <Spinner label="Opening CraftCue…" />

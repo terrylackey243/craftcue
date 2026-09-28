@@ -30,11 +30,25 @@ Stack: Vite + React + TypeScript, Tailwind, Dexie (IndexedDB), @zxing/browser, v
 | `src/lib/backup.ts` | Backup format and migrations |
 | `tests/unit`, `tests/e2e`, `tests/fixtures` | Tests and recorded API responses |
 
+### Accounts and sync
+
+Optional. With `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` set at build time, CraftCue
+gets accounts and offline-first sync through [Supabase](https://supabase.com); without them it is
+the on-device-only app. The database schema and its security rules are in `supabase/migrations/`.
+
+```bash
+./scripts/test-db.sh          # security rules + end-to-end sync (needs Docker + Supabase CLI)
+./scripts/test-sync-e2e.sh    # two devices in real browsers
+```
+
+Both start a throwaway local Supabase and stop it afterwards.
+
 ## Ground rules
 
-- **No telemetry, no accounts, no new outbound hosts.** The only network destinations are
-  `api.anthropic.com` (with the user's key) and, if one is ever added, a UPC lookup host. Both
-  must be listed in `CONNECT_SRC` in `vite.config.ts`.
+- **No telemetry, no new outbound hosts.** The only network destinations are
+  `api.anthropic.com` (with the user's key), the account server when the build has one, and, if
+  one is ever added, a UPC lookup host. All must be allowed by `CONNECT_SRC` in `vite.config.ts`.
+- **Accounts stay optional in the code.** Every feature must still work in a build with no server.
 - **AI output is a proposal.** Nothing the model says is saved or deducted until the user
   confirms it.
 - **Every AI feature has a no-key path.** Use `useAiGate()` so a button opens the setup panel

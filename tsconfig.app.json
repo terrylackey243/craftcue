@@ -19,5 +19,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "tests/unit", "tests/record", "tests/setup.ts"]
+  "include": ["src", "tests/unit", "tests/record", "tests/db", "tests/setup.ts"]
 }

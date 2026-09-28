@@ -11,3 +11,5 @@ test-results
 compose.yml
 compose.override.yml
 deploy/local/
+deploy.env
+dist-sync

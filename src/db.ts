@@ -1,4 +1,4 @@
-import Dexie, { type Table } from 'dexie'
+import Dexie, { type DBCore, type DBCoreMutateRequest, type Table } from 'dexie'
 import type {
   Category,
   Person,
@@ -15,11 +15,24 @@ export interface MetaEntry {
   value: unknown
 }
 
-/** Secrets never go into backups. Only the Anthropic key lives here today. */
+/** Secrets never go into backups or sync. Only the Anthropic key lives here today. */
 export interface SecretEntry {
   key: 'anthropicApiKey'
   value: string
 }
+
+/** One pending local change waiting to be pushed to the account. */
+export interface OutboxEntry {
+  key: string // `${collection}\u0000${id}`
+  collection: SyncedCollection
+  id: string
+  queuedAt: number
+}
+
+/** Tables that sync to the user's account (and go into backups). Order = restore order. */
+export const SYNCED_COLLECTIONS = ['setup', 'categories', 'supplies', 'people', 'projects', 'upcCache', 'shoppingChecks', 'usage'] as const
+export type SyncedCollection = (typeof SYNCED_COLLECTIONS)[number]
+const SYNCED = new Set<string>(SYNCED_COLLECTIONS)
 
 export class CraftCueDB extends Dexie {
   supplies!: Table<Supply, string>
@@ -30,8 +43,9 @@ export class CraftCueDB extends Dexie {
   upcCache!: Table<UpcCacheEntry, string>
   people!: Table<Person, string>
   projects!: Table<Project, string>
-  usageLog!: Table<UsageLogEntry, number>
+  usage!: Table<UsageLogEntry, string>
   shoppingChecks!: Table<ShoppingCheck, string>
+  outbox!: Table<OutboxEntry, string>
 
   constructor(name = 'craftcue') {
     super(name)
@@ -47,23 +61,90 @@ export class CraftCueDB extends Dexie {
       usageLog: '++id, timestamp, feature',
       shoppingChecks: 'key',
     })
+    // v2 (sync): usage entries need globally unique ids, so they move from the auto-increment
+    // `usageLog` table to `usage` keyed by UUID; `outbox` tracks changes to push.
+    this.version(2)
+      .stores({
+        usageLog: null,
+        usage: 'id, timestamp, feature',
+        outbox: 'key, queuedAt',
+      })
+      .upgrade(async (tx) => {
+        const old = await tx.table('usageLog').toArray()
+        await tx.table('usage').bulkAdd(old.map(({ id: _id, ...e }) => ({ ...e, id: crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}` })))
+      })
+    this.use(outboxMiddleware())
+  }
+}
+
+/**
+ * Pulled changes are applied inside transactions marked with this flag so they are not echoed
+ * back to the server.
+ */
+const REMOTE_FLAG = '__craftcueRemote'
+
+export function markRemote(tx: { idbtrans: IDBTransaction }): void {
+  ;(tx.idbtrans as unknown as Record<string, boolean>)[REMOTE_FLAG] = true
+}
+
+export const outboxKey = (collection: string, id: string) => `${collection}\u0000${id}`
+
+/** Called after a local change is queued for sync (used to schedule a push). */
+export const outboxListeners = new Set<() => void>()
+
+/**
+ * Records every change to a synced table in `outbox`, inside the same transaction, so a change
+ * and its "needs pushing" note are saved together or not at all.
+ */
+function outboxMiddleware() {
+  return {
+    stack: 'dbcore' as const,
+    name: 'craftcue-outbox',
+    create(down: DBCore): DBCore {
+      return {
+        ...down,
+        transaction(stores, mode, options) {
+          const needsOutbox = mode === 'readwrite' && stores.some((s) => SYNCED.has(s)) && !stores.includes('outbox')
+          return down.transaction(needsOutbox ? [...stores, 'outbox'] : stores, mode, options)
+        },
+        table(tableName) {
+          const table = down.table(tableName)
+          if (!SYNCED.has(tableName)) return table
+          return {
+            ...table,
+            async mutate(req: DBCoreMutateRequest) {
+              const remote = (req.trans as unknown as Record<string, boolean>)[REMOTE_FLAG]
+              let keys: unknown[] = []
+              if (!remote && req.type === 'deleteRange') {
+                const found = await table.query({ trans: req.trans, values: false, query: { index: table.schema.primaryKey, range: req.range } })
+                keys = found.result
+              }
+              const res = await table.mutate(req)
+              if (remote) return res
+              if (req.type === 'add' || req.type === 'put') keys = res.results ?? req.keys ?? req.values.map((v) => table.schema.primaryKey.extractKey?.(v))
+              else if (req.type === 'delete') keys = req.keys
+              const now = Date.now()
+              const values = keys
+                .filter((k, i) => k !== undefined && !(res.failures && res.failures[i]))
+                .map((k) => ({ key: outboxKey(tableName, String(k)), collection: tableName, id: String(k), queuedAt: now }))
+              if (values.length) {
+                await down.table('outbox').mutate({ type: 'put', trans: req.trans, values })
+                outboxListeners.forEach((l) => l())
+              }
+              return res
+            },
+          }
+        },
+      }
+    },
   }
 }
 
 export const db = new CraftCueDB()
 
 /** Tables that are part of a backup, in restore order. */
-export const BACKUP_TABLES = [
-  'supplies',
-  'categories',
-  'setup',
-  'upcCache',
-  'people',
-  'projects',
-  'usageLog',
-  'shoppingChecks',
-] as const
-export type BackupTable = (typeof BACKUP_TABLES)[number]
+export const BACKUP_TABLES = SYNCED_COLLECTIONS
+export type BackupTable = SyncedCollection
 
 // ----- meta helpers -----
 

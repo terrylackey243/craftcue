@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/ui'
+import { cloudEnabled } from '../lib/cloud/config'
 
 const TOPICS: { q: string; a: ReactNode }[] = [
   {
@@ -29,7 +30,14 @@ const TOPICS: { q: string; a: ReactNode }[] = [
   },
   {
     q: 'Is my information private?',
-    a: (
+    a: cloudEnabled ? (
+      <>
+        <p>Yes. When you're signed in, your stash, projects and photos are saved to your CraftCue account so they show up on all your devices. Only you can see them: the server checks every request against your account.</p>
+        <p>Your Anthropic key is never saved to your account. It stays on each device where you enter it.</p>
+        <p>When you scan a barcode, the product's description (name, brand, color, size) is added to a shared list so the next crafter's scan fills in by itself. How many you have, what you paid, where you keep it and your photos are never shared.</p>
+        <p>Smart features send your request (your supply list, or the photo you took) straight to Anthropic to get an answer.</p>
+      </>
+    ) : (
       <>
         <p>Yes. Everything is saved only in this browser on this device. There are no accounts, no tracking and no ads.</p>
         <p>The only time anything leaves your device is when you use a smart feature: then your request (your supply list, and the photo if you took one) goes straight to Anthropic to get an answer. Anthropic's commercial terms say they don't train their AI on API data.</p>
@@ -38,7 +46,17 @@ const TOPICS: { q: string; a: ReactNode }[] = [
   },
   {
     q: 'Keeping your stash safe (backups)',
-    a: (
+    a: cloudEnabled ? (
+      <>
+        <p>
+          When you're signed in, every change is copied to your account automatically, so a lost or replaced device loses nothing: just sign in on the new one. The cloud
+          icon at the top shows whether everything has synced.
+        </p>
+        <p>
+          You can still save a backup file any time in <Link to="/settings" className="font-semibold text-brand-700 underline">Settings → Backup & restore</Link>.
+        </p>
+      </>
+    ) : (
       <>
         <p>
           Because your data lives in the browser, it can be lost if you clear your browser's data, and phones and tablets sometimes clear it when space is low. Go to{' '}

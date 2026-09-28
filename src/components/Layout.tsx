@@ -2,6 +2,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Suspense, useEffect } from 'react'
 import { Spinner } from './ui'
 import BackupReminder from './BackupReminder'
+import { SyncBadge, SyncBanner } from './SyncStatus'
 
 const NAV = [
   { to: '/', label: 'Home', icon: '🏠', end: true },
@@ -28,7 +29,8 @@ export default function Layout() {
             <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" className="h-9 w-9" />
             CraftCue
           </NavLink>
-          <nav aria-label="Main" className="hidden gap-1 md:flex">
+          <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+            <SyncBadge />
             {NAV.map((n) => (
               <NavLink
                 key={n.to}
@@ -43,13 +45,17 @@ export default function Layout() {
               Help
             </NavLink>
           </nav>
-          <NavLink to="/help" className="rounded-xl px-3 py-2 font-semibold text-brand-700 md:hidden">
-            Help
-          </NavLink>
+          <div className="flex items-center gap-1 md:hidden">
+            <SyncBadge />
+            <NavLink to="/help" className="rounded-xl px-3 py-2 font-semibold text-brand-700">
+              Help
+            </NavLink>
+          </div>
         </div>
       </header>
 
       <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-4 md:pb-10">
+        <SyncBanner />
         <BackupReminder />
         <Suspense fallback={<Spinner />}>
           <Outlet />

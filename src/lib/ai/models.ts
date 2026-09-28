@@ -28,7 +28,7 @@ export function priceFor(model: string): Price | undefined {
 }
 
 /** Estimated dollars for one logged call. */
-export function costOf(e: UsageLogEntry): number {
+export function costOf(e: Omit<UsageLogEntry, 'id'>): number {
   const p = priceFor(e.model)
   if (!p) return 0
   const read = e.cacheReadTokens ?? 0
@@ -45,7 +45,7 @@ export interface MonthSummary {
   dollars: number
 }
 
-export function summarizeMonth(entries: UsageLogEntry[], now = new Date()): MonthSummary {
+export function summarizeMonth(entries: Omit<UsageLogEntry, 'id'>[], now = new Date()): MonthSummary {
   const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   const month = entries.filter((e) => localMonth(e.timestamp) === prefix)
   return {

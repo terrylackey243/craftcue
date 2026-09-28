@@ -4,7 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { db } from '../../db'
 import { getApiKey } from '../repo'
 import type { AiFeature } from '../../types'
-import { nowIso } from '../ids'
+import { nowIso, uuid } from '../ids'
 
 export interface AiClient {
   createMessage(params: Anthropic.MessageCreateParamsNonStreaming): Promise<Anthropic.Message>
@@ -44,7 +44,8 @@ export async function getAiClient(): Promise<AiClient> {
 
 export async function logUsage(feature: AiFeature, message: Anthropic.Message): Promise<void> {
   const u = message.usage
-  await db.usageLog.add({
+  await db.usage.add({
+    id: uuid(),
     timestamp: nowIso(),
     feature,
     model: message.model,

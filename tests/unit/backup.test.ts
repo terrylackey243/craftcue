@@ -50,10 +50,10 @@ describe('backup round trip (spec Phase 1 acceptance)', () => {
   })
 
   it('merge does not double-count usage history', async () => {
-    await db.usageLog.add({ timestamp: '2026-09-01T00:00:00Z', feature: 'recommend', model: 'claude-sonnet-5', inputTokens: 1, outputTokens: 1 })
+    await db.usage.add({ id: 'u1', timestamp: '2026-09-01T00:00:00Z', feature: 'recommend', model: 'claude-sonnet-5', inputTokens: 1, outputTokens: 1 })
     const backup = await buildBackup()
     await importBackup(backup, 'merge')
-    expect(await db.usageLog.count()).toBe(1)
+    expect(await db.usage.count()).toBe(1)
   })
 })
 

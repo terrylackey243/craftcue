@@ -1,5 +1,5 @@
 import { db } from '../../db'
-import { nowIso } from '../ids'
+import { nowIso, uuid } from '../ids'
 import { friendlyError, makeAnthropicClient, type FriendlyError } from './aiClient'
 import { TEST_KEY_MODEL } from './models'
 
@@ -16,7 +16,8 @@ export async function testKey(key: string): Promise<{ ok: true } | { ok: false; 
       max_tokens: 1,
       messages: [{ role: 'user', content: 'Hi' }],
     })
-    await db.usageLog.add({
+    await db.usage.add({
+      id: uuid(),
       timestamp: nowIso(),
       feature: 'test-key',
       model: message.model,

@@ -4,6 +4,15 @@
 set -eu
 cd "$(dirname "$0")"
 IMAGE=craftcue-craftcue
-docker build --network=host -t "$IMAGE" .
+# Build settings for this copy (accounts, sync) live in an untracked file; see deploy.env.example.
+BUILD_ARGS=""
+if [ -f deploy.env ]; then
+  while IFS='=' read -r k v; do
+    case "$k" in ''|\#*) continue ;; esac
+    BUILD_ARGS="$BUILD_ARGS --build-arg $k=$v"
+  done < deploy.env
+fi
+# shellcheck disable=SC2086
+docker build --network=host $BUILD_ARGS -t "$IMAGE" .
 docker compose up -d --no-build --force-recreate
 echo "Deployed."

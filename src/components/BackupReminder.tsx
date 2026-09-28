@@ -1,13 +1,14 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { db } from '../db'
-import { useSetup } from '../hooks'
+import { useAccount, useSetup } from '../hooks'
 import { exportBackup, reminderState, snoozeReminder } from '../lib/backup'
 import { Button } from './ui'
 
 // Gentle nudge after N changes or N days (spec 3.3). Watches the meta table so it updates live.
 export default function BackupReminder() {
   const setup = useSetup()
+  const account = useAccount()
   const state = useLiveQuery(async () => {
     await db.meta.toArray() // subscribe to meta changes
     return setup ? reminderState(setup.backupReminder) : undefined
@@ -15,7 +16,8 @@ export default function BackupReminder() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  if (!state?.due) return null
+  // With an account, every change is already copied off the device.
+  if (!state?.due || account.userId) return null
 
   return (
     <div role="status" className="mb-4 flex flex-col gap-3 rounded-2xl bg-sun-300/50 p-4 ring-1 ring-sun-500 sm:flex-row sm:items-center sm:justify-between">

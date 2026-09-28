@@ -113,7 +113,10 @@ export default function PhotoAdd() {
             initial={result.draft}
             uncertain={result.uncertain}
             onSaved={async (s) => {
-              if (s.upc && isValidUpc(s.upc)) await cacheUpc(normalizeUpc(s.upc), s)
+              if (s.upc && isValidUpc(s.upc)) {
+                await cacheUpc(normalizeUpc(s.upc), s)
+                void import('../lib/cloud/products').then((m) => m.contributeProduct(normalizeUpc(s.upc!), s))
+              }
               setSavedName(s.name)
               setResult(null)
               setFile(null)

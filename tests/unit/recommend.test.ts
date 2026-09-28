@@ -18,7 +18,7 @@ function textMessage(text: string): Anthropic.Message {
 }
 
 beforeEach(async () => {
-  await db.usageLog.clear()
+  await db.usage.clear()
 })
 afterEach(() => setAiClientForTests(null))
 
@@ -31,7 +31,7 @@ describe('recommend()', () => {
     setAiClientForTests({ createMessage: async () => recorded })
     const out = await recommend({ setup, supplies, categories, request })
     expect(out.now.length + out.needs.length).toBe(5)
-    const log = await db.usageLog.toArray()
+    const log = await db.usage.toArray()
     expect(log).toHaveLength(1)
     expect(log[0].feature).toBe('recommend')
     expect(log[0].outputTokens).toBeGreaterThan(0)

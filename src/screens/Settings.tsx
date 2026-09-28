@@ -2,7 +2,10 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { db, getMeta } from '../db'
-import { useApiKey, useSetupEditor } from '../hooks'
+import { useAccount, useApiKey, useSetupEditor } from '../hooks'
+import AccountForm from '../components/AccountForm'
+import { cloudEnabled } from '../lib/cloud/config'
+import { authMethod, changePassword, deleteAccount, signOut, signupOpen, syncNow } from '../lib/cloud/account'
 import { APP_VERSION, REPO_URL, SUPPORT_URL } from '../config'
 import { BackupError, exportBackup, importBackup, parseBackup, type BackupFile } from '../lib/backup'
 import { forgetApiKey, maskKey, resetEverything } from '../lib/repo'
@@ -15,9 +18,9 @@ import KeyForm from '../components/KeyForm'
 import { Button, Chip, Notice, PageHeader, Sheet, Spinner, fieldClass, inputClass } from '../components/ui'
 import type { UserSetup } from '../types'
 
-function Section({ title, summary, children, defaultOpen = false }: { title: string; summary?: ReactNode; children: ReactNode; defaultOpen?: boolean }) {
+function Section({ title, summary, children, defaultOpen = false, id }: { title: string; summary?: ReactNode; children: ReactNode; defaultOpen?: boolean; id?: string }) {
   return (
-    <details className="group rounded-2xl bg-white ring-1 ring-stone-200" open={defaultOpen}>
+    <details id={id} className="group rounded-2xl bg-white ring-1 ring-stone-200" open={defaultOpen}>
       <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-3 p-4">
         <span>
           <span className="block text-lg font-bold">{title}</span>
@@ -34,12 +37,16 @@ function Section({ title, summary, children, defaultOpen = false }: { title: str
 
 export default function Settings() {
   const [setup, patch] = useSetupEditor()
+  useEffect(() => {
+    if (setup && window.location.hash.endsWith('#account')) document.getElementById('account')?.scrollIntoView()
+  }, [setup])
   if (!setup) return <Spinner />
   const m = effectiveMachine(setup)
 
   return (
     <div className="flex flex-col gap-3">
       <PageHeader title="Settings" />
+      {cloudEnabled && <AccountSection />}
       <Section title="Machine & tools" summary={`${m ? machineLabel(m) : 'No machine'} · ${setup.ownedToolIds.length} tools`}>
         <div className="flex flex-col gap-6">
           <MachinePicker setup={setup} patch={patch} />
@@ -80,7 +87,7 @@ export default function Settings() {
 
 function AiSection({ setup, patch }: { setup: UserSetup; patch: (p: Partial<UserSetup>) => void }) {
   const key = useApiKey()
-  const usage = useLiveQuery(() => db.usageLog.toArray(), []) ?? []
+  const usage = useLiveQuery(() => db.usage.toArray(), []) ?? []
   const month = summarizeMonth(usage)
   const [test, setTest] = useState<{ busy: boolean; msg?: string; ok?: boolean }>({ busy: false })
 
@@ -379,6 +386,109 @@ function AboutSection() {
           </p>
         )}
       </div>
+    </Section>
+  )
+}
+
+function AccountSection() {
+  const a = useAccount()
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<{ tone: 'success' | 'error' | 'warn'; text: string } | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+
+  const when = a.lastSyncedAt ? new Date(a.lastSyncedAt).toLocaleString() : 'not yet'
+  const summary = a.userId ? `Signed in as ${a.email}` : 'Not signed in: your stash is only on this device'
+
+  return (
+    <Section id="account" title="Your account" summary={summary} defaultOpen>
+      {!a.userId ? (
+        <div className="flex flex-col gap-3">
+          <p>{signupOpen ? 'Create a free account' : 'Sign in'} to keep your stash safe and see it on all your devices. Everything already on this device comes with you.</p>
+          <AccountForm onDone={() => setMsg({ tone: 'success', text: 'Signed in. Your stash is syncing.' })} />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <div className="rounded-xl bg-stone-50 p-3">
+            <p>
+              Signed in as <strong>{a.email}</strong>
+            </p>
+            <p className="text-sm text-stone-600">
+              Last synced: {when}
+              {a.pending > 0 && ` · ${a.pending} change${a.pending === 1 ? '' : 's'} waiting to sync`}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" disabled={a.sync === 'syncing'} onClick={() => void syncNow()}>
+              🔄 Sync now
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={busy}
+              onClick={async () => {
+                const warn = a.pending > 0 ? `\n\n${a.pending} change(s) haven't synced yet and will be lost.` : ''
+                if (!window.confirm(`Sign out? Your stash stays safe in your account and is removed from this device.${warn}`)) return
+                setBusy(true)
+                await signOut()
+                setBusy(false)
+              }}
+            >
+              Sign out
+            </Button>
+          </div>
+          {authMethod === 'password' && (
+            <details className="rounded-xl bg-stone-50 p-3">
+              <summary className="cursor-pointer font-semibold">Change my password</summary>
+              <form
+                className="mt-3 flex flex-col gap-2"
+                onSubmit={async (e) => {
+                  e.preventDefault()
+                  setBusy(true)
+                  const err = await changePassword(newPassword)
+                  setBusy(false)
+                  if (!err) setNewPassword('')
+                  setMsg(err ? { tone: 'error', text: err } : { tone: 'success', text: 'Your password has been changed.' })
+                }}
+              >
+                <label htmlFor="new-pw" className="font-semibold">
+                  New password
+                </label>
+                <input id="new-pw" type="password" autoComplete="new-password" className={inputClass} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                <Button type="submit" variant="secondary" disabled={busy || newPassword.length < 8} className="self-start">
+                  Change password
+                </Button>
+              </form>
+            </details>
+          )}
+          <details className="rounded-xl bg-red-50 p-3">
+            <summary className="cursor-pointer font-semibold text-red-800">Delete my account</summary>
+            <div className="mt-3 flex flex-col gap-2">
+              <p>This permanently deletes your account and everything in it, from every device. Save a backup first if you might want it back.</p>
+              <label htmlFor="del-acct" className="font-semibold">
+                Type DELETE to confirm
+              </label>
+              <input id="del-acct" className={inputClass} value={confirmDelete} onChange={(e) => setConfirmDelete(e.target.value)} autoComplete="off" />
+              <Button
+                variant="danger"
+                disabled={busy || confirmDelete.trim().toUpperCase() !== 'DELETE'}
+                onClick={async () => {
+                  setBusy(true)
+                  const err = await deleteAccount()
+                  setBusy(false)
+                  setMsg(err ? { tone: 'error', text: err } : { tone: 'success', text: 'Your account and its data have been deleted.' })
+                }}
+              >
+                Delete my account and data
+              </Button>
+            </div>
+          </details>
+        </div>
+      )}
+      {msg && (
+        <div className="mt-3">
+          <Notice tone={msg.tone}>{msg.text}</Notice>
+        </div>
+      )}
     </Section>
   )
 }

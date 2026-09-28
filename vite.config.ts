@@ -6,7 +6,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // Hosts the browser may talk to (spec 3.4). Anthropic is only contacted once the user adds their
 // own key. Add a UPC lookup host here if a CORS-friendly provider is ever enabled (spec 8.1).
-const CONNECT_SRC = ["'self'", 'https://api.anthropic.com']
+// The account server is added when the build has one ("same-origin" is already covered by 'self').
+const cloudUrl = process.env.VITE_SUPABASE_URL
+const cloudOrigin = cloudUrl && cloudUrl !== 'same-origin' ? new URL(cloudUrl).origin : ''
+const CONNECT_SRC = ["'self'", 'https://api.anthropic.com', ...(cloudOrigin ? [cloudOrigin, cloudOrigin.replace(/^http/, 'ws')] : [])]
 
 const CSP = [
   "default-src 'self'",
@@ -64,6 +67,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2,webp}'],
         navigateFallback: 'index.html',
+        // API calls and the login-proxy reconnect page must always reach the network.
+        navigateFallbackDenylist: [/^\/(auth|rest|storage|realtime)\/v1\//, /^\/reconnect/],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),

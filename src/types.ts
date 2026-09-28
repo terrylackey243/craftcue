@@ -187,7 +187,7 @@ export interface Project extends Timestamps {
 export type AiFeature = 'recommend' | 'vision-intake' | 'test-key'
 
 export interface UsageLogEntry {
-  id?: number
+  id: string
   timestamp: string
   feature: AiFeature
   model: string

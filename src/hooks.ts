@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useSyncExternalStore } from 'react'
+import { accountStore, type AccountState } from './lib/cloud/account'
 import { db } from './db'
 import { allCategories, getApiKey, getSetup, saveSetup } from './lib/repo'
 import type { Category, UserSetup } from './types'
@@ -38,4 +39,9 @@ export function useApiKey(): string | undefined {
 
 export function useSupplies() {
   return useLiveQuery(() => db.supplies.orderBy('name').toArray(), [])
+}
+
+/** Signed-in account and sync status (always "off" in builds without a server). */
+export function useAccount(): AccountState {
+  return useSyncExternalStore(accountStore.subscribe, accountStore.get, accountStore.get)
 }

@@ -37,12 +37,22 @@ export default function ScanBarcode() {
     setPhase({ k: 'looking', upc })
     const hit = await lookupUpc(upc, { onlineEnabled: !!setup?.upcLookupEnabled })
     if (hit) {
+      const unconfirmed = hit.from === 'shared' && hit.status !== 'confirmed'
+      const from =
+        hit.from === 'cache'
+          ? "Found it — you've scanned this before."
+          : hit.from === 'shared'
+            ? unconfirmed
+              ? 'Another crafter added this one. Please check the details.'
+              : `Found it — confirmed by ${hit.supporters} crafters.`
+            : 'Found it in our list of common products.'
+      const check = unconfirmed ? 'Added by another crafter — please check' : undefined
       setPhase({
         k: 'form',
         upc,
-        from: hit.from === 'cache' ? "Found it — you've scanned this before." : 'Found it in our list of common products.',
+        from,
         draft: { ...emptyDraft(), ...hit.supply, upc, quantity: 1, source: 'barcode' } as SupplyDraft,
-        uncertain: { quantity: 'How many of these do you have?' },
+        uncertain: { quantity: 'How many of these do you have?', ...(check ? { name: check, category: check, dimensions: check } : {}) },
       })
     } else {
       setPhase({ k: 'miss', upc })
@@ -177,6 +187,8 @@ export default function ScanBarcode() {
             onSaved={async (s) => {
               // Remember this barcode so the next scan needs no network call (spec Phase 3).
               await cacheUpc(phase.upc, s)
+              // Share the product description so the next crafter's scan fills in instantly.
+              void import('../lib/cloud/products').then((m) => m.contributeProduct(phase.upc, s))
               setPhase({ k: 'saved', name: s.name })
             }}
             onCancel={() => setPhase({ k: 'scan' })}

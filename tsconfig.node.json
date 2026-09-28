@@ -14,5 +14,5 @@
     "noEmit": true,
     "strict": true
   },
-  "include": ["vite.config.ts", "vitest.record.config.ts", "playwright.config.ts", "tests/e2e", "scripts"]
+  "include": ["vite.config.ts", "vitest.record.config.ts", "vitest.db.config.ts", "playwright.config.ts", "playwright.sync.config.ts", "tests/e2e", "tests/e2e-sync", "scripts"]
 }

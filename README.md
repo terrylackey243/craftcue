@@ -59,6 +59,13 @@ use **Claude** from Anthropic, with your own API key, paid directly to Anthropic
 The in-app guide (Help → *Setting up smart suggestions*) walks you through it with pictures:
 [docs/ai-key-guide.md](docs/ai-key-guide.md).
 
+## Accounts and sync (coming)
+
+The public version keeps everything on your device. Accounts, so your stash follows you between
+your computer, tablet and phone and survives a lost device, are built and being tested on a
+private copy first. They're optional in the code, so you can also run your own copy with sync:
+see [CONTRIBUTING.md](CONTRIBUTING.md#accounts-and-sync).
+
 ## Run your own copy
 
 It's a static site. Any web server works:

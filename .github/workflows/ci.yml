@@ -31,3 +31,28 @@ jobs:
         with:
           name: playwright-report
           path: test-results
+
+  # Accounts + sync: security rules and two-device sync against a throwaway local Supabase.
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: npm ci
+      - name: Security and sync tests
+        run: ./scripts/test-db.sh
+      - name: Two-device browser test
+        run: |
+          npx playwright install --with-deps chromium
+          ./scripts/test-sync-e2e.sh
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: sync-test-results
+          path: test-results

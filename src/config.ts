@@ -8,7 +8,7 @@ export const SUPPORT_URL = ''
 export const REPO_URL = 'https://github.com/terrylackey243/craftcue'
 
 /** Bumped whenever the backup file format changes; see src/lib/backup.ts migrations. */
-export const BACKUP_SCHEMA_VERSION = 1
+export const BACKUP_SCHEMA_VERSION = 2
 
 /** Above this many supplies the recommendation prompt groups and trims the inventory (spec 9.2). */
 export const LARGE_INVENTORY = 300

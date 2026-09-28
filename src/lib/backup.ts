@@ -1,6 +1,6 @@
 import { BACKUP_TABLES, db, getMeta, setMeta, type BackupTable } from '../db'
 import { APP_VERSION, BACKUP_SCHEMA_VERSION } from '../config'
-import { nowIso } from './ids'
+import { nowIso, uuid } from './ids'
 
 export interface BackupFile {
   app: 'craftcue'
@@ -17,7 +17,15 @@ export class BackupError extends Error {}
  * returns it at version N+1. Add one whenever BACKUP_SCHEMA_VERSION goes up; never edit old ones.
  */
 export const MIGRATIONS: Record<number, (b: BackupFile) => BackupFile> = {
-  // 1: (b) => ({ ...b, schemaVersion: 2, data: { ...b.data, supplies: b.data.supplies?.map(...) } }),
+  // v1 → v2: AI usage history moved from `usageLog` (numeric ids) to `usage` (UUIDs) for sync.
+  1: (b) => {
+    const { usageLog, ...rest } = b.data as Record<string, unknown[]>
+    const usage = (usageLog ?? []).map((e) => {
+      const { id: _id, ...entry } = e as Record<string, unknown>
+      return { ...entry, id: uuid() }
+    })
+    return { ...b, schemaVersion: 2, data: { ...rest, usage } }
+  },
 }
 
 export function migrate(backup: BackupFile, target = BACKUP_SCHEMA_VERSION, migrations = MIGRATIONS): BackupFile {
@@ -113,8 +121,7 @@ export async function importBackup(backup: BackupFile, mode: 'replace' | 'merge'
       const table = db.table(t)
       if (mode === 'replace') {
         await table.clear()
-        if (t === 'usageLog') await table.bulkAdd(rows)
-        else await table.bulkPut(rows)
+        await table.bulkPut(rows)
         counts[t] = rows.length
         continue
       }
@@ -122,13 +129,12 @@ export async function importBackup(backup: BackupFile, mode: 'replace' | 'merge'
         if ((await table.count()) === 0 && rows.length) await table.put(rows[0])
         continue
       }
-      if (t === 'usageLog') {
-        // Usage entries have auto ids; merge on timestamp+feature to avoid double counting.
-        const existing = new Set((await table.toArray()).map((r: { timestamp: string; feature: string }) => `${r.timestamp}|${r.feature}`))
-        const fresh = (rows as unknown as { id?: number; timestamp: string; feature: string }[])
-          .filter((r) => !existing.has(`${r.timestamp}|${r.feature}`))
-          .map(({ id: _id, ...r }) => r)
-        await table.bulkAdd(fresh)
+      if (t === 'usage') {
+        // Old backups had no stable usage ids; match on time+feature so merging twice never double counts.
+        const existing = await table.toArray()
+        const seen = new Set(existing.map((r: { id: string; timestamp: string; feature: string }) => `${r.timestamp}|${r.feature}`))
+        const fresh = (rows as unknown as { timestamp: string; feature: string }[]).filter((r) => !seen.has(`${r.timestamp}|${r.feature}`))
+        await table.bulkPut(fresh)
         counts[t] = fresh.length
         continue
       }

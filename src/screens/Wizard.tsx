@@ -1,18 +1,25 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSetupEditor } from '../hooks'
+import { useAccount, useSetupEditor } from '../hooks'
 import { saveSetup } from '../lib/repo'
 import { AboutYou, EquipmentPicker, MachinePicker, ToolsPicker } from '../components/SetupSections'
 import KeyForm from '../components/KeyForm'
-import { Button, Spinner } from '../components/ui'
+import AccountForm from '../components/AccountForm'
+import { cloudEnabled } from '../lib/cloud/config'
+import { signupOpen } from '../lib/cloud/account'
+import { getSetup } from '../lib/repo'
+import { Button, Notice, Spinner } from '../components/ui'
 import { getMachine, machineLabel } from '../data'
 
 // First-run setup (spec 6). Every step after Welcome can be skipped; all of it is editable later.
-const STEPS = ['welcome', 'machine', 'tools', 'equipment', 'about', 'ai', 'supplies'] as const
-type Step = (typeof STEPS)[number]
+const ALL_STEPS = ['welcome', 'account', 'machine', 'tools', 'equipment', 'about', 'ai', 'supplies'] as const
+type Step = (typeof ALL_STEPS)[number]
+// The account step only exists in builds connected to a server.
+const STEPS: readonly Step[] = cloudEnabled ? ALL_STEPS : ALL_STEPS.filter((s) => s !== 'account')
 
 export default function Wizard({ onComplete }: { onComplete?: () => void }) {
   const [setup, patch] = useSetupEditor()
+  const account = useAccount()
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>('welcome')
 
@@ -30,6 +37,7 @@ export default function Wizard({ onComplete }: { onComplete?: () => void }) {
 
   const titles: Record<Step, string> = {
     welcome: 'Welcome to CraftCue',
+    account: signupOpen ? 'Create your free account' : 'Sign in to CraftCue',
     machine: 'Which cutting machine do you have?',
     tools: 'Which tools do you have for it?',
     equipment: 'What other equipment do you have?',
@@ -58,10 +66,33 @@ export default function Wizard({ onComplete }: { onComplete?: () => void }) {
           <div className="flex flex-col items-center gap-6 py-6 text-center">
             <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" className="h-28 w-28" />
             <p className="text-xl">Keep track of your craft supplies, and find out what you can make with what you already have.</p>
-            <p className="rounded-2xl bg-leaf-50 px-4 py-3 text-lg font-semibold text-leaf-600">🔒 Your data stays on this device.</p>
+            <p className="rounded-2xl bg-leaf-50 px-4 py-3 text-lg font-semibold text-leaf-600">
+              {cloudEnabled ? '🔒 Your stash is private: only you can see it.' : '🔒 Your data stays on this device.'}
+            </p>
             <p className="text-stone-600">Setup takes about two minutes. You can change any of it later in Settings.</p>
           </div>
         )}
+        {step === 'account' &&
+          (account.userId ? (
+            <Notice tone="success">You're signed in as {account.email}. Your stash is saved to your account.</Notice>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <p className="text-lg">Your stash is saved to your account, so it's safe if a device breaks, and it shows up on your phone, tablet and computer.</p>
+              <AccountForm
+                onDone={async () => {
+                  // Already set up on another device? Then there's nothing more to ask.
+                  if ((await getSetup()).setupComplete) {
+                    onComplete?.()
+                    navigate('/', { replace: true })
+                  } else next()
+                }}
+              />
+              <button type="button" className="self-center text-stone-600 underline" onClick={next}>
+                Use without an account
+              </button>
+              <p className="-mt-2 text-center text-sm text-stone-500">Without an account, your stash is only saved on this device.</p>
+            </div>
+          ))}
         {step === 'machine' && <MachinePicker setup={setup} patch={patch} />}
         {step === 'tools' && (
           <>
@@ -115,7 +146,7 @@ export default function Wizard({ onComplete }: { onComplete?: () => void }) {
             Let's start
           </Button>
         )}
-        {step !== 'welcome' && step !== 'supplies' && (
+        {step !== 'welcome' && step !== 'supplies' && (step !== 'account' || account.userId) && (
           <div className="flex gap-2">
             <Button variant="ghost" onClick={next}>
               {step === 'ai' ? 'Maybe later' : 'Skip'}

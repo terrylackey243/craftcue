@@ -3,7 +3,7 @@ import { db } from '../db'
 import seed from '../data/upc-seed.json'
 import type { Supply, UpcCacheEntry } from '../types'
 
-export type UpcHit = { from: 'cache' | 'seed' | 'online'; supply: Partial<Supply> }
+export type UpcHit = { from: 'cache' | 'shared' | 'seed' | 'online'; supply: Partial<Supply>; status?: 'confirmed' | 'unconfirmed'; supporters?: number }
 
 /** Interface for an online lookup. None ships enabled: see CONTRIBUTING.md for the CORS requirement. */
 export interface UpcLookupProvider {
@@ -46,6 +46,10 @@ export async function lookupUpc(raw: string, opts: { onlineEnabled: boolean } = 
     await db.upcCache.update(upc, { timesUsed: cached.timesUsed + 1 })
     return { from: 'cache', supply: cached.proposedSupply }
   }
+  // The shared catalog other crafters built (only in builds with accounts).
+  const { lookupShared } = await import('./cloud/products')
+  const shared = await lookupShared(upc)
+  if (shared) return { from: 'shared', supply: shared.supply, status: shared.status, supporters: shared.supporters }
   const seeded = SEED.get(upc)
   if (seeded) return { from: 'seed', supply: seeded }
   if (opts.onlineEnabled) {
