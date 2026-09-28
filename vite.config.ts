@@ -52,7 +52,8 @@ export default defineConfig({
     contentSecurityPolicy(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'script',
+      // Registered from src/main.tsx so a new version takes over as soon as it's downloaded.
+      injectRegister: false,
       pwaAssets: { image: 'public/icon.svg', preset: 'minimal-2023', overrideManifestIcons: true },
       manifest: {
         name: 'CraftCue',
