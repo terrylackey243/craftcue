@@ -67,6 +67,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2,webp}'],
+        // Required for registerType 'autoUpdate': a new version takes over immediately.
+        skipWaiting: true,
+        clientsClaim: true,
         navigateFallback: 'index.html',
         // API calls and the login-proxy reconnect page must always reach the network.
         navigateFallbackDenylist: [/^\/(auth|rest|storage|realtime)\/v1\//, /^\/reconnect/],
