@@ -23,7 +23,13 @@ const UNIT_LABELS: Record<string, string> = {
   bottle: 'bottles',
   other: 'other',
 }
-export const unitLabel = (u: string) => UNIT_LABELS[u] ?? u
+const SINGULAR: Record<string, string> = { sheet: 'sheet', roll: 'roll', ft: 'foot', yd: 'yard', piece: 'piece', pack: 'pack', blank: 'blank', bottle: 'bottle' }
+
+/** Plural label for pickers ("sheets"), or the right form for a count when `n` is given. */
+export const unitLabel = (u: string, n?: number) => (n === 1 && SINGULAR[u] ? SINGULAR[u] : (UNIT_LABELS[u] ?? u))
+
+/** "1 sheet", "2.5 feet", "0.25 sheet". */
+export const formatQty = (n: number, u: string) => `${Math.round(n * 1000) / 1000} ${unitLabel(u, n)}`
 
 /**
  * The one supply form every intake path ends in (spec 8). `uncertain` highlights fields the user

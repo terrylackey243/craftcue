@@ -6,6 +6,7 @@ import { stockLevel } from '../lib/shopping'
 import { Badge, ButtonLink, EmptyState, PageHeader, Spinner, inputClass } from '../components/ui'
 import { unitLabel } from '../components/SupplyForm'
 import type { Supply } from '../types'
+import { categoryIcon } from '../data/categories'
 
 export function filterSupplies(supplies: Supply[], q: string, category: string, location: string, categoryName: (id: string) => string): Supply[] {
   const words = q.toLowerCase().split(/\s+/).filter(Boolean)
@@ -39,7 +40,7 @@ function QuickQty({ s }: { s: Supply }) {
         −
       </button>
       <span className="min-w-16 text-center font-semibold" aria-live="polite">
-        {s.quantity} <span className="text-sm font-normal text-stone-600">{unitLabel(s.unit)}</span>
+        {s.quantity} <span className="text-sm font-normal text-stone-600">{unitLabel(s.unit, s.quantity)}</span>
       </span>
       <button
         type="button"
@@ -140,7 +141,7 @@ export default function Inventory() {
                     <img src={s.thumbnail} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
                   ) : (
                     <span aria-hidden className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-2xl">
-                      🧵
+                      {categoryIcon(s.category)}
                     </span>
                   )}
                   <Link to={`/supply/${s.id}`} className="min-w-40 flex-1">
@@ -160,8 +161,8 @@ export default function Inventory() {
                     {s.thumbnail ? (
                       <img src={s.thumbnail} alt="" className="aspect-square w-full rounded-xl object-cover" />
                     ) : (
-                      <span aria-hidden className="flex aspect-square w-full items-center justify-center rounded-xl bg-brand-50 text-4xl">
-                        🧵
+                      <span aria-hidden className="flex h-24 w-full items-center justify-center rounded-xl bg-brand-50 text-4xl">
+                        {categoryIcon(s.category)}
                       </span>
                     )}
                     <span className="font-semibold leading-tight">{s.name}</span>

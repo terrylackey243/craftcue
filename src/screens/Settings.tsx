@@ -190,6 +190,7 @@ function BackupSection({ setup, patch }: { setup: UserSetup; patch: (p: Partial<
             ref={fileRef}
             type="file"
             accept="application/json,.json"
+            aria-label="Choose a backup file"
             className="sr-only"
             onChange={async (e) => {
               const f = e.target.files?.[0]

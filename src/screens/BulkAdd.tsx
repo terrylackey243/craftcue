@@ -81,6 +81,7 @@ export default function BulkAdd() {
       <PageHeader title="Add a whole shelf" subtitle="Take one photo of a shelf, bin or pile. We'll list what we see, and you tidy up the list." />
       <input
         ref={input}
+        aria-label="Photo of your shelf"
         type="file"
         accept="image/*"
         capture="environment"

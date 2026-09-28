@@ -1,0 +1,32 @@
+// Captures README screenshots from a demo backup. Run in the Playwright image against `vite preview`.
+import { chromium, devices } from '@playwright/test'
+const base = process.env.BASE ?? 'http://localhost:4173'
+const b = await chromium.launch()
+const ctx = await b.newContext({ ...devices['iPad (gen 7)'], deviceScaleFactor: 1 })
+const page = await ctx.newPage()
+await page.goto(base)
+await page.getByRole('button', { name: "Let's start" }).click()
+for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+await page.getByRole('button', { name: 'Maybe later' }).click()
+await page.getByRole('button', { name: "I'll do it later" }).click()
+await page.getByRole('heading', { name: 'What would you like to make?' }).waitFor()
+await page.goto(`${base}/#/settings`)
+await page.locator('input[aria-label="Choose a backup file"]').setInputFiles('tests/fixtures/demo-backup.json')
+page.once('dialog', (d) => d.accept())
+await page.getByRole('button', { name: 'Replace everything with the backup' }).click()
+await page.getByText('Everything has been restored').waitFor()
+const shot = async (hash, name, full = false) => {
+  await page.goto(`${base}/#${hash}`)
+  await page.waitForTimeout(600)
+  await page.screenshot({ path: `docs/images/app-${name}.png`, fullPage: full })
+}
+await shot('/', 'home')
+await shot('/inventory', 'stash')
+await page.getByRole('button', { name: 'Grid' }).click()
+await page.waitForTimeout(300)
+await page.screenshot({ path: 'docs/images/app-stash-grid.png' })
+await shot('/projects/proj-0', 'project')
+await shot('/suggest/gift', 'gift')
+await shot('/shopping', 'shopping')
+await b.close()
+console.log('ok')

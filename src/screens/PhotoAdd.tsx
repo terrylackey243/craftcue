@@ -56,7 +56,7 @@ export default function PhotoAdd() {
     <div className="mx-auto max-w-2xl">
       {panel}
       <PageHeader title="Add from a photo" subtitle="We'll read the photo and fill in the form. You check it before it's saved." />
-      <input ref={input} type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
+      <input ref={input} aria-label="Photo of the supply" type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
 
       {savedName && <div className="mb-4"><Notice tone="success">Saved “{savedName}”. Take another photo, or you're done.</Notice></div>}
 

@@ -11,7 +11,11 @@ something to **decorate** with, or a **gift** for someone.
 Nothing to install and no account to make. On an iPhone or iPad, tap Share → *Add to Home Screen*
 to keep it one tap away. On Android or a computer, use *Install app*.
 
-<!-- Screenshots: docs/images/app-*.png -->
+<p>
+  <img src="docs/images/app-home.png" width="32%" alt="Home screen: Something to sell, Decorate, Make a gift">
+  <img src="docs/images/app-stash-grid.png" width="32%" alt="My stash in grid view with quick plus and minus buttons">
+  <img src="docs/images/app-project.png" width="32%" alt="A project with materials from the stash, tools and steps">
+</p>
 
 ## What it does
 

@@ -18,3 +18,14 @@ describe('guessCategory', () => {
     expect(guessCategory(name)).toBe(cat)
   })
 })
+
+import { formatQty } from '../../src/components/SupplyForm'
+describe('formatQty', () => {
+  it('uses singular for exactly one', () => {
+    expect(formatQty(1, 'sheet')).toBe('1 sheet')
+    expect(formatQty(1, 'ft')).toBe('1 foot')
+    expect(formatQty(2, 'ft')).toBe('2 feet')
+    expect(formatQty(0.25, 'sheet')).toBe('0.25 sheets')
+    expect(formatQty(1, 'other')).toBe('1 other')
+  })
+})

@@ -6,7 +6,8 @@ import { getTool } from '../data'
 import { applyMade, afterDeduction, proposeDeductions, type DeductionRow } from '../lib/deduction'
 import { deleteProject, updateProject } from '../lib/repo'
 import { makeThumbnail } from '../lib/images'
-import { unitLabel } from '../components/SupplyForm'
+import { formatQty, unitLabel } from '../components/SupplyForm'
+import { toSupplyUnit } from '../lib/units'
 import { Badge, Button, Card, Field, Notice, Sheet, Spinner, Stepper, fieldClass, inputClass } from '../components/ui'
 import { EQUIPMENT, type Project, type ProjectStatus } from '../types'
 import { GOAL_LABEL, STATUS_LABEL } from './Projects'
@@ -84,12 +85,10 @@ export default function ProjectDetail() {
                   ) : (
                     <span className="flex-1 text-stone-500">(no longer in your stash)</span>
                   )}
-                  <span className="text-stone-700">
-                    {u.amount} {unitLabel(u.unit)} each
-                  </span>
+                  <span className="text-stone-700">{formatQty(u.amount, u.unit)} each</span>
                   {s && (
-                    <Badge tone={s.quantity >= u.amount ? 'good' : 'warn'}>
-                      you have {s.quantity} {unitLabel(s.unit)}
+                    <Badge tone={s.quantity >= (toSupplyUnit(u.amount, u.unit, s) ?? u.amount) ? 'good' : 'warn'}>
+                      you have {formatQty(s.quantity, s.unit)}
                     </Badge>
                   )}
                   <button
@@ -299,7 +298,7 @@ function MarkMadeSheet({ open, onClose, project }: { open: boolean; onClose: () 
                       <div className="mt-2 flex flex-wrap items-center gap-3">
                         <Stepper label={`amount of ${r.name} used`} value={r.amount} step={r.unit === 'ft' || r.unit === 'yd' ? 0.5 : 1} onChange={(n) => setOverrides((m) => new Map(m).set(r.supplyId, n))} />
                         <span className="text-sm text-stone-600">
-                          {unitLabel(r.unit)} · {r.available} → {afterDeduction(r.available, r.amount)} left
+                          {unitLabel(r.unit, r.amount)} · {formatQty(r.available, r.unit)} → {afterDeduction(r.available, r.amount)} left
                         </span>
                       </div>
                     )}
@@ -353,7 +352,7 @@ function AddUseSheet({ open, onClose, project }: { open: boolean; onClose: () =>
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold">Amount for one</span>
             <Stepper label="amount" value={amount} step={s.unit === 'ft' || s.unit === 'yd' ? 0.5 : 1} onChange={setAmount} />
-            <span>{unitLabel(s.unit)}</span>
+            <span>{unitLabel(s.unit, amount)}</span>
           </div>
         )}
         <Button

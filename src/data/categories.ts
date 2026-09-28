@@ -146,3 +146,30 @@ export const SEED_CATEGORIES: Category[] = [
     sizes: [],
   },
 ]
+
+const ICONS: Record<string, string> = {
+  'adhesive-vinyl': '🎞️',
+  'iron-on': '👕',
+  'infusible-ink': '🌈',
+  'cardstock-paper': '📄',
+  printable: '🖨️',
+  fabric: '🧵',
+  felt: '🟥',
+  leather: '👜',
+  'wood-chipboard': '🪵',
+  acrylic: '💎',
+  'metal-blanks': '🏷️',
+  'foil-sheets': '✨',
+  'blanks-apparel': '👚',
+  'blanks-drinkware': '☕',
+  'blanks-home': '🛋️',
+  embellishments: '🎀',
+  'adhesives-glue': '🧴',
+  'paint-markers': '🖍️',
+  'transfer-tape-mats': '📏',
+}
+
+/** Placeholder picture for a supply without a photo. */
+export function categoryIcon(id: string): string {
+  return ICONS[id] ?? '📦'
+}

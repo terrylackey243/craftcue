@@ -148,7 +148,7 @@ export default function ScanBarcode() {
             scan it, it'll be instant.
           </Notice>
           {error && <Notice tone="error">{error}</Notice>}
-          <input ref={photoRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => readPackage(e.target.files?.[0], phase.upc)} />
+          <input ref={photoRef} aria-label="Photo of the package" type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => readPackage(e.target.files?.[0], phase.upc)} />
           <Button className="min-h-14 text-lg" onClick={() => guard(() => photoRef.current?.click())}>
             📷 Take a photo of the package
           </Button>
