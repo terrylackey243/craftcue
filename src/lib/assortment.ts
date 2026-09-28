@@ -120,3 +120,40 @@ export function groupStash(supplies: Supply[]): StashEntry[] {
     g.items.sort((a, b) => (a.packOrder ?? Infinity) - (b.packOrder ?? Infinity) || (a.color ?? '').localeCompare(b.color ?? ''))
   return out
 }
+
+/** Save a new color order for a pack (ids in the order they should appear). */
+export async function reorderSet(items: Supply[], orderedIds: string[]): Promise<void> {
+  const byId = new Map(items.map((s) => [s.id, s]))
+  const now = new Date().toISOString()
+  const changed: Supply[] = []
+  orderedIds.forEach((id, i) => {
+    const s = byId.get(id)
+    if (s && s.packOrder !== i) changed.push({ ...s, packOrder: i, updatedAt: now })
+  })
+  if (changed.length) {
+    await db.supplies.bulkPut(changed)
+    await noteChange()
+  }
+}
+
+/** Give every color of a pack the pack's barcode; remember it so the next scan fills in the pack. */
+export async function setPackBarcode(items: Supply[], upc: string): Promise<void> {
+  const now = new Date().toISOString()
+  await db.supplies.bulkPut(items.map((s) => ({ ...s, upc, updatedAt: now })))
+  await noteChange()
+  const first = [...items].sort((a, b) => (a.packOrder ?? 0) - (b.packOrder ?? 0))[0]
+  const product = {
+    name: first.name,
+    setName: first.setName,
+    category: first.category,
+    brand: first.brand,
+    subtype: first.subtype,
+    dimensions: first.dimensions,
+    unit: first.unit,
+    packSize: totalCount(colorsOf(items)),
+    colors: colorsOf(items),
+  }
+  const { cacheUpc } = await import('./repo')
+  await cacheUpc(upc, product)
+  void import('./cloud/products').then((m) => m.contributeProduct(upc, product))
+}

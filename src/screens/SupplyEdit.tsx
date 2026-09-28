@@ -4,6 +4,10 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { db } from '../db'
 import SupplyForm, { emptyDraft } from '../components/SupplyForm'
 import AssortmentForm from '../components/AssortmentForm'
+import BarcodeField from '../components/BarcodeField'
+import { setPackBarcode } from '../lib/assortment'
+import { isValidUpc, normalizeUpc } from '../lib/upc'
+import type { Supply } from '../types'
 import { Chip } from '../components/ui'
 import { Link } from 'react-router-dom'
 import { Button, Notice, PageHeader, Spinner } from '../components/ui'
@@ -38,6 +42,7 @@ export default function SupplyEdit() {
                 See all its colors in My stash
               </Link>
             </div>
+            <PackBarcode items={[existing, ...siblings]} />
             <Button
               variant="danger"
               className="self-start"
@@ -108,6 +113,31 @@ export default function SupplyEdit() {
         }}
         onCancel={() => navigate(-1)}
       />}
+    </div>
+  )
+}
+
+/** One barcode for every color of a mixed pack. */
+function PackBarcode({ items }: { items: Supply[] }) {
+  const current = items.find((s) => s.upc)?.upc ?? ''
+  const [upc, setUpc] = useState(current)
+  const [msg, setMsg] = useState('')
+  const digits = upc.replace(/\D/g, '')
+  return (
+    <div className="flex flex-col gap-2 rounded-xl bg-stone-50 p-3">
+      <BarcodeField label="Barcode for the whole pack" value={upc} onChange={(v) => { setUpc(v); setMsg('') }} />
+      <Button
+        variant="secondary"
+        className="self-start"
+        disabled={!isValidUpc(digits) || normalizeUpc(digits) === current}
+        onClick={async () => {
+          await setPackBarcode(items, normalizeUpc(digits))
+          setMsg(`Saved on all ${items.length} colors. Scanning this pack next time fills everything in.`)
+        }}
+      >
+        Save barcode for all {items.length} colors
+      </Button>
+      {msg && <Notice tone="success">{msg}</Notice>}
     </div>
   )
 }

@@ -12,6 +12,7 @@ import { isValidUpc, normalizeUpc } from '../lib/upc'
 import { UNITS, type PackColor, type Supply } from '../types'
 import { unitLabel } from './SupplyForm'
 import { useAiGate } from './useAiGate'
+import BarcodeField from './BarcodeField'
 import { Button, Chip, Field, Notice, Spinner, Stepper, fieldClass, inputClass } from './ui'
 
 export interface AssortmentInitial {
@@ -202,6 +203,8 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
           </>
         )}
       </Field>
+
+      <BarcodeField value={f.upc} onChange={(upc) => setF({ ...f, upc })} hint="Optional. Saves the pack so scanning it next time fills in every color." />
 
       <fieldset className={`flex flex-col gap-3 rounded-2xl p-3 ring-1 ${countsUncertain ? 'bg-sun-300/30 ring-sun-500' : 'bg-white ring-stone-200'}`}>
         <legend className="px-1 font-semibold">Colors in one pack</legend>

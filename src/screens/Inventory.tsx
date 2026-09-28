@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom'
 import { useCategoryMap, useSupplies } from '../hooks'
 import { adjustQuantity } from '../lib/repo'
 import { stockLevel } from '../lib/shopping'
-import { Badge, ButtonLink, EmptyState, PageHeader, Spinner, inputClass } from '../components/ui'
+import { Badge, Button, ButtonLink, EmptyState, PageHeader, Spinner, inputClass } from '../components/ui'
 import { unitLabel } from '../components/SupplyForm'
 import type { Supply } from '../types'
 import { categoryIcon } from '../data/categories'
-import { groupStash, type StashEntry } from '../lib/assortment'
+import { groupStash, reorderSet, type StashEntry } from '../lib/assortment'
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 export function filterSupplies(supplies: Supply[], q: string, category: string, location: string, categoryName: (id: string) => string): Supply[] {
   const words = q.toLowerCase().split(/\s+/).filter(Boolean)
@@ -28,12 +31,14 @@ function LevelBadge({ s }: { s: Supply }) {
 }
 
 function QuickQty({ s }: { s: Supply }) {
+  // Colors of a pack share a name, so say which color the buttons change.
+  const label = s.color && s.setId ? `${s.name}, ${s.color}` : s.name
   const step = s.unit === 'ft' || s.unit === 'yd' ? 0.5 : 1
   return (
-    <div className="flex items-center gap-1" role="group" aria-label={`Quantity of ${s.name}`}>
+    <div className="flex items-center gap-1" role="group" aria-label={`Quantity of ${label}`}>
       <button
         type="button"
-        aria-label={`Use one ${s.name}`}
+        aria-label={`Use one ${label}`}
         className="min-h-11 min-w-11 rounded-lg border-2 border-stone-300 bg-white text-xl font-bold hover:border-brand-500 disabled:opacity-40"
         disabled={s.quantity <= 0}
         onClick={() => adjustQuantity(s.id, -step)}
@@ -45,7 +50,7 @@ function QuickQty({ s }: { s: Supply }) {
       </span>
       <button
         type="button"
-        aria-label={`Add one ${s.name}`}
+        aria-label={`Add one ${label}`}
         className="min-h-11 min-w-11 rounded-lg border-2 border-stone-300 bg-white text-xl font-bold hover:border-brand-500"
         onClick={() => adjustQuantity(s.id, step)}
       >
@@ -82,6 +87,7 @@ function SetRow({ entry, open, onToggle, catName }: { entry: Extract<StashEntry,
   const first = entry.items[0]
   const total = Math.round(entry.items.reduce((n, s) => n + s.quantity, 0) * 1000) / 1000
   const low = entry.items.filter((s) => stockLevel(s) !== 'ok').length
+  const [reordering, setReordering] = useState(false)
   return (
     <li>
       <button type="button" aria-expanded={open} onClick={onToggle} className="flex w-full flex-wrap items-center gap-3 p-3 text-left hover:bg-stone-50">
@@ -100,12 +106,87 @@ function SetRow({ entry, open, onToggle, catName }: { entry: Extract<StashEntry,
         </span>
       </button>
       {open && (
-        <ul className="divide-y divide-stone-100 border-t border-stone-100">
-          {entry.items.map((s) => (
-            <SupplyRow key={s.id} s={s} catName={catName} indent />
+        <div className="border-t border-stone-100">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-stone-50 px-3 py-2">
+            <span className="text-sm text-stone-600">{reordering ? 'Drag ⠿ to match the order printed on the pack.' : ''}</span>
+            <Button variant={reordering ? 'primary' : 'ghost'} onClick={() => setReordering(!reordering)}>
+              {reordering ? 'Done' : '↕ Change order'}
+            </Button>
+          </div>
+          {reordering ? (
+            <ReorderList items={entry.items} />
+          ) : (
+            <ul className="divide-y divide-stone-100">
+              {entry.items.map((s) => (
+                <SupplyRow key={s.id} s={s} catName={catName} indent />
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </li>
+  )
+}
+
+/** Reorder a saved pack's colors; each drop is saved straight away. */
+function ReorderList({ items }: { items: Supply[] }) {
+  const [order, setOrder] = useState(items.map((s) => s.id))
+  const byId = new Map(items.map((s) => [s.id, s]))
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }))
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return
+    const next = arrayMove(order, order.indexOf(String(active.id)), order.indexOf(String(over.id)))
+    setOrder(next)
+    void reorderSet(items, next)
+  }
+  const name = (id: string) => byId.get(id)?.color || byId.get(id)?.name || ''
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={onDragEnd}
+      accessibility={{
+        announcements: {
+          onDragStart: ({ active }) => `Picked up ${name(String(active.id))}.`,
+          onDragOver: ({ over }) => (over ? `Moving to position ${order.indexOf(String(over.id)) + 1} of ${order.length}.` : ''),
+          onDragEnd: ({ over }) => (over ? `Dropped at position ${order.indexOf(String(over.id)) + 1}.` : 'Dropped.'),
+          onDragCancel: () => 'Move cancelled.',
+        },
+      }}
+    >
+      <SortableContext items={order} strategy={verticalListSortingStrategy}>
+        <ul className="divide-y divide-stone-100">
+          {order.map((id, i) => (
+            <ReorderRow key={id} id={id} index={i} label={name(id)} />
           ))}
         </ul>
-      )}
+      </SortableContext>
+    </DndContext>
+  )
+}
+
+function ReorderRow({ id, index, label }: { id: string; index: number; label: string }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id })
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`flex items-center gap-3 bg-stone-50 py-2 pl-8 pr-3 ${isDragging ? 'relative z-10 bg-brand-50 shadow-lg ring-2 ring-brand-500' : ''}`}
+    >
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        {...attributes}
+        {...listeners}
+        aria-label={`Drag to reorder ${label}`}
+        className="flex min-h-12 min-w-11 cursor-grab touch-none items-center justify-center rounded-lg text-2xl text-stone-500 hover:bg-stone-100 active:cursor-grabbing"
+      >
+        ⠿
+      </button>
+      <span className="w-6 text-right text-sm font-semibold text-stone-500" aria-hidden>
+        {index + 1}
+      </span>
+      <span className="font-semibold">{label}</span>
     </li>
   )
 }

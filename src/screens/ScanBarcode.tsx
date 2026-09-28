@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { IScannerControls } from '@zxing/browser'
+import { useBarcodeCamera } from '../lib/useBarcodeCamera'
 import { useCategories, useSetup } from '../hooks'
 import { cacheUpc } from '../lib/repo'
 import { isValidUpc, lookupUpc, normalizeUpc } from '../lib/upc'
@@ -33,7 +33,6 @@ export default function ScanBarcode() {
   const { guard, panel } = useAiGate()
   const [phase, setPhase] = useState<Phase>({ k: 'scan' })
   const [manual, setManual] = useState('')
-  const [cameraError, setCameraError] = useState('')
   const [error, setError] = useState('')
   const videoRef = useRef<HTMLVideoElement>(null)
   const photoRef = useRef<HTMLInputElement>(null)
@@ -74,39 +73,9 @@ export default function ScanBarcode() {
     }
   }
 
-  // Camera scanning with ZXing (works in Safari, unlike the native BarcodeDetector).
-  useEffect(() => {
-    if (phase.k !== 'scan') return
-    let controls: IScannerControls | undefined
-    let cancelled = false
-    ;(async () => {
-      try {
-        const { BrowserMultiFormatReader } = await import('@zxing/browser')
-        const reader = new BrowserMultiFormatReader()
-        if (!videoRef.current || cancelled) return
-        controls = await reader.decodeFromConstraints({ video: { facingMode: 'environment' } }, videoRef.current, (result) => {
-          if (result && !cancelled) {
-            cancelled = true
-            controls?.stop()
-            void found(result.getText())
-          }
-        })
-        if (cancelled) controls.stop()
-      } catch (e) {
-        const name = (e as Error).name
-        setCameraError(
-          name === 'NotAllowedError'
-            ? 'Camera permission was turned off. You can type the barcode number below instead, or allow the camera in your browser settings.'
-            : "The camera isn't available here. Type the barcode number below instead.",
-        )
-      }
-    })()
-    return () => {
-      cancelled = true
-      controls?.stop()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase.k])
+  // Camera scanning (shared with the Scan buttons on the supply forms).
+  const scanError = useBarcodeCamera(videoRef, phase.k === 'scan', (code) => void found(code))
+  const cameraShownError = scanError
 
   async function readPackage(file: File | undefined, upc: string) {
     if (!file || !setup) return
@@ -131,14 +100,14 @@ export default function ScanBarcode() {
 
       {phase.k === 'scan' && (
         <div className="flex flex-col gap-4">
-          {!cameraError && (
+          {!cameraShownError && (
             <div className="relative overflow-hidden rounded-3xl bg-black">
               <video ref={videoRef} className="aspect-[4/3] w-full object-cover" muted playsInline aria-label="Camera view" />
               <div aria-hidden className="pointer-events-none absolute inset-x-8 top-1/2 h-24 -translate-y-1/2 rounded-xl border-4 border-white/80" />
             </div>
           )}
-          {!cameraError && <p className="text-center text-stone-700">Hold the barcode inside the box. It scans by itself.</p>}
-          {cameraError && <Notice tone="warn">{cameraError}</Notice>}
+          {!cameraShownError && <p className="text-center text-stone-700">Hold the barcode inside the box. It scans by itself.</p>}
+          {cameraShownError && <Notice tone="warn">{cameraShownError}</Notice>}
           <form
             className="flex flex-col gap-2 rounded-2xl bg-white p-4 ring-1 ring-stone-200"
             onSubmit={(e) => {

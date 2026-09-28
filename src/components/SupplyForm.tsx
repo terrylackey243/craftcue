@@ -6,6 +6,7 @@ import { ADHESIVES, UNITS, type Supply } from '../types'
 import { Button, Chip, Field, Notice, Stepper, fieldClass, inputClass } from './ui'
 import { guessCategory } from '../lib/guessCategory'
 import { formatMoney, parseMoney, perUnitFromPack } from '../lib/money'
+import BarcodeField from './BarcodeField'
 
 export type SupplyDraft = Partial<Supply> & { name: string; category: string; quantity: number; unit: Supply['unit'] }
 
@@ -303,9 +304,9 @@ export default function SupplyForm({
               />
             )}
           </Field>
-          <Field label="Barcode (UPC)">
-            {(id) => <input id={id} inputMode="numeric" className={inputClass} value={d.upc ?? ''} onChange={(e) => set('upc', e.target.value.replace(/\D/g, '') || undefined)} />}
-          </Field>
+          <div className="sm:col-span-2">
+            <BarcodeField value={d.upc ?? ''} onChange={(upc) => set('upc', upc.replace(/\D/g, '') || undefined)} />
+          </div>
           <Field label="Notes">
             {(id) => <textarea id={id} rows={2} className={`${inputClass} py-2`} value={d.notes ?? ''} onChange={(e) => set('notes', e.target.value || undefined)} />}
           </Field>

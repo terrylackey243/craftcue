@@ -4,7 +4,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import AssortmentForm from '../../src/components/AssortmentForm'
 import { db } from '../../src/db'
-import { addAnotherPack, cleanColors, colorsOf, costPerUnit, groupStash, saveAssortment } from '../../src/lib/assortment'
+import { addAnotherPack, cleanColors, colorsOf, costPerUnit, groupStash, reorderSet, saveAssortment, setPackBarcode } from '../../src/lib/assortment'
+import { lookupUpc } from '../../src/lib/upc'
 import { saveSetup } from '../../src/lib/repo'
 import type { Supply } from '../../src/types'
 
@@ -60,6 +61,26 @@ describe('mixed-color packs', () => {
     // Colors keep the pack's printed order, not A–Z.
     expect(set.items.map((s) => s.color)).toEqual(['Rocket Red', 'Solar Yellow', 'Lunar Blue', 'Gamma Green', 'Cosmic Orange'])
     expect(colorsOf(set.items)).toHaveLength(5)
+  })
+})
+
+describe('changing a saved pack', () => {
+  it('reorders colors and My stash follows the new order', async () => {
+    const saved = await saveAssortment({ base: { name: 'Cardstock', category: 'cardstock-paper', unit: 'sheet', source: 'manual' }, setName: 'Spectrum', colors: spectrum.slice(0, 3), packs: 1 })
+    const [red, yellow, blue] = saved
+    await reorderSet(saved, [blue.id, red.id, yellow.id])
+    const set = groupStash(await db.supplies.toArray())[0] as Extract<ReturnType<typeof groupStash>[number], { kind: 'set' }>
+    expect(set.items.map((s) => s.color)).toEqual(['Lunar Blue', 'Rocket Red', 'Solar Yellow'])
+  })
+
+  it('one barcode for the whole pack: every color gets it and the next scan knows the pack', async () => {
+    const saved = await saveAssortment({ base: { name: 'Cardstock', category: 'cardstock-paper', unit: 'sheet', source: 'manual' }, setName: 'Spectrum', colors: spectrum, packs: 1 })
+    await setPackBarcode(saved, '036000291452')
+    expect((await db.supplies.toArray()).every((s) => s.upc === '036000291452')).toBe(true)
+    const hit = await lookupUpc('036000291452')
+    expect(hit?.from).toBe('cache')
+    expect((hit?.supply as { colors?: unknown[] }).colors).toHaveLength(5)
+    expect((hit?.supply as { colors?: { color: string }[] }).colors?.[0].color).toBe('Rocket Red')
   })
 })
 
