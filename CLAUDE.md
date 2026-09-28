@@ -55,3 +55,9 @@ Primary hosting is GitHub Pages; the homelab copy (`craftcue.jkne.app`) is Terry
 - The records table has no write policies: all writes go through `sync_push` (security definer,
   always `auth.uid()`). The shared catalog only changes through `submit_product`.
 - The Anthropic key (`secrets` table) never syncs and never goes into backups.
+- Mixed-color packs = one supply per color sharing `setId`/`setName`; `packSize` on a color is
+  that color's count per pack. Photo reading must list only color names it can actually read
+  (it invented plausible names from a real Astrobrights photo before that rule), and the app
+  re-checks that counts add up to the printed total.
+- Outbox entries carry a unique `rev`; never compare timestamps to detect a re-edit (two edits
+  can share a millisecond).
