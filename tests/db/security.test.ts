@@ -152,6 +152,17 @@ describe('shared barcode catalog', () => {
     expect((await A.sb.rpc('submit_product', { p_upc: '012345678905', p_data: { brand: 'x' } })).error?.code).toBe('22023')
   })
 
+  it('keeps the pack size (a product fact) but never the price paid', async () => {
+    const upc = '012345678905'
+    await A.sb.rpc('submit_product', { p_upc: upc, p_data: { name: 'Wiggly eyes', packSize: 80, packPrice: 1.26, unitCost: 0.01575 } })
+    const p = (await anon().from('products').select('data').eq('upc', upc).single()).data!
+    expect(p.data).toEqual({ name: 'Wiggly eyes', packSize: 80 })
+    // Nonsense pack sizes are dropped.
+    await B.sb.rpc('submit_product', { p_upc: upc, p_data: { name: 'Wiggly eyes', packSize: -5 } })
+    const subs = (await B.sb.from('product_submissions').select('data').eq('upc', upc)).data!
+    expect(subs[0].data).toEqual({ name: 'Wiggly eyes' })
+  })
+
   it('treats EAN-13 with a leading zero as the same product', async () => {
     const r = await A.sb.rpc('submit_product', { p_upc: '0036000291452', p_data: vinyl })
     expect(r.data.upc).toBe(UPC)

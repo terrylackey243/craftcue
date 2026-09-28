@@ -14,12 +14,14 @@ export interface SharedProduct {
 /** The only fields ever shared: a product description, never quantities, costs, places or photos. */
 export const SHARED_FIELDS = ['name', 'category', 'subtype', 'brand', 'color', 'finish', 'dimensions', 'unit', 'adhesive'] as const
 
-export function productFields(s: Partial<Supply>): Record<string, string> {
-  const out: Record<string, string> = {}
+export function productFields(s: Partial<Supply>): Record<string, string | number> {
+  const out: Record<string, string | number> = {}
   for (const k of SHARED_FIELDS) {
     const v = s[k]
     if (typeof v === 'string' && v.trim()) out[k] = v.trim()
   }
+  // How many come in a pack is part of the product; what you paid for it is not.
+  if (typeof s.packSize === 'number' && s.packSize >= 1) out.packSize = s.packSize
   return out
 }
 
@@ -37,7 +39,7 @@ export async function lookupShared(upc: string): Promise<SharedProduct | undefin
 
 interface Pending {
   upc: string
-  fields: Record<string, string>
+  fields: Record<string, string | number>
 }
 
 /** Share a confirmed product. Offline or failed attempts wait in a small queue. */
