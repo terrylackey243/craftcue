@@ -1,0 +1,30 @@
+{
+ "model": "claude-haiku-4-5-20251001",
+ "id": "msg_011CfW7Sjj9AtoertKgpHekg",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "text",
+   "text": "{\"items\":[{\"name\":\"Iron-On Heat Transfer Glitter Gold\",\"category\":\"iron-on\",\"subtype\":\"glitter heat transfer\",\"brand\":\"Maple Lane Crafts\",\"color\":\"gold\",\"finish\":\"glitter\",\"dimensions\":\"12 in x 19 in\",\"quantity\":3,\"unit\":\"sheet\",\"adhesive\":\"iron-on\",\"confidence\":{\"name\":\"high\",\"category\":\"high\",\"brand\":\"high\",\"color\":\"high\",\"dimensions\":\"high\",\"quantity\":\"high\"}},{\"name\":\"Cardstock 80 lb Sage Green\",\"category\":\"cardstock-paper\",\"subtype\":\"cardstock\",\"brand\":\"Maple Lane Crafts\",\"color\":\"sage green\",\"finish\":\"matte\",\"dimensions\":\"8.5 x 11 in\",\"quantity\":50,\"unit\":\"sheet\",\"adhesive\":\"none\",\"confidence\":{\"name\":\"high\",\"category\":\"high\",\"brand\":\"high\",\"color\":\"high\",\"dimensions\":\"high\",\"quantity\":\"high\"}},{\"name\":\"Sublimation Mug Blanks White Ceramic 11 oz\",\"category\":\"blanks-drinkware\",\"subtype\":\"sublimation mug\",\"brand\":\"Maple Lane Crafts\",\"color\":\"white\",\"finish\":\"ceramic\",\"dimensions\":\"11 oz\",\"quantity\":4,\"unit\":\"blank\",\"adhesive\":\"none\",\"confidence\":{\"name\":\"high\",\"category\":\"high\",\"brand\":\"high\",\"color\":\"high\",\"dimensions\":\"high\",\"quantity\":\"high\"}},{\"name\":\"Transfer Tape Standard Grip Clear\",\"category\":\"transfer-tape-mats\",\"subtype\":\"transfer tape\",\"brand\":\"Maple Lane Crafts\",\"color\":\"clear\",\"finish\":\"standard grip\",\"dimensions\":\"12 in x 10 ft\",\"quantity\":1,\"unit\":\"roll\",\"adhesive\":\"self-adhesive\",\"confidence\":{\"name\":\"high\",\"category\":\"high\",\"brand\":\"high\",\"color\":\"high\",\"dimensions\":\"high\",\"quantity\":\"high\"}},{\"name\":\"Felt Sheets Rainbow Assortment\",\"category\":\"felt\",\"subtype\":\"felt sheets\",\"brand\":\"Maple Lane Crafts\",\"color\":\"rainbow assortment\",\"finish\":\"matte\",\"dimensions\":\"9 x 12 in\",\"quantity\":20,\"unit\":\"sheet\",\"adhesive\":\"none\",\"confidence\":{\"name\":\"high\",\"category\":\"high\",\"brand\":\"high\",\"color\":\"medium\",\"dimensions\":\"high\",\"quantity\":\"high\"}}]}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2908,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 503,
+  "service_tier": "standard",
+  "inference_geo": "not_available"
+ },
+ "diagnostics": null,
+ "parsed_output": null
+}

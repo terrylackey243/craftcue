@@ -5,6 +5,7 @@ import type { Category, Quality, Supply } from '../../types'
 import type { Compressed } from '../images'
 import { AiResponseError, checkStop, firstText, getAiClient, logUsage } from './aiClient'
 import { supportsEffort, visionModel } from './models'
+import { isValidUpc, normalizeUpc } from '../upc'
 import { visionBulkSchema, visionSingleSchema, wire, type VisionItem } from './schemas'
 
 export type PhotoKind = 'package' | 'loose' | 'bulk'
@@ -106,8 +107,16 @@ export async function readSinglePhoto(kind: 'package' | 'loose', image: Compress
   const format = zodOutputFormat(visionSingleSchema(categories.map((c) => c.id)))
   const prompt = `${PROMPTS[kind]}\n\nCategories:\n${categoryList(categories)}${knownUpc ? `\n\nThe crafter already scanned barcode ${knownUpc}.` : ''}`
   const out = await callVision<{ item: VisionItem; upcDigits: string }>(format, prompt, image, quality, 2000)
-  const upc = knownUpc ?? (out.upcDigits.replace(/\D/g, '') || undefined)
-  return { ...toProposed(out.item, 'vision', upc), upcDigits: out.upcDigits }
+  // Models misread barcode digits easily; only trust ones whose check digit works out.
+  const read = out.upcDigits.replace(/\D/g, '')
+  const upc = knownUpc ?? (read && isValidUpc(read) ? normalizeUpc(read) : undefined)
+  const proposed = toProposed(out.item, 'vision', upc)
+  if (kind === 'loose') {
+    // Spec 8.3: a photo can't show how much is left, so always ask.
+    proposed.uncertain.quantity = 'Please check how much you have'
+    proposed.uncertain.dimensions ??= 'Please check the size'
+  }
+  return { ...proposed, upcDigits: upc ?? '' }
 }
 
 export async function readBulkPhoto(image: Compressed, categories: Category[], quality: Quality): Promise<ProposedSupply[]> {

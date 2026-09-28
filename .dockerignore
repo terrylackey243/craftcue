@@ -1,0 +1,8 @@
+node_modules
+dist
+dev-dist
+test-results
+playwright-report
+.git
+compose.yml
+tests/fixtures/photos

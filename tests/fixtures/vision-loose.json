@@ -1,0 +1,30 @@
+{
+ "model": "claude-haiku-4-5-20251001",
+ "id": "msg_011CfW7UUPxbm5xaW3JebCk1",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "text",
+   "text": "{\"item\":{\"name\":\"Pink craft roller\",\"category\":\"other\",\"subtype\":\"roller tool\",\"brand\":\"\",\"color\":\"hot pink\",\"finish\":\"glossy\",\"dimensions\":\"approximately 3 in wide x 6 in long\",\"quantity\":1,\"unit\":\"piece\",\"adhesive\":\"none\",\"confidence\":{\"name\":\"medium\",\"category\":\"low\",\"brand\":\"high\",\"color\":\"high\",\"dimensions\":\"low\",\"quantity\":\"high\"}},\"upcDigits\":\"\"}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2548,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 99,
+  "service_tier": "standard",
+  "inference_geo": "not_available"
+ },
+ "diagnostics": null,
+ "parsed_output": null
+}

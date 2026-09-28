@@ -4,9 +4,9 @@
 
 export const CONSOLE_URL = 'https://platform.claude.com'
 
-/** Filled in from measured usage (see docs/cost-measurements.md). */
+/** Measured 2026-09-28 with recorded fixtures: 3.8–7.1c per round of 5 (Sonnet 5), 0.3–0.5c per photo (Haiku 4.5). */
 export const COST_NOTE =
-  'A round of 5 suggestions costs about 4 to 6 cents with the Standard quality setting, and reading a photo costs about half a cent. $5 of credit goes a long way.'
+  'A round of 5 ideas costs about 4 to 7 cents with the Standard quality setting, and reading a photo costs well under a cent. $5 of credit goes a long way.'
 
 export interface GuideStep {
   shot: string

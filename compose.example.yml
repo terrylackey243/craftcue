@@ -1,0 +1,14 @@
+# Run your own copy of CraftCue:
+#   cp compose.example.yml compose.yml && docker compose up -d --build
+# Then open http://localhost:8080
+#
+# Installing the app and offline use need HTTPS (browsers allow plain http only for localhost),
+# so put it behind whatever HTTPS reverse proxy you already use.
+services:
+  craftcue:
+    build: .
+    image: craftcue:latest
+    container_name: craftcue
+    restart: unless-stopped
+    ports:
+      - "8080:80"
