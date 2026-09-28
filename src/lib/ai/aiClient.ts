@@ -75,7 +75,7 @@ export function friendlyError(e: unknown): FriendlyError {
   if (e instanceof NoKeyError) return { kind: 'no-key', message: e.message }
   if (e instanceof AiResponseError) return { kind: e.kind, message: e.message }
   if (e instanceof Anthropic.AuthenticationError) {
-    return { kind: 'invalid-key', message: "That key didn't work. Check that you copied the whole key (it starts with sk-ant-), or create a new one." }
+    return { kind: 'invalid-key', message: "That key didn't work. It may have expired or been deleted, or part of it may be missing (it starts with sk-ant-). Create a new key in the Anthropic Console and paste it in Settings." }
   }
   if (e instanceof Anthropic.PermissionDeniedError) {
     return { kind: 'permission', message: "This key isn't allowed to do that. Check the key's workspace settings in the Anthropic Console." }

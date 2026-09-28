@@ -5,9 +5,9 @@ Used by the in-app key guide (`src/data/keyGuide.ts`) and the README.
 | File | Shows |
 |---|---|
 | `key-guide-signup.png` | Anthropic Console sign-in page |
-| `key-guide-billing.png` | Settings → Billing, credit balance and "Buy credits" |
-| `key-guide-limits.png` | Settings → Limits, monthly spend limit |
-| `key-guide-create-key.png` | Settings → API keys, "Create key" |
+| `key-guide-billing.png` | Billing page: credit balance and "Buy credits" |
+| `key-guide-limits.png` | Billing page, scrolled to "Spend limits" |
+| `key-guide-create-key.png` | "Create API key" form: name filled, Expires = Never, Scope = Default workspace |
 
 **Re-capture these whenever the Console UI changes.** Redact email addresses, key values,
 balances and card details before committing. Keep them around 1200 px wide, PNG.

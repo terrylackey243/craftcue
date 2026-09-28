@@ -19,23 +19,30 @@ account. It's free. This is separate from the Claude chat app, but you can use t
 
 ## 2. Add some credit
 
-Open **Settings → Billing**, add a card and buy a small amount of credit ($5 is plenty to start).
-You pay ahead of time, so you can't be charged more than you put in unless you turn on
-auto-reload.
+In the menu on the left, choose **Billing**. Tap **Buy credits**, add a card and buy a small
+amount ($5 is plenty to start). You pay ahead of time; leave auto-reload off and you can't be
+charged more than you put in.
 
 ![Billing page](images/key-guide-billing.png)
 
 ## 3. Set a monthly spending limit (recommended)
 
-Open **Settings → Limits** and set a monthly spend limit, for example $5. If it's ever reached,
-smart features pause until next month.
+Scroll down the same Billing page to **Spend limits**, tap **Adjust limit**, and set a small
+monthly limit such as $5. If it's ever reached, smart features pause until next month.
 
-![Limits page](images/key-guide-limits.png)
+![Spend limits](images/key-guide-limits.png)
 
 ## 4. Create an API key
 
-Open **API keys → Create key**, name it something like "CraftCue on my iPad", and copy it. It
-starts with `sk-ant-` and is **shown only once**.
+Choose **API keys → Create key**. If a box about "identity federation" appears, choose
+**Continue with an API key**. Then:
+
+- **Name:** something like "CraftCue on my iPad"
+- **Expires:** **Never** (a 30-day key stops working next month). A yellow warning about keeping
+  keys safe appears; that's expected, and your spend limit protects you.
+- **Scope:** **Default workspace**
+
+Tap **Create key** and copy it straight away. It starts with `sk-ant-` and is **shown only once**.
 
 ![Create key](images/key-guide-create-key.png)
 
