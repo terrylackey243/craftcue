@@ -51,7 +51,7 @@ export default function Wizard({ onComplete }: { onComplete?: () => void }) {
         </div>
       )}
 
-      <h1 className="mb-4 text-3xl font-bold">{titles[step]}</h1>
+      <h1 className={`mb-4 text-3xl font-bold ${step === 'welcome' ? 'text-center' : ''}`}>{titles[step]}</h1>
 
       <div className="flex-1">
         {step === 'welcome' && (
