@@ -129,7 +129,7 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
     setDone(result)
     setDupe(null)
     onSaved(result.saved)
-    requestAnimationFrame(() => top.current?.scrollIntoView({ block: 'center' }))
+    requestAnimationFrame(() => top.current?.scrollIntoView?.({ block: 'center' }))
   }
 
   function reset() {

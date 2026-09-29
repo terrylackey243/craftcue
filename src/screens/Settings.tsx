@@ -43,7 +43,7 @@ export default function Settings() {
     const el = target ? document.getElementById(target) : null
     if (setup && el) {
       if (el instanceof HTMLDetailsElement) el.open = true
-      el.scrollIntoView()
+      el.scrollIntoView?.()
     }
   }, [setup])
   if (!setup) return <Spinner />
