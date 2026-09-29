@@ -1,3 +1,4 @@
+import { unitStep } from '../lib/units'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -296,7 +297,7 @@ function MarkMadeSheet({ open, onClose, project }: { open: boolean; onClose: () 
                     <p className="font-semibold">{r.name}</p>
                     {!r.missing && (
                       <div className="mt-2 flex flex-wrap items-center gap-3">
-                        <Stepper label={`amount of ${r.name} used`} value={r.amount} step={r.unit === 'ft' || r.unit === 'yd' ? 0.5 : 1} onChange={(n) => setOverrides((m) => new Map(m).set(r.supplyId, n))} />
+                        <Stepper label={`amount of ${r.name} used`} value={r.amount} step={unitStep(r.unit)} onChange={(n) => setOverrides((m) => new Map(m).set(r.supplyId, n))} />
                         <span className="text-sm text-stone-600">
                           {unitLabel(r.unit, r.amount)} · {formatQty(r.available, r.unit)} → {afterDeduction(r.available, r.amount)} left
                         </span>
@@ -351,7 +352,7 @@ function AddUseSheet({ open, onClose, project }: { open: boolean; onClose: () =>
         {s && (
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold">Amount for one</span>
-            <Stepper label="amount" value={amount} step={s.unit === 'ft' || s.unit === 'yd' ? 0.5 : 1} onChange={setAmount} />
+            <Stepper label="amount" value={amount} step={unitStep(s.unit)} onChange={setAmount} />
             <span>{unitLabel(s.unit, amount)}</span>
           </div>
         )}

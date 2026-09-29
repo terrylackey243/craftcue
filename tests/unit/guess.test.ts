@@ -25,6 +25,8 @@ describe('formatQty', () => {
     expect(formatQty(1, 'sheet')).toBe('1 sheet')
     expect(formatQty(1, 'ft')).toBe('1 foot')
     expect(formatQty(2, 'ft')).toBe('2 feet')
+    expect(formatQty(1, 'in')).toBe('1 inch')
+    expect(formatQty(48, 'in')).toBe('48 inches')
     expect(formatQty(0.25, 'sheet')).toBe('0.25 sheets')
     expect(formatQty(1, 'other')).toBe('1 other')
   })

@@ -1,7 +1,7 @@
 import type Anthropic from '@anthropic-ai/sdk'
 import { AnthropicError } from '@anthropic-ai/sdk'
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
-import type { Category, Quality, Supply } from '../../types'
+import { UNITS, type Category, type Quality, type Supply } from '../../types'
 import type { Compressed } from '../images'
 import { AiResponseError, checkStop, firstText, getAiClient, logUsage } from './aiClient'
 import { supportsEffort, visionModel } from './models'
@@ -19,7 +19,7 @@ export interface ProposedSupply {
 }
 
 const COMMON = `Fill in every field. Use an empty string for text you can't tell. Give your confidence for each listed field honestly: "low" if you are guessing.
-Use the category id that fits best from the list. Units: sheet, roll, ft, yd, piece, pack, blank, bottle, other.
+Use the category id that fits best from the list. Units: ${UNITS.join(", ")} (in = inches, ft = feet, yd = yards).
 Colors in plain words ("pastel pink", "matte black"). Dimensions like "12 x 12 in", "12 in x 10 ft roll", "11 oz mug".`
 
 const PROMPTS: Record<PhotoKind, string> = {
@@ -137,7 +137,7 @@ If you can read barcode digits, put them in upcDigits, otherwise an empty string
 /** Read a mixed-color pack: the shared details plus each color and its count. */
 export async function readAssortmentPhoto(image: Compressed, categories: Category[], quality: Quality): Promise<AssortmentReading> {
   const format = zodOutputFormat(assortmentSchema(categories.map((c) => c.id)))
-  const prompt = `${ASSORTMENT_PROMPT}\n\nCategories:\n${categoryList(categories)}\nUnits: sheet, roll, ft, yd, piece, pack, blank, bottle, other.`
+  const prompt = `${ASSORTMENT_PROMPT}\n\nCategories:\n${categoryList(categories)}\nUnits: ${UNITS.join(', ')} (in = inches, ft = feet, yd = yards).`
   const out = await callVision<AssortmentReading>(format, prompt, image, quality, 4000)
   const read = out.upcDigits.replace(/\D/g, '')
   // Don't take the model's word for it: counts must add up to the printed total.

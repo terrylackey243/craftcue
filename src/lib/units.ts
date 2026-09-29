@@ -22,13 +22,25 @@ export function convert(amount: number, from: string, to: string): number | unde
   return undefined
 }
 
-/** Length of one roll in feet, read from a size like "12 in x 10 ft roll" or "12 in x 5 yd". */
+/** Length of one roll in feet, from a size like "12 in x 10 ft roll", "12 in x 5 yd" or "12 in x 48 in". */
 export function rollLengthFt(dimensions: string | undefined): number | undefined {
   if (!dimensions) return undefined
-  const m = dimensions.toLowerCase().match(/x\s*(\d+(?:\.\d+)?)\s*(ft|feet|foot|yd|yds|yard|yards)\b/)
+  const m = dimensions.toLowerCase().match(/x\s*(\d+(?:\.\d+)?)\s*(ft|feet|foot|yd|yds|yard|yards|in|inch|inches|")(?![a-z])/)
   if (!m) return undefined
   const n = Number(m[1])
-  return m[2].startsWith('y') ? n * 3 : n
+  if (m[2].startsWith('y')) return n * 3
+  if (m[2].startsWith('i') || m[2] === '"') return n / 12
+  return n
+}
+
+/** Units that measure length (so amounts convert between them). */
+export function isLengthUnit(u: string): boolean {
+  return normalizeUnit(u) in LENGTH_IN_FEET
+}
+
+/** How much one tap of + or − changes a quantity: half a foot or yard, one of anything else. */
+export function unitStep(u: string): number {
+  return u === 'ft' || u === 'yd' ? 0.5 : 1
 }
 
 /** Convert an amount into the supply's own unit, using the roll length when needed. */

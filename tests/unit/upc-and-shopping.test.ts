@@ -36,12 +36,19 @@ describe('barcodes (spec Phase 3 acceptance)', () => {
 
 describe('units', () => {
   it('reads roll lengths', () => {
+    expect(rollLengthFt('12 in x 48 in')).toBe(4)
+    expect(rollLengthFt('12" x 48"')).toBe(4)
     expect(rollLengthFt('12 in x 10 ft roll')).toBe(10)
     expect(rollLengthFt('12 in x 5 yd')).toBe(15)
-    expect(rollLengthFt('12 x 12 in')).toBeUndefined()
+    // Only consulted for supplies counted in rolls, where the second number is the length.
+    expect(rollLengthFt('12 x 12 in')).toBe(1)
+    expect(rollLengthFt('12 x 12')).toBeUndefined()
+    expect(rollLengthFt('12 in wide')).toBeUndefined()
   })
   it('converts between feet, yards and rolls', () => {
     expect(toSupplyUnit(3, 'ft', { unit: 'yd' })).toBe(1)
+    expect(toSupplyUnit(2, 'ft', { unit: 'in' })).toBe(24)
+    expect(toSupplyUnit(6, 'in', { unit: 'roll', dimensions: '12 in x 48 in' })).toBe(0.125)
     expect(toSupplyUnit(5, 'ft', { unit: 'roll', dimensions: '12 in x 10 ft' })).toBe(0.5)
     expect(toSupplyUnit(1, 'roll', { unit: 'ft', dimensions: '12 in x 10 ft' })).toBe(10)
     expect(toSupplyUnit(2, 'sheets', { unit: 'sheet' })).toBe(2)

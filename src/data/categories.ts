@@ -6,7 +6,7 @@ export const SEED_CATEGORIES: Category[] = [
   {
     id: 'adhesive-vinyl',
     name: 'Adhesive vinyl',
-    units: ['sheet', 'roll', 'ft'],
+    units: ['sheet', 'roll', 'ft', 'in'],
     sizes: ['12 x 12 in', '12 x 24 in', '12 in x 5 ft roll', '12 in x 10 ft roll', '13 in x 10 ft roll', '5.5 in x 4 ft roll'],
     subtypes: ['permanent', 'removable', 'holographic', 'glitter', 'printable', 'window cling'],
     defaultAdhesive: 'permanent',
@@ -14,7 +14,7 @@ export const SEED_CATEGORIES: Category[] = [
   {
     id: 'iron-on',
     name: 'Iron-on / HTV',
-    units: ['sheet', 'roll', 'ft'],
+    units: ['sheet', 'roll', 'ft', 'in'],
     sizes: ['12 x 12 in', '12 x 19 in', '12 in x 3 ft roll', '12 in x 5 ft roll'],
     subtypes: ['everyday', 'glitter', 'holographic', 'foil', 'flocked', 'stretch', 'sport flex'],
     defaultAdhesive: 'iron-on',
@@ -44,7 +44,7 @@ export const SEED_CATEGORIES: Category[] = [
   {
     id: 'fabric',
     name: 'Fabric',
-    units: ['yd', 'piece', 'ft'],
+    units: ['yd', 'piece', 'ft', 'in'],
     sizes: ['fat quarter', '1/2 yd', '1 yd', '12 x 12 in'],
     subtypes: ['cotton', 'canvas', 'denim', 'fleece', 'bonded'],
   },
@@ -114,7 +114,7 @@ export const SEED_CATEGORIES: Category[] = [
   {
     id: 'embellishments',
     name: 'Embellishments (googly eyes, rhinestones, ribbon, buttons)',
-    units: ['pack', 'piece', 'yd', 'roll'],
+    units: ['pack', 'piece', 'yd', 'in', 'roll'],
     sizes: ['small', 'medium', 'large', 'assorted'],
     subtypes: ['googly eyes', 'rhinestones', 'ribbon', 'buttons', 'pom poms', 'sequins', 'twine', 'tassels'],
   },
@@ -135,7 +135,7 @@ export const SEED_CATEGORIES: Category[] = [
   {
     id: 'transfer-tape-mats',
     name: 'Transfer tape & mats',
-    units: ['roll', 'sheet', 'piece'],
+    units: ['roll', 'sheet', 'piece', 'ft', 'in'],
     sizes: ['12 in x 4 ft', '12 in x 10 ft', '12 x 12 in mat', '12 x 24 in mat'],
     subtypes: ['standard transfer tape', 'strong grip transfer tape', 'light grip mat', 'standard grip mat', 'strong grip mat', 'fabric grip mat'],
   },

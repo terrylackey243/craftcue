@@ -7,6 +7,7 @@ import { Badge, Button, ButtonLink, EmptyState, PageHeader, Spinner, inputClass 
 import { unitLabel } from '../components/SupplyForm'
 import type { Supply } from '../types'
 import { categoryIcon } from '../data/categories'
+import { unitStep } from '../lib/units'
 import { groupStash, reorderSet, type StashEntry } from '../lib/assortment'
 import { ScannerView } from '../components/BarcodeField'
 import { Sheet } from '../components/ui'
@@ -48,7 +49,7 @@ function LevelBadge({ s }: { s: Supply }) {
 function QuickQty({ s }: { s: Supply }) {
   // Colors of a pack share a name, so say which color the buttons change.
   const label = s.color && s.setId ? `${s.name}, ${s.color}` : s.name
-  const step = s.unit === 'ft' || s.unit === 'yd' ? 0.5 : 1
+  const step = unitStep(s.unit)
   return (
     <div className="flex items-center gap-1" role="group" aria-label={`Quantity of ${label}`}>
       <button

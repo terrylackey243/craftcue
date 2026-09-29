@@ -6,7 +6,7 @@ export interface Timestamps {
   updatedAt: string
 }
 
-export const UNITS = ['sheet', 'roll', 'ft', 'yd', 'piece', 'pack', 'blank', 'bottle', 'other'] as const
+export const UNITS = ['sheet', 'roll', 'ft', 'in', 'yd', 'piece', 'pack', 'blank', 'bottle', 'other'] as const
 export type Unit = (typeof UNITS)[number]
 
 export const ADHESIVES = ['none', 'removable', 'permanent', 'iron-on', 'self-adhesive'] as const

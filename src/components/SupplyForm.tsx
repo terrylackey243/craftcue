@@ -1,3 +1,4 @@
+import { unitStep } from '../lib/units'
 import { useMemo, useState } from 'react'
 import { useCategories } from '../hooks'
 import { addCategory, saveSupply } from '../lib/repo'
@@ -18,6 +19,7 @@ const UNIT_LABELS: Record<string, string> = {
   sheet: 'sheets',
   roll: 'rolls',
   ft: 'feet',
+  in: 'inches',
   yd: 'yards',
   piece: 'pieces',
   pack: 'packs',
@@ -25,7 +27,7 @@ const UNIT_LABELS: Record<string, string> = {
   bottle: 'bottles',
   other: 'other',
 }
-const SINGULAR: Record<string, string> = { sheet: 'sheet', roll: 'roll', ft: 'foot', yd: 'yard', piece: 'piece', pack: 'pack', blank: 'blank', bottle: 'bottle' }
+const SINGULAR: Record<string, string> = { sheet: 'sheet', roll: 'roll', ft: 'foot', in: 'inch', yd: 'yard', piece: 'piece', pack: 'pack', blank: 'blank', bottle: 'bottle' }
 
 /** Plural label for pickers ("sheets"), or the right form for a count when `n` is given. */
 export const unitLabel = (u: string, n?: number) => (n === 1 && SINGULAR[u] ? SINGULAR[u] : (UNIT_LABELS[u] ?? u))
@@ -222,7 +224,7 @@ export default function SupplyForm({
       <div className={`flex flex-col gap-2 ${flag('quantity') ? 'rounded-xl bg-sun-300/40 p-2 ring-2 ring-sun-500' : ''}`}>
         <p className="font-semibold">How many do you have?</p>
         <div className="flex flex-wrap items-center gap-3">
-          <Stepper label="quantity" value={d.quantity} onChange={(n) => set('quantity', n)} step={d.unit === 'ft' || d.unit === 'yd' ? 0.5 : 1} />
+          <Stepper label="quantity" value={d.quantity} onChange={(n) => set('quantity', n)} step={unitStep(d.unit)} />
           <label htmlFor="unit" className="sr-only">
             Unit
           </label>
@@ -246,6 +248,11 @@ export default function SupplyForm({
             </Button>
           ) : null}
         </div>
+        {d.unit === 'in' && d.quantity >= 12 && (
+          <p className="text-sm text-stone-600" aria-live="polite">
+            = {Math.round((d.quantity / 12) * 100) / 100} ft
+          </p>
+        )}
         {flag('quantity') && <p className="text-sm font-medium text-amber-900">⚠ {flag('quantity')}</p>}
       </div>
 
