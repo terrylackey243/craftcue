@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../../src/db'
-import { addColorsToPack, groupStash, parseColorList, saveAssortment } from '../../src/lib/assortment'
+import { addColorsToPack, groupStash, parseColorList, saveAssortment, setPackLowAt } from '../../src/lib/assortment'
+import { stockLevel } from '../../src/lib/shopping'
 
 // Terry's list, exactly as pasted (bullets, trailing commas, a final full stop, one line without a comma).
 const TERRY = `* Black,
@@ -79,5 +80,16 @@ describe('adding colors to a saved pack', () => {
     expect(r).toEqual({ added: 1, reordered: false })
     const set = groupStash(await db.supplies.toArray())[0] as Extract<ReturnType<typeof groupStash>[number], { kind: 'set' }>
     expect(set.items.map((s) => s.color)).toEqual(['Red', 'Blue', 'Green'])
+  })
+
+  it('one low-stock level for the whole pack: at 0, one pen left is fine, none left is out', async () => {
+    const saved = await saveAssortment({ base: { name: 'Pens', category: 'paint-markers', unit: 'piece', source: 'manual' }, setName: 'Pens', colors: [{ color: 'Red', count: 1 }, { color: 'Blue', count: 1 }], packs: 1 })
+    await db.supplies.update(saved[0].id, { quantity: 0 })
+    await setPackLowAt(saved, 0)
+    const [red, blue] = await Promise.all(saved.map((s) => db.supplies.get(s.id)))
+    expect(red!.lowAt).toBe(0)
+    expect(red!.quantity).toBe(0) // the level change didn't touch counts
+    expect(stockLevel(red!)).toBe('out')
+    expect(stockLevel(blue!)).toBe('ok')
   })
 })

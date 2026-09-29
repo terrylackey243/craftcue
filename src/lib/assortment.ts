@@ -233,3 +233,12 @@ export async function addColorsToPack(existing: Supply[], names: string[], count
   }
   return { added: created.length, reordered: false }
 }
+
+/** Set the low-stock warning level for every color of a pack at once. */
+export async function setPackLowAt(items: Supply[], lowAt: number): Promise<void> {
+  const now = new Date().toISOString()
+  await db.transaction('rw', db.supplies, async () => {
+    for (const s of items) await db.supplies.update(s.id, { lowAt, updatedAt: now })
+  })
+  await noteChange()
+}

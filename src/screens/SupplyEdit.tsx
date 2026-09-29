@@ -5,7 +5,7 @@ import { db } from '../db'
 import SupplyForm, { emptyDraft } from '../components/SupplyForm'
 import AssortmentForm from '../components/AssortmentForm'
 import BarcodeField from '../components/BarcodeField'
-import { addColorsToPack, parseColorList, setPackBarcode } from '../lib/assortment'
+import { addColorsToPack, parseColorList, setPackBarcode, setPackLowAt } from '../lib/assortment'
 import { PasteSummary } from '../components/AssortmentForm'
 import { Stepper, inputClass } from '../components/ui'
 import { isValidUpc, normalizeUpc } from '../lib/upc'
@@ -46,6 +46,7 @@ export default function SupplyEdit() {
             </div>
             <PackBarcode items={[existing, ...siblings]} />
             <AddColors items={[existing, ...siblings]} />
+            <PackLowAt items={[existing, ...siblings]} />
             <Button
               variant="danger"
               className="self-start"
@@ -193,6 +194,34 @@ function AddColors({ items }: { items: Supply[] }) {
           Cancel
         </Button>
       </div>
+    </div>
+  )
+}
+
+/** One low-stock warning level for every color of a pack (0 = only when a color runs out). */
+function PackLowAt({ items }: { items: Supply[] }) {
+  const current = items[0]?.lowAt ?? 1
+  const same = items.every((s) => (s.lowAt ?? 1) === current)
+  const [value, setValue] = useState(current)
+  const [msg, setMsg] = useState('')
+  return (
+    <div className="flex flex-col gap-2 rounded-xl bg-stone-50 p-3">
+      <p className="font-semibold">Warn me when each color is down to</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <Stepper label="warn when each color is down to" value={value} onChange={(n) => { setValue(Math.max(0, n)); setMsg('') }} />
+        <Button
+          variant="secondary"
+          disabled={same && value === current}
+          onClick={async () => {
+            await setPackLowAt(items, value)
+            setMsg(`Set for all ${items.length} colors.`)
+          }}
+        >
+          Set for all {items.length} colors
+        </Button>
+      </div>
+      <p className="text-sm text-stone-600">0 means only when a color runs out, handy when you keep just one of each.</p>
+      {msg && <Notice tone="success">{msg}</Notice>}
     </div>
   )
 }
