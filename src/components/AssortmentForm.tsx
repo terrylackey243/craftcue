@@ -3,7 +3,7 @@ import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, us
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useCategories, useSetup } from '../hooks'
-import { addAnotherPack, cleanColors, costPerUnit, findSamePack, saveAssortment, totalCount } from '../lib/assortment'
+import { addAnotherPack, cleanColors, costPerUnit, findSamePack, parseColorList, saveAssortment, totalCount } from '../lib/assortment'
 import { formatMoney, parseMoney } from '../lib/money'
 import { makeVisionImage } from '../lib/images'
 import { friendlyError } from '../lib/ai/aiClient'
@@ -57,6 +57,8 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
   const [same, setSame] = useState(3)
   const [packs, setPacks] = useState(1)
   const [price, setPrice] = useState('')
+  const [pasting, setPasting] = useState(false)
+  const [pasted, setPasted] = useState('')
   const [reading, setReading] = useState(false)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -344,9 +346,37 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
             </ul>
           </SortableContext>
         </DndContext>
-        <Button variant="ghost" className="self-start" onClick={() => addAfter(rows.length - 1, rows.at(-1)?.count ?? 1)}>
-          + Add a color
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" onClick={() => addAfter(rows.length - 1, rows.at(-1)?.count ?? 1)}>
+            + Add a color
+          </Button>
+          <Button variant="ghost" onClick={() => setPasting(!pasting)} aria-expanded={pasting}>
+            📋 Paste a list of colors
+          </Button>
+        </div>
+        {pasting && (
+          <div className="flex flex-col gap-2 rounded-xl bg-stone-50 p-3">
+            <label htmlFor="paste-colors" className="font-semibold">
+              Paste the colors (one per line, or separated by commas)
+            </label>
+            <textarea id="paste-colors" rows={6} className={`${inputClass} py-2`} value={pasted} onChange={(e) => setPasted(e.target.value)} placeholder={'Black\nRed\nSour Apple\n…'} />
+            <PasteSummary text={pasted} existing={rows.map((r) => r.color)} />
+            <Button
+              variant="secondary"
+              className="self-start"
+              disabled={!parseColorList(pasted).length}
+              onClick={() => {
+                const have = new Set(rows.map((r) => r.color.trim().toLowerCase()).filter(Boolean))
+                const fresh = parseColorList(pasted).filter((n) => !have.has(n.toLowerCase()))
+                setRows((rs) => [...rs.filter((r) => r.color.trim()), ...toRows(fresh.map((color) => ({ color, count: same })))])
+                setPasted('')
+                setPasting(false)
+              }}
+            >
+              Add these colors ({same} of each)
+            </Button>
+          </div>
+        )}
         <p className="font-semibold" aria-live="polite">
           {colors.length} color{colors.length === 1 ? '' : 's'} · {total} {unitLabel(f.unit, total)} per pack
         </p>
@@ -443,5 +473,19 @@ function ColorRow({ row, index, label, onChange, onRemove, onEnter, autoFocus }:
         ×
       </button>
     </li>
+  )
+}
+
+/** "29 colors: 28 new, 1 already listed (Sour Apple)" so it's clear what pasting will do. */
+export function PasteSummary({ text, existing }: { text: string; existing: (string | undefined)[] }) {
+  const names = parseColorList(text)
+  if (!names.length) return null
+  const have = new Set(existing.map((c) => (c ?? '').trim().toLowerCase()).filter(Boolean))
+  const already = names.filter((n) => have.has(n.toLowerCase()))
+  return (
+    <p className="text-sm text-stone-700" aria-live="polite">
+      {names.length} color{names.length === 1 ? '' : 's'} found: {names.length - already.length} new
+      {already.length > 0 && `, ${already.length} already here (${already.slice(0, 3).join(', ')}${already.length > 3 ? '…' : ''})`}.
+    </p>
   )
 }

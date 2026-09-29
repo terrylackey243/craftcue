@@ -232,3 +232,38 @@ test('a pack’s barcode, reordering in My stash, and scanning it again to add a
   await page.getByRole('button', { name: /Scan cardstock/ }).click()
   await expect(page.getByRole('group', { name: 'Quantity of Scan cardstock, Red' })).toContainText('6')
 })
+
+test('paste a color list into a saved pack (Terry’s 30 markers)', async ({ page }) => {
+  const list = ['Black', 'Red', 'Blue', 'Green', 'Yellow', 'Sour Apple', 'Candy Corn', 'Blueberry', 'Candy Crystal', 'Very Berry', 'Cactus Pink', 'Bluebonnet', 'Lavender', 'Honeysuckle', 'Sage', 'Armadillo', 'Geode', 'Brick', 'Adobe Clay', 'Moccasin', 'Jade', 'Gemstone Blue', 'Wine', 'Pink Crystal', 'Coral', 'Turquoise', 'Tawny', 'Light Green', 'Light Turquoise', 'Magenta']
+  const pasted = list.map((c, i) => `* ${c}${i === list.length - 1 ? '.' : i === list.length - 2 ? '' : ','}`).join('\n')
+
+  await page.goto('/')
+  await page.getByRole('button', { name: "Let's start" }).click()
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+  await page.getByRole('button', { name: 'Maybe later' }).click()
+  await page.getByRole('button', { name: /Add supplies now/ }).click()
+  await page.getByRole('link', { name: /Type it in/ }).click()
+  await page.getByRole('button', { name: 'A pack with several colors' }).click()
+  await page.getByLabel('Type of supply').selectOption('paint-markers')
+  await page.getByLabel(/What is one .* \(without the color\)/).fill('Fine Point Pens')
+  await page.getByLabel('Color 1', { exact: true }).fill('Sour Apple')
+  await page.getByRole('button', { name: /Save 1 color/ }).click()
+  await expect(page.getByText(/Saved “Fine Point Pens/)).toBeVisible()
+
+  // Open the pack's one color, then add the rest by pasting.
+  await page.goto('/#/inventory')
+  await page.getByRole('button', { name: /Fine Point Pens/ }).click()
+  await page.getByRole('link', { name: 'Sour Apple' }).click()
+  await page.getByRole('button', { name: '➕ Add colors to this pack' }).click()
+  await page.getByLabel(/Colors to add/).fill(pasted)
+  await expect(page.getByText('30 colors found: 29 new, 1 already here (Sour Apple).')).toBeVisible()
+  await page.getByRole('button', { name: 'Add 29 colors' }).click()
+  await expect(page.getByText('Added 29 colors, and put the pack in your list’s order.')).toBeVisible()
+
+  await page.goto('/#/inventory')
+  const group = page.getByRole('button', { name: /Fine Point Pens/ })
+  await expect(group).toContainText('30 colors')
+  await group.click()
+  const names = await page.locator('li li a span.font-semibold').allTextContents()
+  expect(names).toEqual(list)
+})

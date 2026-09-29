@@ -5,7 +5,9 @@ import { db } from '../db'
 import SupplyForm, { emptyDraft } from '../components/SupplyForm'
 import AssortmentForm from '../components/AssortmentForm'
 import BarcodeField from '../components/BarcodeField'
-import { setPackBarcode } from '../lib/assortment'
+import { addColorsToPack, parseColorList, setPackBarcode } from '../lib/assortment'
+import { PasteSummary } from '../components/AssortmentForm'
+import { Stepper, inputClass } from '../components/ui'
 import { isValidUpc, normalizeUpc } from '../lib/upc'
 import type { Supply } from '../types'
 import { Chip } from '../components/ui'
@@ -43,6 +45,7 @@ export default function SupplyEdit() {
               </Link>
             </div>
             <PackBarcode items={[existing, ...siblings]} />
+            <AddColors items={[existing, ...siblings]} />
             <Button
               variant="danger"
               className="self-start"
@@ -138,6 +141,58 @@ function PackBarcode({ items }: { items: Supply[] }) {
         Save barcode for all {items.length} colors
       </Button>
       {msg && <Notice tone="success">{msg}</Notice>}
+    </div>
+  )
+}
+
+/** Add colors to a pack that's already saved: paste or type them, choose how many of each. */
+function AddColors({ items }: { items: Supply[] }) {
+  const [open, setOpen] = useState(false)
+  const [text, setText] = useState('')
+  const [count, setCount] = useState(items[0]?.packSize ?? 1)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const names = parseColorList(text)
+  if (!open) {
+    return (
+      <div className="flex flex-col gap-2">
+        <Button variant="secondary" className="self-start" onClick={() => { setOpen(true); setMsg('') }}>
+          ➕ Add colors to this pack
+        </Button>
+        {msg && <Notice tone="success">{msg}</Notice>}
+      </div>
+    )
+  }
+  return (
+    <div className="flex flex-col gap-3 rounded-xl bg-stone-50 p-3">
+      <label htmlFor="add-colors" className="font-semibold">
+        Colors to add (paste a list, one per line or separated by commas)
+      </label>
+      <textarea id="add-colors" rows={8} className={`${inputClass} py-2`} value={text} onChange={(e) => setText(e.target.value)} placeholder={'Black\nRed\nBlue\n…'} />
+      <PasteSummary text={text} existing={items.map((s) => s.color)} />
+      <p className="text-sm text-stone-600">If your list includes every color already in the pack, the pack is put in your list's order.</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-semibold">How many of each new color?</span>
+        <Stepper label="how many of each new color" value={count} onChange={(n) => setCount(Math.max(1, n))} />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          disabled={busy || !names.length}
+          onClick={async () => {
+            setBusy(true)
+            const r = await addColorsToPack(items, names, count)
+            setBusy(false)
+            setOpen(false)
+            setText('')
+            setMsg(`Added ${r.added} color${r.added === 1 ? '' : 's'}${r.reordered ? ', and put the pack in your list’s order' : ''}.`)
+          }}
+        >
+          Add {names.length ? names.filter((n) => !items.some((s) => (s.color ?? '').toLowerCase() === n.toLowerCase())).length : ''} colors
+        </Button>
+        <Button variant="ghost" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
+      </div>
     </div>
   )
 }
