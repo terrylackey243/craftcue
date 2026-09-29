@@ -48,6 +48,19 @@ Primary hosting is GitHub Pages; the homelab copy (`craftcue.jkne.app`) is Terry
 - Add icons via scripts/build-icons.mjs (never brand logos). Fonts: bundle only OFL/Apache fonts,
   with their license file in public/licenses/.
 
+## Image add-ons (added 2026-09-28)
+
+- Optional, each with its own key in the `secrets` table (never synced/backed up), set up in
+  Settings → Extra abilities (`#/settings#extras`). Models/prices: `src/data/imageModels.json`.
+- OpenAI (`src/lib/addons/openaiImages.ts`): transparent sticker art → `artwork` records (WebP data
+  URLs, synced via the photos bucket) → `stickers.ts` adds a white border and lays out a 300 dpi
+  Print Then Cut sheet (≤ 9.25 × 6.75 in). The browser can't run it in jsdom; it was checked in
+  Chromium + WebKit via the Vite dev server.
+- Recraft (`recraft.ts`): SVG in only the chosen colors → `importSvg.ts` (paint order kept, white
+  background dropped, white details become cut-outs) → `vectorDesign.ts` builds a normal Design
+  with ready-made outlines in `design.art` (Claude never sees or writes `art`).
+- Both APIs allow browser CORS; their hosts are in `CONNECT_SRC`.
+
 ## Invariants
 
 - `src/lib/ai/aiClient.ts` is the only module that calls Anthropic. Models come from `src/data/models.json`.

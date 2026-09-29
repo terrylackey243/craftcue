@@ -9,7 +9,7 @@ export interface Compressed {
   height: number
 }
 
-async function loadBitmap(file: Blob): Promise<ImageBitmap | HTMLImageElement> {
+export async function loadBitmap(file: Blob): Promise<ImageBitmap | HTMLImageElement> {
   if (typeof createImageBitmap === 'function') {
     try {
       return await createImageBitmap(file, { imageOrientation: 'from-image' })

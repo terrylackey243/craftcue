@@ -1,8 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useCallback, useState, useSyncExternalStore } from 'react'
 import { accountStore, type AccountState } from './lib/cloud/account'
-import { db } from './db'
-import { allCategories, getApiKey, getSetup, saveSetup } from './lib/repo'
+import { db, type SecretKey } from './db'
+import { allCategories, getApiKey, getSecret, getSetup, saveSetup } from './lib/repo'
 import type { Category, UserSetup } from './types'
 
 export function useSetup(): UserSetup | undefined {
@@ -35,6 +35,11 @@ export function useCategoryMap(): Map<string, Category> {
 /** undefined while loading, '' when no key is saved. */
 export function useApiKey(): string | undefined {
   return useLiveQuery(async () => (await getApiKey()) ?? '', [])
+}
+
+/** A saved key ('' when none; undefined while loading). */
+export function useSecret(key: SecretKey): string | undefined {
+  return useLiveQuery(async () => (await getSecret(key)) ?? '', [key])
 }
 
 export function useSupplies() {

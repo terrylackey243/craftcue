@@ -69,6 +69,9 @@ export interface DesignInput {
   refine?: { previous: Design; request: string }
 }
 
+/** Only the parts of a design Claude writes (vector artwork outlines are not for Claude). */
+const forClaude = ({ art: _art, artPrompt: _p, ...d }: Design) => d
+
 export function buildDesignParams(input: DesignInput, fix?: { design: Design; problems: string[] }): Anthropic.MessageCreateParamsNonStreaming {
   const m = effectiveMachine(input.setup)
   const p = input.project
@@ -91,7 +94,7 @@ export function buildDesignParams(input: DesignInput, fix?: { design: Design; pr
     .filter(Boolean)
     .join('\n')
   let ask = `${project}\n\nDesign it.`
-  if (input.refine) ask = `${project}\n\nCURRENT DESIGN:\n${JSON.stringify(input.refine.previous)}\n\nChange it like this: ${input.refine.request}\nKeep everything else the same unless the change needs it.`
+  if (input.refine) ask = `${project}\n\nCURRENT DESIGN:\n${JSON.stringify(forClaude(input.refine.previous))}\n\nChange it like this: ${input.refine.request}\nKeep everything else the same unless the change needs it.`
   if (fix) ask = `${project}\n\nYOUR DESIGN:\n${JSON.stringify(fix.design)}\n\nCraftCue found these problems. Fix them and return the corrected design:\n- ${fix.problems.join('\n- ')}`
   return {
     model,

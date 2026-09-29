@@ -8,7 +8,7 @@ const PUSH_BATCH = 200
 const PULL_BATCH = 500
 
 /** Fields that hold a photo (data URL) locally and a storage path on the server. */
-const PHOTO_FIELDS: Partial<Record<SyncedCollection, string>> = { supplies: 'thumbnail', projects: 'photoThumb' }
+const PHOTO_FIELDS: Partial<Record<SyncedCollection, string>> = { supplies: 'thumbnail', projects: 'photoThumb', artwork: 'image' }
 const pathField = (field: string) => `${field}Path`
 
 type Row = Record<string, unknown>

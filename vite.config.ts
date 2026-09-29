@@ -9,7 +9,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 // The account server is added when the build has one ("same-origin" is already covered by 'self').
 const cloudUrl = process.env.VITE_SUPABASE_URL
 const cloudOrigin = cloudUrl && cloudUrl !== 'same-origin' ? new URL(cloudUrl).origin : ''
-const CONNECT_SRC = ["'self'", 'https://api.anthropic.com', ...(cloudOrigin ? [cloudOrigin, cloudOrigin.replace(/^http/, 'ws')] : [])]
+// Optional image add-ons (user's own keys): OpenAI for sticker art, Recraft for vector art.
+const CONNECT_SRC = ["'self'", 'https://api.anthropic.com', 'https://api.openai.com', 'https://external.api.recraft.ai', ...(cloudOrigin ? [cloudOrigin, cloudOrigin.replace(/^http/, 'ws')] : [])]
 
 const CSP = [
   "default-src 'self'",

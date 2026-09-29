@@ -29,6 +29,7 @@ export function priceFor(model: string): Price | undefined {
 
 /** Estimated dollars for one logged call. */
 export function costOf(e: Omit<UsageLogEntry, 'id'>): number {
+  if (e.costUsd !== undefined) return e.costUsd
   const p = priceFor(e.model)
   if (!p) return 0
   const read = e.cacheReadTokens ?? 0
@@ -42,6 +43,7 @@ export function costOf(e: Omit<UsageLogEntry, 'id'>): number {
 export interface MonthSummary {
   suggestions: number
   designs: number
+  images: number
   photoScans: number
   dollars: number
 }
@@ -52,6 +54,7 @@ export function summarizeMonth(entries: Omit<UsageLogEntry, 'id'>[], now = new D
   return {
     suggestions: month.filter((e) => e.feature === 'recommend').length,
     designs: month.filter((e) => e.feature === 'design').length,
+    images: month.filter((e) => e.feature === 'image').length,
     photoScans: month.filter((e) => e.feature === 'vision-intake').length,
     dollars: month.reduce((sum, e) => sum + costOf(e), 0),
   }

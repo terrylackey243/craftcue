@@ -35,3 +35,12 @@ for (const path of ['/', '/inventory', '/add', '/add/manual', '/suggest/sell', '
     await scan(page)
   })
 }
+
+test('extra abilities settings are accessible', async ({ page }) => {
+  await finishSetup(page)
+  await page.goto('/#/settings#extras')
+  await expect(page.getByLabel('Paste your OpenAI key')).toBeVisible()
+  await expect(page.getByLabel('Paste your Recraft key')).toBeVisible()
+  await page.getByText('How to get a Recraft key').click()
+  await scan(page)
+})

@@ -1,8 +1,8 @@
 // All user-facing writes go through here so the backup-reminder change counter stays accurate.
-import { db, noteChange } from '../db'
+import { db, noteChange, type SecretKey } from '../db'
 import { SEED_CATEGORIES } from '../data/categories'
 import { getMachine } from '../data'
-import type { Category, PackColor, Person, Project, Supply, UpcCacheEntry, UserSetup } from '../types'
+import type { Artwork, Category, PackColor, Person, Project, Supply, UpcCacheEntry, UserSetup } from '../types'
 import { nowIso, uuid } from './ids'
 
 // ----- setup -----
@@ -177,11 +177,41 @@ export async function updateProject(id: string, patch: Partial<Project>): Promis
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  await db.projects.delete(id)
+  await db.transaction('rw', db.projects, db.artwork, async () => {
+    await db.projects.delete(id)
+    await db.artwork.where('projectId').equals(id).delete()
+  })
+  await noteChange()
+}
+
+// ----- artwork (image add-ons) -----
+
+export async function saveArtwork(input: Omit<Artwork, 'id' | 'createdAt' | 'updatedAt'>): Promise<Artwork> {
+  const t = nowIso()
+  const art: Artwork = { ...input, id: uuid(), createdAt: t, updatedAt: t }
+  await db.artwork.add(art)
+  await noteChange()
+  return art
+}
+
+export async function deleteArtwork(id: string): Promise<void> {
+  await db.artwork.delete(id)
   await noteChange()
 }
 
 // ----- secrets -----
+
+export async function getSecret(key: SecretKey): Promise<string | undefined> {
+  return (await db.secrets.get(key))?.value
+}
+
+export async function setSecret(key: SecretKey, value: string): Promise<void> {
+  await db.secrets.put({ key, value: value.trim() })
+}
+
+export async function forgetSecret(key: SecretKey): Promise<void> {
+  await db.secrets.delete(key)
+}
 
 export async function getApiKey(): Promise<string | undefined> {
   return (await db.secrets.get('anthropicApiKey'))?.value

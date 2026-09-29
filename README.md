@@ -44,7 +44,8 @@ against the manufacturer's help pages. [Help us check them](CONTRIBUTING.md#addi
 - Everything is stored **only in your browser, on your device**. There are no accounts, no
   analytics and no tracking.
 - The only time anything leaves your device is when you use a smart feature: your request (and
-  your supply list, or the photo you took) goes straight from your browser to Anthropic.
+  your supply list, or the photo you took) goes straight from your browser to Anthropic. The
+  optional extra abilities send only your description (and chosen colors) to OpenAI or Recraft.
 - **Back up now and then** (Settings → Backup & restore). Browsers, especially on iPhone and iPad,
   can clear saved data when space runs low. The app reminds you.
 
@@ -55,6 +56,16 @@ use **Claude** from Anthropic, with your own API key, paid directly to Anthropic
 
 - A round of 5 ideas costs about **4–7 cents** (Standard quality).
 - Reading a photo costs **well under a cent**.
+
+**Designs:** Claude lays out a cut-ready design (fonts, shapes, icons, botanicals) that CraftCue
+draws itself, with a mock-up, cut layers and a Design Space SVG (about 2–5 cents).
+
+**Extra abilities (optional, each with its own key):**
+
+- *Illustrated stickers* with OpenAI images (about 6 cents a picture), laid out as a Print Then
+  Cut sticker sheet.
+- *Illustrated vinyl art* with Recraft (about 8 cents a design), drawn only in the vinyl colors
+  you pick and split into one cut layer per color.
 
 The in-app guide (Help → *Setting up smart suggestions*) walks you through it with pictures:
 [docs/ai-key-guide.md](docs/ai-key-guide.md).
@@ -87,7 +98,7 @@ lettering and icons in exported files may be used for items you sell.
 ## Disclaimer
 
 CraftCue is an independent open-source project. It is **not affiliated with or endorsed by
-Cricut, Silhouette, Brother or Anthropic**. Brand and machine names are used only to describe
+Cricut, Silhouette, Brother, Anthropic, OpenAI or Recraft**. Brand and machine names are used only to describe
 compatibility. AI ideas are suggestions: check sizes, materials and safety before you start.
 
 ## License

@@ -32,7 +32,11 @@ export function svgFilename(title: string): string {
 }
 
 export function downloadText(text: string, filename: string, type = 'image/svg+xml') {
-  const url = URL.createObjectURL(new Blob([text], { type }))
+  downloadBlob(new Blob([text], { type }), filename)
+}
+
+export function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = filename

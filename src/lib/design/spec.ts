@@ -89,4 +89,13 @@ export const DesignSchema = z.object({
   elements: z.array(ElementSchema),
   assembly: z.array(z.string()).describe('short steps to put the cut pieces together'),
 })
-export type Design = z.infer<typeof DesignSchema>
+/** Ready-made outlines on a layer (from vector artwork), in thousandths of an inch. */
+export interface ArtPiece {
+  layer: string
+  d: string
+}
+/**
+ * A saved design. `art` and `artPrompt` are only set on designs made from illustrated vector
+ * artwork (the Recraft add-on); Claude never writes them.
+ */
+export type Design = z.infer<typeof DesignSchema> & { art?: ArtPiece[]; artPrompt?: string }

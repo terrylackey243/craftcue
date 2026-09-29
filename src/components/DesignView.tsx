@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Project, Supply } from '../types'
 import type { Design } from '../lib/design/spec'
 import { renderDesign, type RenderedDesign, type RenderedLayer } from '../lib/design/render'
@@ -6,7 +7,8 @@ import { checkDesign, type CheckResult } from '../lib/design/checks'
 import { downloadText, exportSvg, svgFilename } from '../lib/design/export'
 import { bbox, boxH, boxW, linesOn, linesToPathD, pieces, shapeToPathD, UNITS_PER_IN } from '../lib/design/geometry'
 import { effectiveMachine } from '../data'
-import { useCategoryMap, useSetup } from '../hooks'
+import { useCategoryMap, useSecret, useSetup } from '../hooks'
+import { StickerPanel, VectorArtPanel } from './AddonPanels'
 import { friendlyError } from '../lib/ai/aiClient'
 import { updateProject } from '../lib/repo'
 import { useAiGate } from './useAiGate'
@@ -25,6 +27,8 @@ export default function DesignView({ project, supplies }: { project: Project; su
   const [view, setView] = useState<'mockup' | 'layers'>('mockup')
   const [shown, setShown] = useState<{ rendered: RenderedDesign; check: CheckResult } | null>(null)
   const design = project.design
+  const recraftKey = useSecret('recraftApiKey')
+  const openaiKey = useSecret('openaiApiKey')
 
   // Draw the saved design on this device (fonts load on first use).
   useEffect(() => {
@@ -124,23 +128,27 @@ export default function DesignView({ project, supplies }: { project: Project; su
             )}
           </div>
 
-          <form
-            className="flex flex-col gap-2"
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (change.trim()) guard(() => void run('change'))
-            }}
-          >
-            <label htmlFor="design-change" className="font-semibold">
-              Change something
-            </label>
-            <div className="flex gap-2">
-              <input id="design-change" className={inputClass} value={change} onChange={(e) => setChange(e.target.value)} placeholder="e.g. bigger letters, add a heart, use the red cardstock" />
-              <Button type="submit" variant="secondary" disabled={!change.trim()}>
-                Change
-              </Button>
-            </div>
-          </form>
+          {design.art ? (
+            <p className="text-sm text-stone-600">Made from illustrated artwork. To change it, make new vinyl artwork below.</p>
+          ) : (
+            <form
+              className="flex flex-col gap-2"
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (change.trim()) guard(() => void run('change'))
+              }}
+            >
+              <label htmlFor="design-change" className="font-semibold">
+                Change something
+              </label>
+              <div className="flex gap-2">
+                <input id="design-change" className={inputClass} value={change} onChange={(e) => setChange(e.target.value)} placeholder="e.g. bigger letters, add a heart, use the red cardstock" />
+                <Button type="submit" variant="secondary" disabled={!change.trim()}>
+                  Change
+                </Button>
+              </div>
+            </form>
+          )}
           <Button variant="ghost" className="self-start" onClick={() => guard(() => void run('new'))}>
             ↻ Try a different design
           </Button>
@@ -157,6 +165,33 @@ export default function DesignView({ project, supplies }: { project: Project; su
           )}
           <DesignSpaceHelp rendered={shown.rendered} printThenCut={design.mode === 'print-then-cut'} />
         </div>
+      )}
+
+      {!busy && (recraftKey || openaiKey) && (
+        <div className="mt-4 flex flex-col gap-2 border-t border-stone-200 pt-4">
+          <h3 className="font-semibold">Illustrated designs</h3>
+          {recraftKey && (
+            <details className="rounded-xl bg-stone-50 p-3">
+              <summary className="cursor-pointer font-semibold">🖌 Illustrated vinyl art (Recraft)</summary>
+              <div className="mt-3">
+                <VectorArtPanel project={project} supplies={supplies} />
+              </div>
+            </details>
+          )}
+          {openaiKey && (
+            <details className="rounded-xl bg-stone-50 p-3">
+              <summary className="cursor-pointer font-semibold">✨ Illustrated stickers (OpenAI)</summary>
+              <div className="mt-3">
+                <StickerPanel project={project} />
+              </div>
+            </details>
+          )}
+        </div>
+      )}
+      {!busy && recraftKey === '' && openaiKey === '' && (
+        <p className="mt-3 text-sm text-stone-500">
+          Want illustrated stickers or multi-color vinyl art? <Link to="/settings#extras" className="font-semibold text-brand-700 underline">Turn on extra abilities in Settings</Link>.
+        </p>
       )}
     </Card>
   )
@@ -281,10 +316,10 @@ function DesignSpaceHelp({ rendered, printThenCut }: { rendered: RenderedDesign;
     const s = ['In Design Space, choose Upload, then Upload Image, and pick the SVG you downloaded.', 'Upload it, then select it and Add to Canvas. It keeps its real size, and each color is its own layer.']
     if (hasScore) s.push('Select the score lines layer, change its Operation to Score, then select it together with the piece it belongs to and tap Attach so the lines stay in place.')
     if (hasDraw) s.push('Select the pen lines layer, change its Operation to Pen, choose your pen color, then Attach it to its piece.')
-    if (printThenCut) s.push('For Print Then Cut, upload the PNG instead and choose “Print Then Cut image”. Design Space prints it and cuts around it.')
+    if (printThenCut) s.push(`For Print Then Cut, upload the PNG instead and choose “Print Then Cut image”, then set its width to ${rendered.widthIn} in. Design Space prints it and cuts around it.`)
     s.push('Tap Make It. Each color goes on its own mat, so load the matching material when asked.')
     return s
-  }, [hasScore, hasDraw, printThenCut])
+  }, [hasScore, hasDraw, printThenCut, rendered.widthIn])
   return (
     <details className="rounded-xl bg-stone-50 p-3">
       <summary className="cursor-pointer font-semibold">How to use this in Design Space</summary>

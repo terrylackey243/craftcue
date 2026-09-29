@@ -2,13 +2,13 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { db, getMeta } from '../db'
-import { useAccount, useApiKey, useSetupEditor } from '../hooks'
+import { useAccount, useApiKey, useSecret, useSetupEditor } from '../hooks'
 import AccountForm from '../components/AccountForm'
 import { cloudEnabled } from '../lib/cloud/config'
 import { authMethod, changePassword, deleteAccount, signOut, signupOpen, syncNow } from '../lib/cloud/account'
 import { APP_VERSION, REPO_URL, SUPPORT_URL } from '../config'
 import { BackupError, exportBackup, importBackup, parseBackup, type BackupFile } from '../lib/backup'
-import { forgetApiKey, maskKey, resetEverything } from '../lib/repo'
+import { forgetApiKey, forgetSecret, maskKey, resetEverything, setSecret } from '../lib/repo'
 import { formatBytes, requestPersistence, storageStatus, type StorageStatus } from '../lib/storage'
 import { summarizeMonth } from '../lib/ai/models'
 import { cacheToSeed, PROVIDERS } from '../lib/upc'
@@ -17,6 +17,7 @@ import { AboutYou, EquipmentPicker, MachinePicker, ToolsPicker } from '../compon
 import KeyForm from '../components/KeyForm'
 import { Button, Chip, Notice, PageHeader, Sheet, Spinner, fieldClass, inputClass } from '../components/ui'
 import type { UserSetup } from '../types'
+import imageModels from '../data/imageModels.json'
 
 function Section({ title, summary, children, defaultOpen = false, id }: { title: string; summary?: ReactNode; children: ReactNode; defaultOpen?: boolean; id?: string }) {
   return (
@@ -38,7 +39,12 @@ function Section({ title, summary, children, defaultOpen = false, id }: { title:
 export default function Settings() {
   const [setup, patch] = useSetupEditor()
   useEffect(() => {
-    if (setup && window.location.hash.endsWith('#account')) document.getElementById('account')?.scrollIntoView()
+    const target = ['account', 'extras'].find((id) => window.location.hash.endsWith(`#${id}`))
+    const el = target ? document.getElementById(target) : null
+    if (setup && el) {
+      if (el instanceof HTMLDetailsElement) el.open = true
+      el.scrollIntoView()
+    }
   }, [setup])
   if (!setup) return <Spinner />
   const m = effectiveMachine(setup)
@@ -63,6 +69,7 @@ export default function Settings() {
         <AboutYou setup={setup} patch={patch} />
       </Section>
       <AiSection setup={setup} patch={patch} />
+      <ExtrasSection />
       <Section title="People" summary="Gift recipients">
         <Link to="/people" className="font-semibold text-brand-700 underline">
           Manage the people you make gifts for →
@@ -146,16 +153,164 @@ function AiSection({ setup, patch }: { setup: UserSetup; patch: (p: Partial<User
         <div className="rounded-xl bg-stone-50 p-3">
           <p className="font-semibold">This month</p>
           <p>
-            {month.suggestions} round{month.suggestions === 1 ? '' : 's'} of suggestions, {month.designs} design{month.designs === 1 ? '' : 's'}, {month.photoScans} photo scan{month.photoScans === 1 ? '' : 's'}, about{' '}
+            {month.suggestions} round{month.suggestions === 1 ? '' : 's'} of suggestions, {month.designs} design{month.designs === 1 ? '' : 's'}, {month.photoScans} photo scan{month.photoScans === 1 ? '' : 's'}
+            {month.images ? `, ${month.images} illustration${month.images === 1 ? '' : 's'}` : ''}, about{' '}
             <strong>${month.dollars.toFixed(2)}</strong>
           </p>
-          <p className="text-sm text-stone-600">An estimate from list prices. Your Anthropic Console shows the exact amount.</p>
+          <p className="text-sm text-stone-600">An estimate from list prices. Your Anthropic, OpenAI and Recraft accounts show the exact amounts.</p>
         </div>
         <Link to="/help/ai-key" className="font-semibold text-brand-700 underline">
           How to get a key, and what it costs →
         </Link>
       </div>
     </Section>
+  )
+}
+
+function ExtrasSection() {
+  const openai = useSecret('openaiApiKey')
+  const recraft = useSecret('recraftApiKey')
+  const on = [openai && 'stickers', recraft && 'vinyl art'].filter(Boolean)
+  return (
+    <Section id="extras" title="Extra abilities (optional)" summary={on.length ? `On: ${on.join(', ')}` : 'Illustrated stickers and vinyl art'}>
+      <div className="flex flex-col gap-6">
+        <p>
+          These are optional. Each one uses a separate account with its own key and its own small charges. Turn on the ones you want; everything else in CraftCue works
+          without them. Your keys stay on this device and never sync or go into backups.
+        </p>
+        <AddonKey
+          name="Illustrated stickers"
+          secret="openaiApiKey"
+          saved={openai}
+          provider="OpenAI"
+          what="Paints full-color sticker art with a see-through background. CraftCue adds a white edge and lays them out on a sheet for Print Then Cut."
+          cost={`About ${Math.round(imageModels.openai.estUsdPerImage * 100)} cents per picture.`}
+          placeholder="sk-…"
+          test={async (k) => (await import('../lib/addons/openaiImages')).testOpenAiKey(k)}
+          steps={[
+            'Go to platform.openai.com and sign in or create an account.',
+            'Open Settings, then Billing, and add a little credit (for example $5).',
+            'Open API keys, choose Create new secret key, and copy it.',
+            'Paste it below. If OpenAI says your organization must be verified, follow its steps under Settings, then Organization; it can take a few minutes.',
+          ]}
+        />
+        <AddonKey
+          name="Illustrated vinyl art"
+          secret="recraftApiKey"
+          saved={recraft}
+          provider="Recraft"
+          what="Draws a flat illustration in only the vinyl colors you pick. CraftCue turns each color into its own cut layer with a mock-up and a Design Space file."
+          cost={`About ${Math.round(imageModels.recraft.estUsdPerImage * 100)} cents per design.`}
+          placeholder="Your Recraft API key"
+          test={async (k) => {
+            const r = await (await import('../lib/addons/recraft')).testRecraftKey(k)
+            return r.error
+          }}
+          steps={[
+            'Go to recraft.ai and sign in or create an account.',
+            'Open your profile menu and choose API.',
+            'Buy some API units (the smallest pack is plenty to start).',
+            'Create an API key, copy it, and paste it below.',
+          ]}
+        />
+        <p className="text-sm text-stone-600">
+          When you use these, the description you write goes straight from this device to OpenAI or Recraft. Nothing from your stash is sent except the colors you pick.
+        </p>
+      </div>
+    </Section>
+  )
+}
+
+function AddonKey({
+  name,
+  secret,
+  saved,
+  provider,
+  what,
+  cost,
+  placeholder,
+  steps,
+  test,
+}: {
+  name: string
+  secret: 'openaiApiKey' | 'recraftApiKey'
+  saved: string | undefined
+  provider: string
+  what: string
+  cost: string
+  placeholder: string
+  steps: string[]
+  test: (key: string) => Promise<string | null>
+}) {
+  const [key, setKey] = useState('')
+  const [state, setState] = useState<{ busy: boolean; ok?: boolean; msg?: string }>({ busy: false })
+  const check = async (k: string, save: boolean) => {
+    setState({ busy: true })
+    const error = await test(k.trim())
+    if (!error && save) {
+      await setSecret(secret, k)
+      setKey('')
+    }
+    setState({ busy: false, ok: !error, msg: error ?? (save ? `It works! ${name} are turned on.` : 'Your key works.') })
+  }
+  const inputId = `key-${secret}`
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl bg-stone-50 p-4">
+      <h3 className="text-lg font-bold">
+        {name} <span className="font-normal text-stone-600">with {provider}</span>
+      </h3>
+      <p>{what}</p>
+      <p className="text-sm text-stone-600">{cost}</p>
+      {saved ? (
+        <>
+          <p>
+            Your key: <code className="rounded bg-white px-2 py-1">{maskKey(saved)}</code>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" disabled={state.busy} onClick={() => void check(saved, false)}>
+              Test key
+            </Button>
+            <Button
+              variant="danger"
+              onClick={async () => {
+                if (window.confirm(`Forget your ${provider} key? ${name} will stop until you add it again.`)) {
+                  await forgetSecret(secret)
+                  setState({ busy: false })
+                }
+              }}
+            >
+              Forget key
+            </Button>
+          </div>
+        </>
+      ) : (
+        <form
+          className="flex flex-col gap-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (key.trim()) void check(key, true)
+          }}
+        >
+          <details>
+            <summary className="cursor-pointer font-semibold text-brand-700">How to get a {provider} key</summary>
+            <ol className="mt-2 list-decimal space-y-1 pl-6">
+              {steps.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ol>
+          </details>
+          <label htmlFor={inputId} className="font-semibold">
+            Paste your {provider} key
+          </label>
+          <input id={inputId} type="password" autoComplete="off" spellCheck={false} className={inputClass} placeholder={placeholder} value={key} onChange={(e) => setKey(e.target.value)} />
+          <Button type="submit" className="self-start" disabled={!key.trim() || state.busy}>
+            Test and save key
+          </Button>
+        </form>
+      )}
+      {state.busy && <Spinner label={`Checking with ${provider}…`} />}
+      {state.msg && <Notice tone={state.ok ? 'success' : 'error'}>{state.msg}</Notice>}
+    </div>
   )
 }
 

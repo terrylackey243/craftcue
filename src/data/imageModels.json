@@ -1,0 +1,6 @@
+{
+  "_comment": "Optional image add-ons (the user's own keys). Prices are estimates for the usage meter; check the providers' pricing pages.",
+  "checked": "2026-09-28",
+  "openai": { "model": "gpt-image-2.5-flare", "quality": "medium", "size": "1024x1024", "estUsdPerImage": 0.06 },
+  "recraft": { "model": "recraftv4_1_utility_vector", "estUsdPerImage": 0.08 }
+}

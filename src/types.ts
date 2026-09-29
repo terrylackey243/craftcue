@@ -204,7 +204,7 @@ export interface Project extends Timestamps {
   designedAt?: string
 }
 
-export type AiFeature = 'recommend' | 'vision-intake' | 'design' | 'test-key'
+export type AiFeature = 'recommend' | 'vision-intake' | 'design' | 'image' | 'test-key'
 
 export interface UsageLogEntry {
   id: string
@@ -215,6 +215,18 @@ export interface UsageLogEntry {
   outputTokens: number
   cacheReadTokens?: number
   cacheWriteTokens?: number
+  /** Flat estimated cost, for image add-ons priced per picture rather than per token. */
+  costUsd?: number
+}
+
+/** Illustrated artwork made by an image add-on for a project (e.g. sticker art). */
+export interface Artwork extends Timestamps {
+  id: string
+  projectId: string
+  kind: 'sticker'
+  /** WebP data URL with transparency; synced through photo storage like supply photos. */
+  image: string
+  prompt: string
 }
 
 /** Shopping list entries the user adds or ticks off. Aggregated items are derived, not stored. */

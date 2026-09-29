@@ -33,14 +33,16 @@ const TOPICS: { q: string; a: ReactNode }[] = [
     a: cloudEnabled ? (
       <>
         <p>Yes. When you're signed in, your stash, projects and photos are saved to your CraftCue account so they show up on all your devices. Only you can see them: the server checks every request against your account.</p>
-        <p>Your Anthropic key is never saved to your account. It stays on each device where you enter it.</p>
+        <p>Your Anthropic, OpenAI and Recraft keys are never saved to your account. They stay on each device where you enter them.</p>
         <p>When you scan a barcode, the product's description (name, brand, color, size) is added to a shared list so the next crafter's scan fills in by itself. How many you have, what you paid, where you keep it and your photos are never shared.</p>
         <p>Smart features send your request (your supply list, or the photo you took) straight to Anthropic to get an answer.</p>
+        <p>The optional extra abilities send only the description you write (and, for vinyl art, the colors you pick) straight to OpenAI or Recraft.</p>
       </>
     ) : (
       <>
         <p>Yes. Everything is saved only in this browser on this device. There are no accounts, no tracking and no ads.</p>
         <p>The only time anything leaves your device is when you use a smart feature: then your request (your supply list, and the photo if you took one) goes straight to Anthropic to get an answer. Anthropic's commercial terms say they don't train their AI on API data.</p>
+        <p>The optional extra abilities send only the description you write (and, for vinyl art, the colors you pick) straight to OpenAI or Recraft.</p>
       </>
     ),
   },
@@ -130,7 +132,7 @@ export default function Help() {
         ))}
       </div>
       <p className="mt-6 text-sm text-stone-600">
-        CraftCue is not affiliated with or endorsed by Cricut, Silhouette, Brother or Anthropic. Brand names are used only to describe compatibility.
+        CraftCue is not affiliated with or endorsed by Cricut, Silhouette, Brother, Anthropic, OpenAI or Recraft. Brand names are used only to describe compatibility.
       </p>
     </div>
   )

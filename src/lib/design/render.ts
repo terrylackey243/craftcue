@@ -121,6 +121,8 @@ export async function renderDesign(design: Design): Promise<RenderedDesign> {
     }
   }
 
+  for (const piece of design.art ?? []) add(piece.layer, flatten(svgToCmds(piece.d), 1))
+
   // Words touching something else of the same color would be cut as one lump.
   for (let i = 0; i < drawn.length; i++)
     for (let j = i + 1; j < drawn.length; j++) {

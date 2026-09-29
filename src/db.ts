@@ -1,5 +1,6 @@
 import Dexie, { type DBCore, type DBCoreMutateRequest, type Table } from 'dexie'
 import type {
+  Artwork,
   Category,
   Person,
   Project,
@@ -15,9 +16,10 @@ export interface MetaEntry {
   value: unknown
 }
 
-/** Secrets never go into backups or sync. Only the Anthropic key lives here today. */
+/** Secrets never go into backups or sync: the user's own API keys, kept on this device only. */
+export type SecretKey = 'anthropicApiKey' | 'openaiApiKey' | 'recraftApiKey'
 export interface SecretEntry {
-  key: 'anthropicApiKey'
+  key: SecretKey
   value: string
 }
 
@@ -32,7 +34,7 @@ export interface OutboxEntry {
 }
 
 /** Tables that sync to the user's account (and go into backups). Order = restore order. */
-export const SYNCED_COLLECTIONS = ['setup', 'categories', 'supplies', 'people', 'projects', 'upcCache', 'shoppingChecks', 'usage'] as const
+export const SYNCED_COLLECTIONS = ['setup', 'categories', 'supplies', 'people', 'projects', 'upcCache', 'shoppingChecks', 'usage', 'artwork'] as const
 export type SyncedCollection = (typeof SYNCED_COLLECTIONS)[number]
 const SYNCED = new Set<string>(SYNCED_COLLECTIONS)
 
@@ -48,6 +50,7 @@ export class CraftCueDB extends Dexie {
   usage!: Table<UsageLogEntry, string>
   shoppingChecks!: Table<ShoppingCheck, string>
   outbox!: Table<OutboxEntry, string>
+  artwork!: Table<Artwork, string>
 
   constructor(name = 'craftcue') {
     super(name)
@@ -75,6 +78,8 @@ export class CraftCueDB extends Dexie {
         const old = await tx.table('usageLog').toArray()
         await tx.table('usage').bulkAdd(old.map(({ id: _id, ...e }) => ({ ...e, id: crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}` })))
       })
+    // v3: artwork from the image add-ons.
+    this.version(3).stores({ artwork: 'id, projectId, createdAt' })
     this.use(outboxMiddleware())
   }
 }
