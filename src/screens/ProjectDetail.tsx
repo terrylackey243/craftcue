@@ -7,6 +7,7 @@ import { getTool } from '../data'
 import { applyMade, afterDeduction, proposeDeductions, type DeductionRow } from '../lib/deduction'
 import { deleteProject, updateProject } from '../lib/repo'
 import { makeThumbnail } from '../lib/images'
+import DesignView from '../components/DesignView'
 import { formatQty, unitLabel } from '../components/SupplyForm'
 import { toSupplyUnit } from '../lib/units'
 import { Badge, Button, Card, Field, Notice, Sheet, Spinner, Stepper, fieldClass, inputClass } from '../components/ui'
@@ -62,6 +63,8 @@ export default function ProjectDetail() {
 
       {p.summary && <p className="text-lg">{p.summary}</p>}
       {p.whyItFits && <p className="text-stone-600">💡 {p.whyItFits}</p>}
+
+      <DesignView project={p} supplies={supplies} />
 
       <Card>
         <div className="mb-2 flex items-center justify-between">

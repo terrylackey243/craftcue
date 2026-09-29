@@ -1,0 +1,93 @@
+{
+  "title": "Happy Fall Farmhouse Sign",
+  "product": "sign",
+  "mode": "cut",
+  "widthIn": 11,
+  "heightIn": 7,
+  "layers": [
+    {
+      "id": "backing",
+      "name": "Solar White vinyl",
+      "supplyId": "",
+      "color": "#fbfaf3",
+      "operation": "cut"
+    },
+    {
+      "id": "words",
+      "name": "Black vinyl",
+      "supplyId": "",
+      "color": "#1c1c1c",
+      "operation": "cut"
+    },
+    {
+      "id": "accent",
+      "name": "Cosmic Orange vinyl",
+      "supplyId": "",
+      "color": "#f28c28",
+      "operation": "cut"
+    },
+    {
+      "id": "topwhite",
+      "name": "White vinyl (on banner)",
+      "supplyId": "",
+      "color": "#fbfaf3",
+      "operation": "cut"
+    }
+  ],
+  "elements": [
+    {
+      "kind": "shape",
+      "layer": "accent",
+      "shape": "banner",
+      "x": 5.5,
+      "y": 5.4,
+      "widthIn": 7,
+      "heightIn": 1.1,
+      "rotationDeg": 0
+    },
+    {
+      "kind": "text",
+      "layer": "words",
+      "text": "Happy Fall",
+      "font": "Lobster",
+      "capHeightIn": 1.5,
+      "x": 5.5,
+      "y": 2.8,
+      "rotationDeg": -4,
+      "letterSpacing": 0
+    },
+    {
+      "kind": "text",
+      "layer": "topwhite",
+      "text": "Y'ALL",
+      "font": "Bebas Neue",
+      "capHeightIn": 0.7,
+      "x": 5.5,
+      "y": 5.4,
+      "rotationDeg": 0,
+      "letterSpacing": 0.2
+    },
+    {
+      "kind": "icon",
+      "layer": "accent",
+      "icon": "leaf",
+      "x": 9.6,
+      "y": 1.1,
+      "sizeIn": 1.2,
+      "rotationDeg": 20
+    },
+    {
+      "kind": "outline",
+      "layer": "backing",
+      "of": [
+        "words"
+      ],
+      "distanceIn": 0.1
+    }
+  ],
+  "assembly": [
+    "Apply the white backing first",
+    "Layer the black lettering on top",
+    "Add the orange banner and leaf"
+  ]
+}

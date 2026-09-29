@@ -146,7 +146,7 @@ function AiSection({ setup, patch }: { setup: UserSetup; patch: (p: Partial<User
         <div className="rounded-xl bg-stone-50 p-3">
           <p className="font-semibold">This month</p>
           <p>
-            {month.suggestions} round{month.suggestions === 1 ? '' : 's'} of suggestions, {month.photoScans} photo scan{month.photoScans === 1 ? '' : 's'}, about{' '}
+            {month.suggestions} round{month.suggestions === 1 ? '' : 's'} of suggestions, {month.designs} design{month.designs === 1 ? '' : 's'}, {month.photoScans} photo scan{month.photoScans === 1 ? '' : 's'}, about{' '}
             <strong>${month.dollars.toFixed(2)}</strong>
           </p>
           <p className="text-sm text-stone-600">An estimate from list prices. Your Anthropic Console shows the exact amount.</p>
@@ -377,6 +377,10 @@ function AboutSection() {
           <a href={REPO_URL} target="_blank" rel="noreferrer" className="font-semibold text-brand-700 underline">
             Source code, license and third-party licenses on GitHub
           </a>
+        </p>
+        <p className="text-sm text-stone-600">
+          Designs use open-license fonts (SIL Open Font License and Apache 2.0: Bebas Neue, Anton, Alfa Slab One, Abril Fatface, Luckiest Guy, Chewy, Sniglet, Rye,
+          Lobster, Pacifico, Oleo Script, Cookie) and Phosphor Icons (MIT). Their licenses are included with the app in the licenses folder.
         </p>
         {SUPPORT_URL && (
           <p>

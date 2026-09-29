@@ -66,7 +66,8 @@ export default defineConfig({
         scope: '.',
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2,webp}'],
+        // Fonts included so saved designs still draw offline.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2,webp,ttf}'],
         // Required for registerType 'autoUpdate': a new version takes over immediately.
         skipWaiting: true,
         clientsClaim: true,

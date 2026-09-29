@@ -78,6 +78,12 @@ docker compose up -d --build   # → http://localhost:8080
 Installing the app and using it offline need HTTPS, so put it behind your usual HTTPS proxy.
 Developers: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Credits
+
+Designs are drawn with open-license fonts from Google Fonts (SIL Open Font License 1.1 and Apache
+2.0; see `public/licenses/`) and [Phosphor Icons](https://phosphoricons.com) (MIT). Cut shapes,
+lettering and icons in exported files may be used for items you sell.
+
 ## Disclaimer
 
 CraftCue is an independent open-source project. It is **not affiliated with or endorsed by

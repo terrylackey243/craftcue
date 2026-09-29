@@ -13,3 +13,4 @@ compose.override.yml
 deploy/local/
 deploy.env
 dist-sync
+.design-preview

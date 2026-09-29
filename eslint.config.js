@@ -16,4 +16,6 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' }],
     },
   },
+  // Type declaration files describe other libraries' shapes; unused names there are expected.
+  { files: ['**/*.d.ts'], rules: { '@typescript-eslint/no-unused-vars': 'off' } },
 )

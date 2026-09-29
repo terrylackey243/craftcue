@@ -1,0 +1,19 @@
+{
+  "title": "Layered Paper Botanical Wall Art",
+  "product": "wall-art",
+  "mode": "cut",
+  "widthIn": 8,
+  "heightIn": 10,
+  "layers": [
+    { "id": "bg", "name": "Solar White cardstock", "supplyId": "sup-white", "color": "#fbfaf3", "operation": "cut" },
+    { "id": "stem", "name": "Husk cardstock", "supplyId": "sup-husk", "color": "#b98c55", "operation": "cut" },
+    { "id": "leafA", "name": "Terra Green cardstock", "supplyId": "sup-terra", "color": "#5b7f3a", "operation": "cut" },
+    { "id": "leafB", "name": "Gamma Green cardstock", "supplyId": "sup-gamma", "color": "#3e9b4f", "operation": "cut" },
+    { "id": "veins", "name": "Leaf veins", "supplyId": "", "color": "#1d4ed8", "operation": "score" }
+  ],
+  "elements": [
+    { "kind": "shape", "layer": "bg", "shape": "rectangle", "x": 4, "y": 5, "widthIn": 8, "heightIn": 10, "rotationDeg": 0 },
+    { "kind": "branch", "stemLayer": "stem", "leafLayers": ["leafA", "leafA", "leafB"], "veinLayer": "veins", "x": 4, "y": 9.2, "heightIn": 8, "rotationDeg": 4, "leafShape": "leaf-pointed", "leafCount": 16, "leafLengthIn": 2, "curve": "gentle" }
+  ],
+  "assembly": ["Glue the stem to the background", "Add leaves from the bottom up, lifting every other one with foam squares"]
+}

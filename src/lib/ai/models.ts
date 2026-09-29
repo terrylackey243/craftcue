@@ -41,6 +41,7 @@ export function costOf(e: Omit<UsageLogEntry, 'id'>): number {
 
 export interface MonthSummary {
   suggestions: number
+  designs: number
   photoScans: number
   dollars: number
 }
@@ -50,6 +51,7 @@ export function summarizeMonth(entries: Omit<UsageLogEntry, 'id'>[], now = new D
   const month = entries.filter((e) => localMonth(e.timestamp) === prefix)
   return {
     suggestions: month.filter((e) => e.feature === 'recommend').length,
+    designs: month.filter((e) => e.feature === 'design').length,
     photoScans: month.filter((e) => e.feature === 'vision-intake').length,
     dollars: month.reduce((sum, e) => sum + costOf(e), 0),
   }

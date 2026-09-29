@@ -267,3 +267,32 @@ test('paste a color list into a saved pack (Terry’s 30 markers)', async ({ pag
   const names = await page.locator('li li a span.font-semibold').allTextContents()
   expect(names).toEqual(list)
 })
+
+test('a saved design: mock-up, cut layers, SVG download, and accessible', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: "Let's start" }).click()
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+  await page.getByRole('button', { name: 'Maybe later' }).click()
+  await page.getByRole('button', { name: "I'll do it later" }).click()
+  await expect(page.getByRole('heading', { name: 'What would you like to make?' })).toBeVisible()
+  await page.goto('/#/settings')
+  await page.locator('input[aria-label="Choose a backup file"]').setInputFiles('tests/fixtures/demo-with-design.json')
+  page.once('dialog', (d) => d.accept())
+  await page.getByRole('button', { name: 'Replace everything with the backup' }).click()
+  await expect(page.getByText('Everything has been restored')).toBeVisible()
+
+  await page.goto('/#/projects/proj-bot')
+  await expect(page.getByRole('img', { name: /Mock-up of/ })).toBeVisible({ timeout: 20_000 })
+  await page.getByRole('button', { name: 'Cut layers' }).click()
+  await expect(page.getByText('Terra Green cardstock')).toBeVisible()
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: /Download SVG for Design Space/ }).click()
+  const file = await (await download).path()
+  const svg = (await import('node:fs')).readFileSync(file, 'utf8')
+  expect(svg).toContain('width="8in" height="10in"')
+  expect(svg).toContain('(score)')
+
+  const AxeBuilder = (await import('@axe-core/playwright')).default
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+  expect(results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([])
+})

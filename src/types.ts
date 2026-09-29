@@ -199,9 +199,12 @@ export interface Project extends Timestamps {
   aiGenerated: boolean
   madeAt?: string
   madeCount?: number
+  /** Layout from the design engine (see src/lib/design/spec.ts); drawn on the device. */
+  design?: import('./lib/design/spec').Design
+  designedAt?: string
 }
 
-export type AiFeature = 'recommend' | 'vision-intake' | 'test-key'
+export type AiFeature = 'recommend' | 'vision-intake' | 'design' | 'test-key'
 
 export interface UsageLogEntry {
   id: string

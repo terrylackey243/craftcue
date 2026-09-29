@@ -1,0 +1,74 @@
+{
+ "title": "Happy Fall Basswood Sign",
+ "product": "sign",
+ "mode": "cut",
+ "widthIn": 12,
+ "heightIn": 12,
+ "layers": [
+  {
+   "id": "wood-bg",
+   "name": "Basswood sheet - natural",
+   "supplyId": "sup-24",
+   "color": "#c9a06a",
+   "operation": "cut"
+  },
+  {
+   "id": "black-vinyl",
+   "name": "Glossy permanent vinyl - black",
+   "supplyId": "sup-01",
+   "color": "#1a1a1a",
+   "operation": "cut"
+  }
+ ],
+ "elements": [
+  {
+   "kind": "text",
+   "layer": "black-vinyl",
+   "text": "Happy",
+   "font": "Alfa Slab One",
+   "capHeightIn": 2.2,
+   "x": 6,
+   "y": 4.6,
+   "rotationDeg": 0,
+   "letterSpacing": 0.02
+  },
+  {
+   "kind": "text",
+   "layer": "black-vinyl",
+   "text": "Fall",
+   "font": "Alfa Slab One",
+   "capHeightIn": 3.4,
+   "x": 6,
+   "y": 8.3,
+   "rotationDeg": 0,
+   "letterSpacing": 0.02
+  },
+  {
+   "kind": "icon",
+   "layer": "black-vinyl",
+   "icon": "leaf",
+   "x": 9.4,
+   "y": 2.2,
+   "sizeIn": 1.4,
+   "rotationDeg": 25
+  },
+  {
+   "kind": "icon",
+   "layer": "black-vinyl",
+   "icon": "leaf",
+   "x": 2.6,
+   "y": 2.2,
+   "sizeIn": 1.4,
+   "rotationDeg": -25
+  }
+ ],
+ "assembly": [
+  "Design the 'Happy Fall' word art with the two leaf accents, sized to fit the 12x12 in basswood sheet.",
+  "Load the black vinyl on the standard grip mat and cut the design with the fine-point tool.",
+  "Weed away the excess vinyl, keeping only the letters and leaves.",
+  "Lay transfer tape over the weeded design, burnish well, then peel off the paper backing and lift the design.",
+  "Cut the basswood sheet to size if needed, then center the transferred design on the wood.",
+  "Press the design down firmly onto the basswood, then slowly peel away the transfer tape.",
+  "Lean the finished sign on a shelf or prop it against the backsplash."
+ ]
+}

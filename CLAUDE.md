@@ -35,6 +35,19 @@ Primary hosting is GitHub Pages; the homelab copy (`craftcue.jkne.app`) is Terry
 - Plan for later (not built): hosted Supabase Pro, Resend SMTP, 6-digit email codes
   (`VITE_AUTH_METHOD=otp` is already implemented), open sign-ups, privacy policy page.
 
+## Design engine (added 2026-09-28)
+
+- Claude fills in a `Design` (src/lib/design/spec.ts, structured output); CraftCue draws it
+  (render.ts: fonts via opentype.js → outlines, shapes.ts, icons.json from Phosphor, procedural
+  `branch`) in thousandths of an inch, welds/offsets with clipper-lib, checks it (checks.ts), and
+  exports a Design Space SVG in real inches (export.ts). Designs are saved on the project and
+  re-drawn on each device, so fonts are precached for offline use.
+- designProject() sends problems found by the checks back to Claude once to fix.
+- Previews for eyeballing: `DESIGN_PREVIEW=1` on tests/unit/design.test.ts, and the live recorder
+  tests/record/design.record.test.ts (costs cents). Output goes to the gitignored `.design-preview/`.
+- Add icons via scripts/build-icons.mjs (never brand logos). Fonts: bundle only OFL/Apache fonts,
+  with their license file in public/licenses/.
+
 ## Invariants
 
 - `src/lib/ai/aiClient.ts` is the only module that calls Anthropic. Models come from `src/data/models.json`.
