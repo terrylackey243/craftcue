@@ -9,6 +9,7 @@ import { bbox, boxH, boxW, pieces, UNITS_PER_IN } from '../../src/lib/design/geo
 import { DesignSchema, type Design } from '../../src/lib/design/spec'
 import type { Supply } from '../../src/types'
 import { getMachine } from '../../src/data'
+import { designSpaceSteps } from '../../src/components/DesignView'
 
 const load = (name: string): Design => DesignSchema.parse(JSON.parse(readFileSync(`tests/fixtures/designs/${name}.json`, 'utf8')))
 const supply = (id: string, dims: string): Supply => ({ id, name: id, category: 'cardstock-paper', quantity: 3, unit: 'sheet', dimensions: dims, source: 'manual', createdAt: '', updatedAt: '' })
@@ -107,5 +108,26 @@ describe('score lines belong to the pieces they sit on', () => {
     const onLeaves = linesOn(veins, [...r.layers.find((l) => l.id === 'leafA')!.shape, ...r.layers.find((l) => l.id === 'leafB')!.shape])
     expect(onLeaves.length).toBe(veins.length)
     expect(linesOn(veins, r.layers.find((l) => l.id === 'stem')!.shape).length).toBe(0)
+  })
+})
+
+describe('Print Then Cut designs', () => {
+  it('joins the outline into one piece, scores fold bars as one line, and flags overlapping extra pieces', async () => {
+    const d = load('live-coffee-ptc')
+    const r = await renderDesign(d)
+    const layer = (id: string) => r.layers.find((l) => l.id === id)!
+    expect(pieces(layer('cutOutline').shape)).toHaveLength(1)
+    expect(layer('foamScore').lines).toHaveLength(1)
+    expect(layer('foamScore').shape).toHaveLength(0)
+    const check = checkDesign(r, { supplies: [], mode: d.mode })
+    expect(check.problems.join(' ')).toMatch(/Light Brown foam easel back” piece overlaps the printed piece/)
+    const steps = designSpaceSteps(r, true).join(' ')
+    expect(steps).toMatch(/“Sign cutout \(Solar White cardstock\)” and “Coffee-themed print design”.*Flatten/)
+  })
+
+  it('keeps one outline per sticker on a sticker sheet', async () => {
+    const d = { ...load('live-coffee-ptc'), product: 'sticker-sheet' as const }
+    const r = await renderDesign(d)
+    expect(pieces(r.layers.find((l) => l.id === 'cutOutline')!.shape).length).toBeGreaterThan(1)
   })
 })

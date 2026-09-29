@@ -58,7 +58,7 @@ use **Claude** from Anthropic, with your own API key, paid directly to Anthropic
 - Reading a photo costs **well under a cent**.
 
 **Designs:** Claude lays out a cut-ready design (fonts, shapes, icons, botanicals) that CraftCue
-draws itself, with a mock-up, cut layers and a Design Space SVG (about 2–5 cents).
+draws itself, with a mock-up, cut layers and a Design Space SVG (usually 3–15 cents).
 
 **Extra abilities (optional, each with its own key):**
 

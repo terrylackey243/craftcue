@@ -14,3 +14,5 @@ deploy/local/
 deploy.env
 dist-sync
 .design-preview
+tests/fixtures/project-coffee-ptc.json
+tests/fixtures/design-coffee-ptc.json

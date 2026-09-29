@@ -1,6 +1,6 @@
 // Draw a Design into exact outlines per layer (thousandths of an inch).
 import iconData from '../../data/icons.json'
-import { area, bbox, boxH, boxW, centerAt, flatten, intersection, offset, svgToCmds, thicken, transform, union, UNITS_PER_IN, type Poly, type Shape } from './geometry'
+import { area, bbox, boxH, boxW, centerAt, flatten, intersection, offset, pieces, svgToCmds, thicken, transform, union, UNITS_PER_IN, type Poly, type Shape } from './geometry'
 import { loadFont, textShape, type FontName } from './fonts'
 import { makeShape, type ShapeName } from './shapes'
 import type { Design, DesignElement, DesignLayer } from './spec'
@@ -91,6 +91,19 @@ export async function renderDesign(design: Design): Promise<RenderedDesign> {
   for (const l of design.layers) layers.set(l.id, { ...l, shape: [], lines: [] })
   // Separate things on one layer that touch get welded into one piece; remember them to check.
   const drawn: { layer: string; label: string; shape: Shape; isText: boolean }[] = []
+  const isLineLayer = (id: string) => ['score', 'draw'].includes(layers.get(id)?.operation ?? '')
+  // A shape on a score or pen layer becomes lines: a thin bar is one line down its middle
+  // (a fold line), anything else is traced around its edge.
+  const addLines = (id: string, shape: Shape, el?: { x: number; y: number; widthIn: number; heightIn: number; rotationDeg: number }) => {
+    const layer = layers.get(id)
+    if (!layer) return problems.push(`A piece refers to a layer that doesn't exist (${id}).`)
+    if (el && Math.min(el.widthIn, el.heightIn) < 0.15) {
+      const half = (Math.max(el.widthIn, el.heightIn) / 2) * IN
+      const along = el.widthIn >= el.heightIn ? { x: 1, y: 0 } : { x: 0, y: 1 }
+      const line = [{ x: el.x * IN - along.x * half, y: el.y * IN - along.y * half }, { x: el.x * IN + along.x * half, y: el.y * IN + along.y * half }]
+      layer.lines.push(...(el.rotationDeg ? transform([line], { rotateDeg: el.rotationDeg, about: { x: el.x * IN, y: el.y * IN } }) : [line]))
+    } else layer.lines.push(...shape.map((poly) => [...poly, poly[0]]))
+  }
   const add = (id: string, shape: Shape) => {
     const layer = layers.get(id)
     if (!layer) return problems.push(`A piece refers to a layer that doesn't exist (${id}).`)
@@ -102,14 +115,26 @@ export async function renderDesign(design: Design): Promise<RenderedDesign> {
       if (!el.text.trim()) continue
       const font = await loadFont(el.font as FontName)
       const s = placed(textShape(font, el.text, clamp(el.capHeightIn, 0.15, 20) * IN, clamp(el.letterSpacing, -0.1, 0.5)), el.x, el.y, el.rotationDeg)
+      if (isLineLayer(el.layer)) {
+        addLines(el.layer, s)
+        continue
+      }
       drawn.push({ layer: el.layer, label: `the words “${el.text}”`, shape: s, isText: true })
       add(el.layer, s)
     } else if (el.kind === 'shape') {
       const s = placed(makeShape(el.shape, clamp(el.widthIn, 0.1, 60) * IN, clamp(el.heightIn, 0.1, 60) * IN), el.x, el.y, el.rotationDeg)
+      if (isLineLayer(el.layer)) {
+        addLines(el.layer, s, el)
+        continue
+      }
       drawn.push({ layer: el.layer, label: `the ${el.shape.replace('-', ' ')}`, shape: s, isText: false })
       add(el.layer, s)
     } else if (el.kind === 'icon') {
       const s = placed(iconShape(el.icon, clamp(el.sizeIn, 0.2, 40)), el.x, el.y, el.rotationDeg)
+      if (isLineLayer(el.layer)) {
+        addLines(el.layer, s)
+        continue
+      }
       drawn.push({ layer: el.layer, label: `the ${el.icon.replace('-', ' ')}`, shape: s, isText: false })
       add(el.layer, s)
     } else if (el.kind === 'branch') {
@@ -139,7 +164,17 @@ export async function renderDesign(design: Design): Promise<RenderedDesign> {
     if (el.kind !== 'outline') continue
     const traced = el.of.flatMap((id) => layers.get(id)?.shape ?? [])
     if (!traced.length) continue
-    add(el.layer, offset(traced, clamp(el.distanceIn, 0.02, 2) * IN))
+    const d = clamp(el.distanceIn, 0.02, 2) * IN
+    // Print Then Cut signs, tags and cards are one piece: close the gaps between the parts so the
+    // outline goes around everything. Sticker sheets keep one outline per sticker.
+    const joined = design.mode === 'print-then-cut' && design.product !== 'sticker-sheet'
+    let outline = offset(traced, d)
+    if (joined)
+      for (const r of [0.25, 0.5, 1, 1.5, 2, 3]) {
+        outline = offset(offset(traced, d + r * IN), -r * IN)
+        if (pieces(outline).length <= 1) break
+      }
+    add(el.layer, outline)
     const layer = layers.get(el.layer)
     if (layer) layer.shape = union(layer.shape)
   }

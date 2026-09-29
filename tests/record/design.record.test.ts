@@ -1,6 +1,6 @@
 // @vitest-environment node
 // Live design runs (spends a few cents). RECORD=1 npx vitest run --config vitest.record.config.ts design
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { describe, it } from 'vitest'
 import { makeAnthropicClient, setAiClientForTests, type AiClient } from '../../src/lib/ai/aiClient'
 import { designProject } from '../../src/lib/ai/design'
@@ -22,6 +22,9 @@ const botanicalStash = [astro('terra', 'Terra Green'), astro('gamma', 'Gamma Gre
 
 const project = (over: Partial<Project>): Project => ({ id: 'p', title: '', summary: '', goal: 'decor', goalContext: {}, status: 'idea', uses: [], missing: [], toolsNeeded: [], equipmentNeeded: [], steps: [], designTips: '', safetyNotes: [], aiGenerated: true, createdAt: '', updatedAt: '', ...over })
 
+// Local only (a real stash; gitignored): skipped when the file isn't there.
+const COFFEE = 'tests/fixtures/project-coffee-ptc.json'
+const coffee: { project: Project; supplies: Supply[] } | null = existsSync(COFFEE) ? JSON.parse(readFileSync(COFFEE, 'utf8')) : null
 const decor = JSON.parse(readFileSync('tests/fixtures/recommend-decor.json', 'utf8'))
 const sign = JSON.parse(decor.content.find((b: { type: string }) => b.type === 'text').text).suggestions[0]
 
@@ -37,6 +40,8 @@ const CASES: [string, Project, Supply[]][] = [
     botanicalStash,
   ],
   ['sign', project({ title: sign.title, summary: sign.summary, steps: sign.steps, designTips: sign.designTips, uses: sign.uses }), inventory],
+  // A real Print Then Cut project: printed sign plus a foam easel back cut separately.
+  ...(coffee ? [['coffee-ptc', coffee.project, coffee.supplies] as [string, Project, Supply[]]] : []),
 ]
 
 function recorder(real: AiClient, sink: unknown[]): AiClient {

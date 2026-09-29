@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 import type { Project, Supply } from '../types'
 import type { Design } from '../lib/design/spec'
 import { renderDesign, type RenderedDesign, type RenderedLayer } from '../lib/design/render'
-import { checkDesign, type CheckResult } from '../lib/design/checks'
-import { downloadText, exportSvg, svgFilename } from '../lib/design/export'
+import { checkDesign, printedPiece, type CheckResult } from '../lib/design/checks'
+import { downloadBlob, downloadText, exportSvg, svgFilename } from '../lib/design/export'
 import { bbox, boxH, boxW, linesOn, linesToPathD, pieces, shapeToPathD, UNITS_PER_IN } from '../lib/design/geometry'
 import { effectiveMachine } from '../data'
 import { useCategoryMap, useSecret, useSetup } from '../hooks'
@@ -79,7 +79,7 @@ export default function DesignView({ project, supplies }: { project: Project; su
           <Button className="self-start" onClick={() => guard(() => void run('new'))}>
             🎨 Design it for me
           </Button>
-          <p className="text-sm text-stone-500">Uses smart suggestions: about 2 to 5 cents.</p>
+          <p className="text-sm text-stone-500">Uses smart suggestions: usually 3 to 15 cents.</p>
         </div>
       )}
       {busy && <Spinner label={busy === 'change' ? 'Changing the design…' : 'Designing… this usually takes 10 to 30 seconds.'} />}
@@ -121,7 +121,7 @@ export default function DesignView({ project, supplies }: { project: Project; su
 
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => downloadText(exportSvg(shown.rendered, design.title), svgFilename(design.title))}>⬇ Download SVG for Design Space</Button>
-            {design.mode === 'print-then-cut' && (
+            {design.mode === 'print-then-cut' && printedPiece(shown.rendered) && (
               <Button variant="secondary" onClick={() => void downloadPrintPng(shown.rendered, design.title)}>
                 ⬇ Download PNG to print
               </Button>
@@ -310,16 +310,7 @@ function Layers({ rendered, supplies }: { rendered: RenderedDesign; supplies: Su
 // ----- Design Space help -----
 
 function DesignSpaceHelp({ rendered, printThenCut }: { rendered: RenderedDesign; printThenCut: boolean }) {
-  const hasScore = rendered.layers.some((l) => l.operation === 'score' && l.lines.length)
-  const hasDraw = rendered.layers.some((l) => l.operation === 'draw' && l.lines.length)
-  const steps = useMemo(() => {
-    const s = ['In Design Space, choose Upload, then Upload Image, and pick the SVG you downloaded.', 'Upload it, then select it and Add to Canvas. It keeps its real size, and each color is its own layer.']
-    if (hasScore) s.push('Select the score lines layer, change its Operation to Score, then select it together with the piece it belongs to and tap Attach so the lines stay in place.')
-    if (hasDraw) s.push('Select the pen lines layer, change its Operation to Pen, choose your pen color, then Attach it to its piece.')
-    if (printThenCut) s.push(`For Print Then Cut, upload the PNG instead and choose “Print Then Cut image”, then set its width to ${rendered.widthIn} in. Design Space prints it and cuts around it.`)
-    s.push('Tap Make It. Each color goes on its own mat, so load the matching material when asked.')
-    return s
-  }, [hasScore, hasDraw, printThenCut, rendered.widthIn])
+  const steps = useMemo(() => designSpaceSteps(rendered, printThenCut), [rendered, printThenCut])
   return (
     <details className="rounded-xl bg-stone-50 p-3">
       <summary className="cursor-pointer font-semibold">How to use this in Design Space</summary>
@@ -332,28 +323,48 @@ function DesignSpaceHelp({ rendered, printThenCut }: { rendered: RenderedDesign;
   )
 }
 
+export function designSpaceSteps(rendered: RenderedDesign, printThenCut: boolean): string[] {
+  const hasScore = rendered.layers.some((l) => l.operation === 'score' && l.lines.length)
+  const hasDraw = rendered.layers.some((l) => l.operation === 'draw' && l.lines.length)
+  const piece = printThenCut ? printedPiece(rendered) : null
+  const quoted = (names: string[]) => names.map((n) => `“${n}”`).join(' and ')
+  const s = ['In Design Space, choose Upload, then Upload Image, and pick the SVG you downloaded.', 'Upload it, then select it and Add to Canvas. It keeps its real size, and each color is its own layer.']
+  if (piece) {
+    s.push(
+      `Make the printed part: in the Layers panel, select ${quoted(piece.layers.map((l) => l.name))} together (hold Shift, or Ctrl/Cmd, and click each), then tap Flatten at the bottom of the Layers panel. They become one Print Then Cut image that prints the artwork and cuts around its outer edge.`,
+    )
+  }
+  if (hasScore) s.push('Select the score lines layer, change its Operation to Score, then select it together with the piece it belongs to and tap Attach so the lines stay in place.')
+  if (hasDraw) s.push('Select the pen lines layer, change its Operation to Pen, choose your pen color, then Attach it to its piece.')
+  s.push(
+    piece
+      ? 'Tap Make It. Design Space sends the printed part to your printer first (with a black box around it for the machine to find), then asks you to put the printed sheet on the mat to cut. Other pieces go on their own mats.'
+      : 'Tap Make It. Each color goes on its own mat, so load the matching material when asked.',
+  )
+  if (piece) s.push(`No SVG uploads? Download the PNG instead, upload it as a “Print Then Cut image”, and set its width to ${(boxW(piece.box) / IN).toFixed(2)} in (keep the lock closed).`)
+  return s
+}
+
 // ----- Print Then Cut PNG -----
 
 async function downloadPrintPng(rendered: RenderedDesign, title: string) {
+  // Only the printed piece (its paper outline underneath, the artwork on top), cropped to it, so
+  // Design Space cuts around its outer edge.
+  const piece = printedPiece(rendered)
+  if (!piece) return
   const dpi = 300
   const scale = dpi / IN
   const canvas = document.createElement('canvas')
-  canvas.width = Math.round(rendered.widthIn * dpi)
-  canvas.height = Math.round(rendered.heightIn * dpi)
+  canvas.width = Math.round((boxW(piece.box) / IN) * dpi)
+  canvas.height = Math.round((boxH(piece.box) / IN) * dpi)
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   ctx.scale(scale, scale)
-  for (const l of rendered.layers) {
-    if (l.operation !== 'print' || !l.shape.length) continue
+  ctx.translate(-piece.box.minX, -piece.box.minY)
+  for (const l of piece.layers) {
     ctx.fillStyle = l.color
     ctx.fill(new Path2D(shapeToPathD(l.shape)), 'nonzero')
   }
   const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/png'))
-  if (!blob) return
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = svgFilename(title).replace(/\.svg$/, '.png')
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(url), 5000)
+  if (blob) downloadBlob(blob, svgFilename(title).replace(/\.svg$/, '.png'))
 }

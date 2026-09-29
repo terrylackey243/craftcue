@@ -1,0 +1,125 @@
+{
+    "mode": "print-then-cut",
+    "title": "Sip Happens Coffee Bar Sign",
+    "layers": [
+        {
+            "id": "foamBack",
+            "name": "Light Brown foam easel back",
+            "color": "#c8a074",
+            "supplyId": "7af9da82-ddd6-458b-8002-b29d5b7776e2",
+            "operation": "cut"
+        },
+        {
+            "id": "foamScore",
+            "name": "Easel fold score line",
+            "color": "#a67c52",
+            "supplyId": "7af9da82-ddd6-458b-8002-b29d5b7776e2",
+            "operation": "score"
+        },
+        {
+            "id": "cutOutline",
+            "name": "Sign cutout (Solar White cardstock)",
+            "color": "#f5f0e1",
+            "supplyId": "64ef6e85-cb1e-4b21-9e59-6c3007892ee4",
+            "operation": "cut"
+        },
+        {
+            "id": "print",
+            "name": "Coffee-themed print design",
+            "color": "#6f4e37",
+            "supplyId": "64ef6e85-cb1e-4b21-9e59-6c3007892ee4",
+            "operation": "print"
+        }
+    ],
+    "product": "sign",
+    "widthIn": 5,
+    "assembly": [
+        "Design the coffee-themed graphic and text sized to fit a 5x6.5 in area in your software, using registration marks for Print Then Cut.",
+        "Print the design onto Solar White cardstock and load the printed sheet into the machine.",
+        "Cut out the sign along the printed outline using the Print Then Cut function.",
+        "Run the cut sign through a laminator for a glossy, wipeable finish.",
+        "Cut the triangle easel-back shape from the Light Brown foam sheet, including the horizontal fold-and-score line near the top.",
+        "Fold the foam triangle along the scored line to form a stand tab.",
+        "Glue the folded easel back to the rear of the laminated sign with the Scotch Create Permanent Glue Pen so the sign stands upright on a shelf."
+    ],
+    "elements": [
+        {
+            "x": 2.5,
+            "y": 4.3,
+            "kind": "shape",
+            "layer": "foamBack",
+            "shape": "triangle",
+            "widthIn": 3.5,
+            "heightIn": 3.6,
+            "rotationDeg": 0
+        },
+        {
+            "x": 2.5,
+            "y": 2.7,
+            "kind": "shape",
+            "layer": "foamScore",
+            "shape": "rectangle",
+            "widthIn": 3.5,
+            "heightIn": 0.04,
+            "rotationDeg": 0
+        },
+        {
+            "of": [
+                "print"
+            ],
+            "kind": "outline",
+            "layer": "cutOutline",
+            "distanceIn": 0.125
+        },
+        {
+            "x": 2.5,
+            "y": 1.4,
+            "icon": "coffee",
+            "kind": "icon",
+            "layer": "print",
+            "sizeIn": 1.6,
+            "rotationDeg": 0
+        },
+        {
+            "x": 2.5,
+            "y": 2.85,
+            "font": "Luckiest Guy",
+            "kind": "text",
+            "text": "SIP",
+            "layer": "print",
+            "capHeightIn": 0.9,
+            "rotationDeg": 0,
+            "letterSpacing": 0.05
+        },
+        {
+            "x": 2.5,
+            "y": 3.85,
+            "font": "Luckiest Guy",
+            "kind": "text",
+            "text": "HAPPENS",
+            "layer": "print",
+            "capHeightIn": 0.7,
+            "rotationDeg": 0,
+            "letterSpacing": 0.05
+        },
+        {
+            "x": 1.1,
+            "y": 5.6,
+            "icon": "coffee-bean",
+            "kind": "icon",
+            "layer": "print",
+            "sizeIn": 0.6,
+            "rotationDeg": -15
+        },
+        {
+            "x": 3.9,
+            "y": 5.6,
+            "icon": "coffee-bean",
+            "kind": "icon",
+            "layer": "print",
+            "sizeIn": 0.6,
+            "rotationDeg": 15
+        }
+    ],
+    "heightIn": 6.5
+}

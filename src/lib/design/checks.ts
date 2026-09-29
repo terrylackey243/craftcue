@@ -1,6 +1,6 @@
 // Will it actually cut? Checks a rendered design against the machine and the materials.
 import type { MachineProfile, Supply } from '../../types'
-import { area, bbox, boxH, boxW, difference, offset, pieces, union, UNITS_PER_IN } from './geometry'
+import { area, bbox, boxH, boxW, difference, intersection, offset, pieces, union, UNITS_PER_IN } from './geometry'
 import type { RenderedDesign } from './render'
 
 const IN = UNITS_PER_IN
@@ -24,6 +24,18 @@ export function materialSize(dimensions: string | undefined, unit: Supply['unit'
 const fits = (w: number, h: number, W: number, H: number) => (w <= W + 0.01 && h <= H + 0.01) || (h <= W + 0.01 && w <= H + 0.01)
 const inches = (n: number) => `${Math.round((n / IN) * 100) / 100} in`
 
+/**
+ * The Print Then Cut part of a design: its print layers plus the cut layers on the same paper
+ * (the outline around them), and their bounds. Other pieces (e.g. a foam easel back) are cut normally.
+ */
+export function printedPiece(r: RenderedDesign): { layers: RenderedDesign['layers']; box: ReturnType<typeof bbox> } | null {
+  const print = r.layers.filter((l) => l.operation === 'print' && l.shape.length)
+  if (!print.length) return null
+  const paper = new Set(print.map((l) => l.supplyId))
+  const layers = r.layers.filter((l) => l.shape.length && (l.operation === 'print' || (l.operation === 'cut' && paper.has(l.supplyId))))
+  return { layers, box: bbox(layers.flatMap((l) => l.shape)) }
+}
+
 export interface CheckResult {
   problems: string[] // it won't work as is
   cautions: string[] // it will work, but take care
@@ -35,13 +47,25 @@ export function checkDesign(r: RenderedDesign, opts: { machine?: MachineProfile;
   const byId = new Map(opts.supplies.map((s) => [s.id, s]))
   const cutW = opts.machine?.cutWidthIn ?? 12
 
-  if (opts.mode === 'print-then-cut' && !fits(r.widthIn, r.heightIn, PRINT_THEN_CUT_MAX.h, PRINT_THEN_CUT_MAX.w)) {
-    problems.push(`Print Then Cut designs can be at most ${PRINT_THEN_CUT_MAX.w} × ${PRINT_THEN_CUT_MAX.h} in; this one is ${r.widthIn} × ${r.heightIn} in.`)
+  const printed = printedPiece(r)
+  if (opts.mode === 'print-then-cut') {
+    const w = printed ? Math.round((boxW(printed.box) / IN) * 100) / 100 : r.widthIn
+    const h = printed ? Math.round((boxH(printed.box) / IN) * 100) / 100 : r.heightIn
+    if (!fits(w, h, PRINT_THEN_CUT_MAX.h, PRINT_THEN_CUT_MAX.w)) problems.push(`Print Then Cut pieces can be at most ${PRINT_THEN_CUT_MAX.w} × ${PRINT_THEN_CUT_MAX.h} in; the printed piece is ${w} × ${h} in.`)
+    // Pieces cut from other materials (an easel back, a stand) must sit beside the printed piece.
+    const printedShape = union(...(printed?.layers ?? []).map((l) => l.shape))
+    for (const l of r.layers) {
+      if (!printed || l.operation !== 'cut' || !l.shape.length || printed.layers.includes(l)) continue
+      if (area(intersection(l.shape, printedShape)) > 0.02 * area(l.shape))
+        problems.push(`The “${l.name}” piece overlaps the printed piece. Separate pieces go beside it on the canvas, 0.5 in away (make the canvas wider).`)
+    }
   }
 
   // A layer that ends up (almost) entirely under the layers above it can't be seen.
+  // (Not the paper under Print Then Cut artwork: it's flattened with the print into one image.)
   r.layers.forEach((layer, i) => {
     if ((layer.operation !== 'cut' && layer.operation !== 'print') || !layer.shape.length) return
+    if (opts.mode === 'print-then-cut' && printed?.layers.includes(layer)) return
     const above = r.layers.slice(i + 1).filter((l) => l.operation === 'cut' || l.operation === 'print').flatMap((l) => l.shape)
     if (!above.length) return
     const own = area(layer.shape)

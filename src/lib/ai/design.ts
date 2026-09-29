@@ -30,10 +30,16 @@ Elements:
 - icon: from the icon list; sizeIn is its larger side.
 - branch: a stem with leaves (botanicals): stemLayer, leafLayers used in turn, optional veinLayer (a score layer), base at (x, y), rotationDeg 0 grows straight up.
 - outline: traces around the combined shape of other layers by distanceIn, as a backing layer behind lettering, or the sticker cut line in Print Then Cut.
+- Fold lines: a thin rectangle (heightIn 0.02) on a "score" layer becomes one score line down its middle. Keep it inside the piece it folds (measure the piece's width at that height).
+- Words and art that sit on a background shape stay at least 0.25 in inside its edges (check the width of long words: roughly 0.75 × capHeightIn per letter for bold fonts).
 
-Print Then Cut: use mode "print-then-cut" only if the project uses printable or sticker paper. The canvas must fit ${PRINT_THEN_CUT_MAX.w} × ${PRINT_THEN_CUT_MAX.h} in. Use "print" layers for the artwork and one "cut" layer with an outline around it.
+Separate pieces: anything made separately that doesn't sit on the front of the finished piece (an easel back or stand, a card liner, box or envelope parts) goes BESIDE the main piece on the canvas, 0.5 in away, never overlapping it. Make the canvas wide enough for both. Only pieces that stack on the front overlap.
 
-Good design: clear hierarchy (one big main word or motif), balanced and centered unless the idea calls otherwise, 2–4 layers for layered vinyl or paper, sizes that suit the product (e.g. shirt chest designs about 10 in wide, mug wraps about 3–4 in tall). Only original wording: never characters, brands, logos, team names or song lyrics. "assembly" gives short steps to put the pieces together, in plain words.`
+Print Then Cut: use mode "print-then-cut" only if the project uses printable or sticker paper. The printed piece must fit ${PRINT_THEN_CUT_MAX.w} × ${PRINT_THEN_CUT_MAX.h} in. Use one or more "print" layers for the artwork (different colors are fine, it's printed) and one "cut" layer, on the same paper, with an outline around the print layers; listed BEFORE the print layers so it is the background. For a sign, tag or card CraftCue joins that outline into one piece around everything; for a sticker-sheet each sticker gets its own.
+
+Good design: clear hierarchy (one big main word or motif), balanced and centered unless the idea calls otherwise, 2–4 layers for layered vinyl or paper, sizes that suit the product (e.g. shirt chest designs about 10 in wide, mug wraps about 3–4 in tall). Only original wording: never characters, brands, logos, team names or song lyrics.
+
+"assembly" gives short steps, in plain words, for making it from exactly the pieces in this design, which CraftCue hands over ready to cut. Never tell the crafter to design, draw, find or size artwork. For Print Then Cut, start with printing and cutting the printed piece, then the other pieces, then putting it together.`
 
 function catalog(): string {
   return [
