@@ -35,7 +35,7 @@ export default function BarcodeField({ value, onChange, label = 'Barcode (UPC)',
   )
 }
 
-function ScannerView({ onResult }: { onResult: (code: string) => void }) {
+export function ScannerView({ onResult }: { onResult: (code: string) => void }) {
   const video = useRef<HTMLVideoElement>(null)
   const error = useBarcodeCamera(video, true, onResult)
   return (

@@ -8,18 +8,33 @@ import { unitLabel } from '../components/SupplyForm'
 import type { Supply } from '../types'
 import { categoryIcon } from '../data/categories'
 import { groupStash, reorderSet, type StashEntry } from '../lib/assortment'
+import { ScannerView } from '../components/BarcodeField'
+import { Sheet } from '../components/ui'
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
+/** Barcodes are compared as digits only, ignoring the extra leading zero of a 13-digit EAN. */
+const barcodeDigits = (t: string) => t.replace(/\D/g, '').replace(/^0+/, '')
+
+/**
+ * Every word must match somewhere: name, pack, color, brand, kind, finish, size, place, notes,
+ * type or barcode. A query that is only digits (and spaces, as printed under the bars) is read
+ * as one barcode, and part of a barcode matches too.
+ */
 export function filterSupplies(supplies: Supply[], q: string, category: string, location: string, categoryName: (id: string) => string): Supply[] {
-  const words = q.toLowerCase().split(/\s+/).filter(Boolean)
+  const trimmed = q.trim()
+  const asBarcode = /^[\d\s-]+$/.test(trimmed) && trimmed.replace(/\D/g, '').length >= 6 ? barcodeDigits(trimmed) : ''
+  const words = asBarcode ? [] : trimmed.toLowerCase().split(/\s+/).filter(Boolean)
   return supplies.filter((s) => {
     if (category && s.category !== category) return false
     if (location && (s.location ?? '') !== location) return false
+    if (asBarcode) return Boolean(s.upc) && barcodeDigits(s.upc!).includes(asBarcode)
     if (!words.length) return true
     const hay = [s.name, s.setName, s.color, s.brand, s.subtype, s.finish, s.dimensions, s.location, s.notes, categoryName(s.category)].join(' ').toLowerCase()
-    return words.every((w) => hay.includes(w))
+    // Long numbers are checked against the barcode; short ones ("12", "65") only against the text,
+    // since barcodes contain almost every short number.
+    return words.every((w) => (/^\d{6,}$/.test(w) ? Boolean(s.upc) && barcodeDigits(s.upc!).includes(barcodeDigits(w)) : hay.includes(w)))
   })
 }
 
@@ -198,6 +213,7 @@ export default function Inventory() {
   const [category, setCategory] = useState('')
   const [location, setLocation] = useState('')
   const [openSets, setOpenSets] = useState<Set<string>>(new Set())
+  const [scanning, setScanning] = useState(false)
   const toggleSet = (id: string) =>
     setOpenSets((prev) => {
       const next = new Set(prev)
@@ -231,6 +247,16 @@ export default function Inventory() {
 
   return (
     <div>
+      <Sheet open={scanning} onClose={() => setScanning(false)} title="Scan to find it">
+        {scanning && (
+          <ScannerView
+            onResult={(code) => {
+              setQ(code)
+              setScanning(false)
+            }}
+          />
+        )}
+      </Sheet>
       <PageHeader title="My stash" subtitle={`${supplies.length} suppl${supplies.length === 1 ? 'y' : 'ies'}`} action={<ButtonLink to="/add">➕ Add</ButtonLink>} />
 
       {supplies.length === 0 ? (
@@ -244,7 +270,12 @@ export default function Inventory() {
             <label className="sr-only" htmlFor="inv-search">
               Search your stash
             </label>
-            <input id="inv-search" type="search" className={inputClass} placeholder="🔍 Search (e.g. pink vinyl)" value={q} onChange={(e) => setQ(e.target.value)} />
+            <div className="flex gap-2">
+              <input id="inv-search" type="search" className={inputClass} placeholder="🔍 Search, or scan a barcode" value={q} onChange={(e) => setQ(e.target.value)} />
+              <Button variant="secondary" aria-label="Scan a barcode to find it" onClick={() => setScanning(true)}>
+                📷
+              </Button>
+            </div>
             <label className="sr-only" htmlFor="inv-cat">
               Filter by type
             </label>
