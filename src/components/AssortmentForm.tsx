@@ -3,11 +3,12 @@ import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, us
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useCategories, useSetup } from '../hooks'
-import { cleanColors, costPerUnit, saveAssortment, totalCount } from '../lib/assortment'
+import { addAnotherPack, cleanColors, costPerUnit, findSamePack, saveAssortment, totalCount } from '../lib/assortment'
 import { formatMoney, parseMoney } from '../lib/money'
 import { makeVisionImage } from '../lib/images'
 import { friendlyError } from '../lib/ai/aiClient'
 import { cacheUpc } from '../lib/repo'
+import { db } from '../db'
 import { isValidUpc, normalizeUpc } from '../lib/upc'
 import { UNITS, type PackColor, type Supply } from '../types'
 import { unitLabel } from './SupplyForm'
@@ -116,13 +117,59 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
     }
   }
 
-  async function submit(e: React.FormEvent) {
+  // A ref, not state: it blocks a second tap even before React re-renders the disabled button.
+  const inFlight = useRef(false)
+  const [done, setDone] = useState<{ saved: Supply[]; addedTo?: boolean } | null>(null)
+  const [dupe, setDupe] = useState<Supply[] | null>(null)
+  const top = useRef<HTMLDivElement>(null)
+
+  function finish(result: { saved: Supply[]; addedTo?: boolean }) {
+    setDone(result)
+    setDupe(null)
+    onSaved(result.saved)
+    requestAnimationFrame(() => top.current?.scrollIntoView({ block: 'center' }))
+  }
+
+  function reset() {
+    setDone(null)
+    setF({ name: '', setName: '', category: f.category, brand: '', subtype: '', dimensions: '', unit: f.unit, upc: '' })
+    setRows(toRows([{ color: '', count: 1 }]))
+    setPrice('')
+    setPacks(1)
+    setCountsUncertain(false)
+  }
+
+  async function addToExisting(existing: Supply[]) {
+    if (inFlight.current) return
+    inFlight.current = true
+    setSaving(true)
+    try {
+      await addAnotherPack(existing, colors, packs)
+      const setId = existing[0].setId
+      finish({ saved: await db.supplies.filter((s) => s.setId === setId).toArray(), addedTo: true })
+    } finally {
+      inFlight.current = false
+      setSaving(false)
+    }
+  }
+
+  async function submit(e: React.FormEvent, separate = false) {
     e.preventDefault()
+    if (inFlight.current) return
     if (!f.name.trim()) return setError('Please give it a name, like “Astrobrights cardstock”.')
     if (!colors.length) return setError('Add at least one color.')
+    inFlight.current = true
     setSaving(true)
     setError('')
     try {
+      // Already have this exact pack? Ask before making a second copy.
+      if (!separate) {
+        const same = await findSamePack(f.name, f.setName, colors)
+        if (same) {
+          setDupe(same)
+          return
+        }
+      }
       const saved = await saveAssortment({
         base: { name: f.name, category: f.category, brand: f.brand || undefined, subtype: f.subtype || undefined, dimensions: f.dimensions || undefined, unit: f.unit, upc: f.upc || undefined, source: 'manual' },
         setName: f.setName,
@@ -135,12 +182,56 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
         await cacheUpc(normalizeUpc(f.upc), product)
         void import('../lib/cloud/products').then((m) => m.contributeProduct(normalizeUpc(f.upc), product))
       }
-      onSaved(saved)
+      finish({ saved })
     } catch (err) {
       setError((err as Error).message || "Couldn't save. Please try again.")
     } finally {
+      inFlight.current = false
       setSaving(false)
     }
+  }
+
+  if (done) {
+    const first = done.saved[0]
+    const count = done.saved.reduce((n, s) => n + s.quantity, 0)
+    return (
+      <div ref={top} className="flex flex-col gap-4 rounded-2xl bg-leaf-50 p-5 ring-1 ring-green-200" role="status">
+        <p className="text-xl font-bold text-leaf-600">✓ {done.addedTo ? 'Added another pack to' : 'Saved'} {first?.setName ?? first?.name}</p>
+        <p>
+          {done.saved.length} colors, now {Math.round(count * 1000) / 1000} {unitLabel(first?.unit ?? 'sheet', count)} in your stash.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={reset}>Enter a different pack</Button>
+          {onCancel && (
+            <Button variant="secondary" onClick={onCancel}>
+              I'm done
+            </Button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  if (dupe) {
+    return (
+      <div ref={top} className="flex flex-col gap-4 rounded-2xl bg-sun-300/40 p-5 ring-2 ring-sun-500" role="alertdialog" aria-label="You already have this pack">
+        <p className="text-xl font-bold">You already have this pack</p>
+        <p>
+          <strong>{dupe[0].setName ?? dupe[0].name}</strong> with the same {dupe.length} colors is already in your stash. Did you buy another one?
+        </p>
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <Button disabled={saving} onClick={() => void addToExisting(dupe)}>
+            Yes, add it as another pack
+          </Button>
+          <Button variant="secondary" disabled={saving} onClick={(e) => void submit(e as unknown as React.FormEvent, true)}>
+            Save a separate copy
+          </Button>
+          <Button variant="ghost" onClick={() => setDupe(null)}>
+            Go back
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -121,6 +121,28 @@ export function groupStash(supplies: Supply[]): StashEntry[] {
   return out
 }
 
+/**
+ * An existing pack with the same name and the same colors, if there is one. Used to ask "did you
+ * buy another?" instead of silently making a second copy.
+ */
+export async function findSamePack(name: string, setName: string, colors: PackColor[]): Promise<Supply[] | null> {
+  const norm = (t: string | undefined) => (t ?? '').trim().toLowerCase()
+  const wantColors = cleanColors(colors).map((c) => norm(c.color)).sort().join('|')
+  const sets = new Map<string, Supply[]>()
+  for (const s of await db.supplies.filter((x) => Boolean(x.setId)).toArray()) {
+    const list = sets.get(s.setId!) ?? []
+    list.push(s)
+    sets.set(s.setId!, list)
+  }
+  for (const items of sets.values()) {
+    const first = items[0]
+    const sameName = norm(first.name) === norm(name) && norm(first.setName) === norm(setName || name)
+    const sameColors = items.map((s) => norm(s.color)).sort().join('|') === wantColors
+    if (sameName && sameColors) return items
+  }
+  return null
+}
+
 /** Save a new color order for a pack (ids in the order they should appear). */
 export async function reorderSet(items: Supply[], orderedIds: string[]): Promise<void> {
   const byId = new Map(items.map((s) => [s.id, s]))

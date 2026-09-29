@@ -109,4 +109,39 @@ describe('the mixed-pack form', () => {
       ['Lunar Blue', 3],
     ])
   })
+
+  it('a quick double tap on Save saves the pack only once', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <AssortmentForm onSaved={() => {}} />
+      </MemoryRouter>,
+    )
+    await user.type(await screen.findByLabelText('What is one sheet? (without the color)'), 'Double cardstock')
+    await user.type(screen.getByLabelText('Color 1', { exact: true }), 'Red')
+    await user.dblClick(screen.getByRole('button', { name: /Save 1 color/ }))
+    expect(await screen.findByText(/✓ Saved Double cardstock/)).toBeInTheDocument()
+    expect(await db.supplies.count()).toBe(1)
+    // After saving, there is no Save button left to tap again.
+    expect(screen.queryByRole('button', { name: /Save 1 color/ })).toBeNull()
+  })
+
+  it('entering the same pack again asks instead of making a copy', async () => {
+    await saveAssortment({ base: { name: 'Repeat cardstock', category: 'cardstock-paper', unit: 'sheet', source: 'manual' }, setName: '', colors: [{ color: 'Red', count: 3 }], packs: 1 })
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <AssortmentForm onSaved={() => {}} />
+      </MemoryRouter>,
+    )
+    await user.type(await screen.findByLabelText('What is one sheet? (without the color)'), 'Repeat cardstock')
+    await user.type(screen.getByLabelText('Color 1', { exact: true }), 'Red')
+    await user.click(screen.getByRole('button', { name: /Save 1 color/ }))
+    expect(await screen.findByText('You already have this pack')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Yes, add it as another pack' }))
+    expect(await screen.findByText(/✓ Added another pack to Repeat cardstock/)).toBeInTheDocument()
+    const all = await db.supplies.toArray()
+    expect(all).toHaveLength(1)
+    expect(all[0].quantity).toBe(4) // 3 already + 1 from the form (count 1)
+  })
 })
