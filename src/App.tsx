@@ -11,6 +11,7 @@ import Home from './screens/Home'
 import Inventory from './screens/Inventory'
 import AddSupply from './screens/AddSupply'
 import SupplyEdit from './screens/SupplyEdit'
+import PackEdit from './screens/PackEdit'
 import Projects from './screens/Projects'
 import ProjectDetail from './screens/ProjectDetail'
 import Shopping from './screens/Shopping'
@@ -66,6 +67,7 @@ export default function App() {
             <Route path="add/photo" element={<PhotoAdd />} />
             <Route path="add/bulk" element={<BulkAdd />} />
             <Route path="supply/:id" element={<SupplyEdit />} />
+            <Route path="pack/:setId" element={<PackEdit />} />
             <Route path="suggest/:goal" element={<Suggest />} />
             <Route path="projects" element={<Projects />} />
             <Route path="projects/:id" element={<ProjectDetail />} />

@@ -234,11 +234,34 @@ export async function addColorsToPack(existing: Supply[], names: string[], count
   return { added: created.length, reordered: false }
 }
 
-/** Set the low-stock warning level for every color of a pack at once. */
-export async function setPackLowAt(items: Supply[], lowAt: number): Promise<void> {
+/** Fields that are the same for every color of a pack and can be changed for the whole pack. */
+export const PACK_FIELDS = ['setName', 'name', 'category', 'subtype', 'brand', 'finish', 'dimensions', 'unit', 'adhesive', 'lowAt', 'location', 'notes', 'packPrice'] as const
+export type PackField = (typeof PACK_FIELDS)[number]
+export type PackPatch = Partial<Pick<Supply, PackField>>
+
+/** The pack's value for a field, or `mixed` if the colors differ. */
+export function packValue<K extends PackField>(items: Supply[], key: K): { value: Supply[K] | undefined; mixed: boolean } {
+  const norm = (v: unknown) => (v === '' ? undefined : v)
+  const first = norm(items[0]?.[key]) as Supply[K] | undefined
+  return { value: first, mixed: items.some((s) => norm(s[key]) !== first) }
+}
+
+/**
+ * Change shared details on every color of a pack, field by field (each color's own count, color
+ * name, photo and order are untouched). A new pack price re-figures the cost per piece for all.
+ */
+export async function updatePack(items: Supply[], patch: PackPatch): Promise<void> {
+  const keys = Object.keys(patch) as PackField[]
+  if (!keys.length) return
+  const changes: Partial<Supply> = {}
+  for (const k of keys) (changes as Record<string, unknown>)[k] = patch[k] === '' ? undefined : patch[k]
+  if ('packPrice' in patch) {
+    const total = roundQty(items.reduce((n, s) => n + (s.packSize ?? 0), 0))
+    changes.unitCost = patch.packPrice !== undefined && total > 0 ? patch.packPrice / total : undefined
+  }
   const now = new Date().toISOString()
   await db.transaction('rw', db.supplies, async () => {
-    for (const s of items) await db.supplies.update(s.id, { lowAt, updatedAt: now })
+    for (const s of items) await db.supplies.update(s.id, { ...changes, updatedAt: now })
   })
   await noteChange()
 }

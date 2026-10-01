@@ -250,15 +250,32 @@ test('paste a color list into a saved pack (Terry’s 30 markers)', async ({ pag
   await page.getByRole('button', { name: /Save 1 color/ }).click()
   await expect(page.getByText(/Saved “Fine Point Pens/)).toBeVisible()
 
-  // Open the pack's one color, then add the rest by pasting.
+  // Open the pack from My stash, then add the rest by pasting.
   await page.goto('/#/inventory')
   await page.getByRole('button', { name: /Fine Point Pens/ }).click()
-  await page.getByRole('link', { name: 'Sour Apple' }).click()
+  await page.getByRole('link', { name: '✏️ Edit pack' }).click()
   await page.getByRole('button', { name: '➕ Add colors to this pack' }).click()
   await page.getByLabel(/Colors to add/).fill(pasted)
   await expect(page.getByText('30 colors found: 29 new, 1 already here (Sour Apple).')).toBeVisible()
   await page.getByRole('button', { name: 'Add 29 colors' }).click()
   await expect(page.getByText('Added 29 colors, and put the pack in your list’s order.')).toBeVisible()
+
+  // One low-stock level for all 30 pens, set once for the pack.
+  await page.getByRole('button', { name: 'Less warn when each color is down to' }).click()
+  await page.getByRole('button', { name: 'Save for all 30 colors' }).click()
+  await expect(page.getByText('Saved for all 30 colors.')).toBeVisible()
+  const levels = await page.evaluate(
+    () =>
+      new Promise<number[]>((resolve) => {
+        const req = indexedDB.open('craftcue')
+        req.onsuccess = () => {
+          const all = req.result.transaction('supplies').objectStore('supplies').getAll()
+          all.onsuccess = () => resolve(all.result.map((s: { lowAt?: number }) => s.lowAt ?? 1))
+        }
+      }),
+  )
+  expect(levels).toHaveLength(30)
+  expect(levels.every((n) => n === 0)).toBe(true)
 
   await page.goto('/#/inventory')
   const group = page.getByRole('button', { name: /Fine Point Pens/ })

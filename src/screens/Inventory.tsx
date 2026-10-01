@@ -125,9 +125,16 @@ function SetRow({ entry, open, onToggle, catName }: { entry: Extract<StashEntry,
         <div className="border-t border-stone-100">
           <div className="flex flex-wrap items-center justify-between gap-2 bg-stone-50 px-3 py-2">
             <span className="text-sm text-stone-600">{reordering ? 'Drag ⠿ to match the order printed on the pack.' : ''}</span>
-            <Button variant={reordering ? 'primary' : 'ghost'} onClick={() => setReordering(!reordering)}>
-              {reordering ? 'Done' : '↕ Change order'}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              {!reordering && (
+                <ButtonLink to={`/pack/${entry.setId}`} variant="ghost">
+                  ✏️ Edit pack
+                </ButtonLink>
+              )}
+              <Button variant={reordering ? 'primary' : 'ghost'} onClick={() => setReordering(!reordering)}>
+                {reordering ? 'Done' : '↕ Change order'}
+              </Button>
+            </div>
           </div>
           {reordering ? (
             <ReorderList items={entry.items} />
