@@ -8,6 +8,7 @@ import { Button, Chip, Field, Notice, Stepper, fieldClass, inputClass } from './
 import { guessCategory } from '../lib/guessCategory'
 import { formatMoney, parseMoney, perUnitFromPack } from '../lib/money'
 import BarcodeField from './BarcodeField'
+import PhotoDrop from './PhotoDrop'
 
 export type SupplyDraft = Partial<Supply> & { name: string; category: string; quantity: number; unit: Supply['unit'] }
 
@@ -273,6 +274,7 @@ export default function SupplyForm({
 
       <div className="flex flex-col gap-2">
         <p className="font-semibold">Photo (optional)</p>
+        <PhotoDrop onFile={(f) => void onPhoto(f)}>
         <div className="flex items-center gap-3">
           {d.thumbnail && <img src={d.thumbnail} alt="" className="h-20 w-20 rounded-xl object-cover ring-1 ring-stone-200" />}
           <label className="inline-flex min-h-12 cursor-pointer items-center rounded-xl border-2 border-brand-200 bg-white px-4 font-semibold text-brand-700">
@@ -285,6 +287,7 @@ export default function SupplyForm({
             </Button>
           )}
         </div>
+        </PhotoDrop>
       </div>
 
       <button type="button" className="self-start font-semibold text-brand-700 underline" onClick={() => setMore(!more)} aria-expanded={more}>

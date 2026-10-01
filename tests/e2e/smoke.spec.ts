@@ -296,3 +296,46 @@ test('a saved design: mock-up, cut layers, SVG download, and accessible', async 
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
   expect(results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([])
 })
+
+test('a photo can be dragged in or pasted, not only chosen', async ({ page }, testInfo) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: "Let's start" }).click()
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+  await page.getByRole('button', { name: 'Maybe later' }).click()
+  await page.getByRole('button', { name: "I'll do it later" }).click()
+  await expect(page.getByRole('heading', { name: 'What would you like to make?' })).toBeVisible()
+
+  // A real PNG made in the page, handed over the way a drop or a paste would.
+  const send = (how: 'drop' | 'paste') =>
+    page.evaluate(async (how) => {
+      const c = document.createElement('canvas')
+      c.width = c.height = 40
+      c.getContext('2d')!.fillRect(0, 0, 40, 40)
+      const blob: Blob = await new Promise((r) => c.toBlob((b) => r(b!), 'image/png'))
+      const dt = new DataTransfer()
+      dt.items.add(new File([blob], 'shot.png', { type: 'image/png' }))
+      const zone = document.querySelector('[data-testid="photo-drop"]')!
+      if (how === 'drop') {
+        zone.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dt }))
+        zone.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt }))
+      } else document.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt }))
+    }, how)
+
+  await page.goto('/#/add/manual')
+  // The hint is for computers; touch-only screens just show the button (drops still work there).
+  const hint = page.getByText(/drag a picture here, or paste one/)
+  if (testInfo.project.name === 'ipad-webkit') await expect(hint).toBeHidden()
+  else await expect(hint).toBeVisible()
+  await send('drop')
+  await expect(page.getByRole('button', { name: 'Remove' })).toBeVisible()
+  await page.getByRole('button', { name: 'Remove' }).click()
+  await expect(page.getByText('Add a photo')).toBeVisible()
+  await send('paste')
+  await expect(page.getByRole('button', { name: 'Remove' })).toBeVisible()
+
+  // Reading a photo needs smart suggestions: a dropped photo opens the same setup panel as the button.
+  await page.goto('/#/add/photo')
+  await expect(page.getByRole('button', { name: /Take or choose a photo/ })).toBeVisible()
+  await send('drop')
+  await expect(page.getByRole('dialog', { name: /quick one-time setup/ })).toBeVisible()
+})

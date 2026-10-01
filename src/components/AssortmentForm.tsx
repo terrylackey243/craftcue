@@ -15,6 +15,7 @@ import { unitLabel } from './SupplyForm'
 import { useAiGate } from './useAiGate'
 import BarcodeField from './BarcodeField'
 import { Button, Chip, Field, Notice, Spinner, Stepper, fieldClass, inputClass } from './ui'
+import PhotoDrop from './PhotoDrop'
 
 export interface AssortmentInitial {
   name?: string
@@ -241,9 +242,11 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
       {panel}
       <input ref={photoRef} type="file" accept="image/*" capture="environment" aria-label="Photo of the pack" className="sr-only" onChange={(e) => readPhoto(e.target.files?.[0])} />
       <div className="flex flex-col gap-2 rounded-2xl bg-white p-4 ring-1 ring-stone-200">
-        <Button variant="secondary" onClick={() => guard(() => photoRef.current?.click())} disabled={reading}>
-          📷 Read the colors from a photo
-        </Button>
+        <PhotoDrop onFile={(f) => guard(() => void readPhoto(f))} disabled={reading}>
+          <Button variant="secondary" onClick={() => guard(() => photoRef.current?.click())} disabled={reading}>
+            📷 Read the colors from a photo
+          </Button>
+        </PhotoDrop>
         <p className="text-sm text-stone-600">Photograph the edge or back of the pack where the color names are printed. You'll check everything before saving.</p>
         {reading && <Spinner label="Reading the colors…" />}
       </div>

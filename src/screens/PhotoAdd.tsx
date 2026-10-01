@@ -11,6 +11,7 @@ import AssortmentForm from '../components/AssortmentForm'
 import { useAiGate } from '../components/useAiGate'
 import { Button, Notice, PageHeader, Spinner } from '../components/ui'
 import type { Quality, Supply } from '../types'
+import PhotoDrop from '../components/PhotoDrop'
 
 type Kind = 'package' | 'loose' | 'mixed'
 
@@ -86,9 +87,11 @@ export default function PhotoAdd() {
           {kind === 'mixed' ? (
             <AssortmentForm onSaved={(saved) => setSavedName(`${saved[0]?.setName ?? 'Pack'} (${saved.length} colors)`)} onCancel={() => navigate('/add')} />
           ) : (
-            <Button className="min-h-16 text-lg" onClick={() => guard(() => input.current?.click())}>
-              📷 Take or choose a photo
-            </Button>
+            <PhotoDrop onFile={(f) => guard(() => pick(f))}>
+              <Button className="min-h-16 text-lg" onClick={() => guard(() => input.current?.click())}>
+                📷 Take or choose a photo
+              </Button>
+            </PhotoDrop>
           )}
           <p className="text-sm text-stone-600">Only a small copy of the photo is kept on this device. The larger copy is sent to Claude to read, then thrown away.</p>
         </div>

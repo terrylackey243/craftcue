@@ -9,6 +9,7 @@ import { unitLabel } from '../components/SupplyForm'
 import { useAiGate } from '../components/useAiGate'
 import { Button, Notice, PageHeader, Spinner, inputClass } from '../components/ui'
 import { UNITS, type Quality, type Supply } from '../types'
+import PhotoDrop from '../components/PhotoDrop'
 
 interface Row extends ProposedSupply {
   key: number
@@ -97,9 +98,18 @@ export default function BulkAdd() {
 
       {!rows && !busy && (
         <div className="flex flex-col gap-3">
-          <Button className="min-h-16 text-lg" onClick={() => guard(() => input.current?.click())}>
-            📷 Take or choose a photo
-          </Button>
+          <PhotoDrop
+            onFile={(f) =>
+              guard(() => {
+                setFile(f)
+                void read(f, setup.quality)
+              })
+            }
+          >
+            <Button className="min-h-16 text-lg" onClick={() => guard(() => input.current?.click())}>
+              📷 Take or choose a photo
+            </Button>
+          </PhotoDrop>
           <p className="text-stone-600">Tips: good light, labels facing the camera, and not too far away. Rolls on their side are easiest to read.</p>
         </div>
       )}

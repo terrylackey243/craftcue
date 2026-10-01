@@ -13,6 +13,7 @@ import { toSupplyUnit } from '../lib/units'
 import { Badge, Button, Card, Field, Notice, Sheet, Spinner, Stepper, fieldClass, inputClass } from '../components/ui'
 import { EQUIPMENT, type Project, type ProjectStatus } from '../types'
 import { GOAL_LABEL, STATUS_LABEL } from './Projects'
+import PhotoDrop from '../components/PhotoDrop'
 
 export default function ProjectDetail() {
   const { id } = useParams()
@@ -199,7 +200,9 @@ export default function ProjectDetail() {
       <Card>
         <h2 className="mb-2 text-xl font-bold">Your notes</h2>
         <NotesEditor project={p} />
-        <div className="mt-3 flex items-center gap-3">
+        <div className="mt-3">
+        <PhotoDrop onFile={async (f) => updateProject(p.id, { photoThumb: (await makeThumbnail(f)).dataUrl })}>
+        <div className="flex items-center gap-3">
           {p.photoThumb && <img src={p.photoThumb} alt="Finished project" className="h-24 w-24 rounded-xl object-cover" />}
           <label className="inline-flex min-h-12 cursor-pointer items-center rounded-xl border-2 border-brand-200 bg-white px-4 font-semibold text-brand-700">
             {p.photoThumb ? 'Change photo' : 'Add a photo of it'}
@@ -213,6 +216,8 @@ export default function ProjectDetail() {
               }}
             />
           </label>
+        </div>
+        </PhotoDrop>
         </div>
       </Card>
 
