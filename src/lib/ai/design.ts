@@ -62,7 +62,7 @@ function materials(project: Project, supplies: Supply[], categories: Map<string,
   // The project's own materials first, then other colors of the same kinds (for extra layers).
   const pick = supplies.filter((s) => used.has(s.id) || (usedCats.has(s.category) && s.quantity > 0))
   const line = (s: Supply) =>
-    `${s.id} | ${s.name}${s.color ? ` — ${s.color}` : ''} | ${categories.get(s.category)?.name ?? s.category} | ${s.dimensions || 'size unknown'} | have ${s.quantity} ${s.unit}${used.has(s.id) ? ' | PLANNED FOR THIS PROJECT' : ''}`
+    `${s.id} | ${s.name}${s.color ? ` — ${s.color}` : ''}${s.colorHex ? ` (${s.colorHex})` : ''} | ${categories.get(s.category)?.name ?? s.category} | ${s.dimensions || 'size unknown'} | have ${s.quantity} ${s.unit}${used.has(s.id) ? ' | PLANNED FOR THIS PROJECT' : ''}`
   return pick.slice(0, 150).map(line).join('\n') || '(no stash materials listed)'
 }
 

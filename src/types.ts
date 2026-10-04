@@ -21,6 +21,8 @@ export interface Supply extends Timestamps {
   subtype?: string
   brand?: string
   color?: string
+  /** The exact color, picked with the eyedropper (hex like #f28c28). Better than guessing from the name. */
+  colorHex?: string
   finish?: string
   dimensions?: string
   quantity: number
@@ -137,6 +139,8 @@ export interface UserSetup {
 export interface PackColor {
   color: string
   count: number
+  /** Picked swatch color (hex), if any. */
+  hex?: string
 }
 
 export interface UpcCacheEntry {

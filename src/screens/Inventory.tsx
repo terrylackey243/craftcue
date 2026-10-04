@@ -81,6 +81,8 @@ function SupplyRow({ s, catName, indent = false }: { s: Supply; catName: (id: st
     <li className={`flex flex-wrap items-center gap-3 p-3 ${indent ? 'bg-stone-50 pl-8' : ''}`}>
       {s.thumbnail ? (
         <img src={s.thumbnail} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+      ) : s.colorHex ? (
+        <span aria-hidden className="h-14 w-14 shrink-0 rounded-lg ring-1 ring-stone-200" style={{ background: s.colorHex }} />
       ) : (
         <span aria-hidden className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-2xl">
           {indent ? '🎨' : categoryIcon(s.category)}

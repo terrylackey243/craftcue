@@ -9,6 +9,7 @@ import { guessCategory } from '../lib/guessCategory'
 import { formatMoney, parseMoney, perUnitFromPack } from '../lib/money'
 import BarcodeField from './BarcodeField'
 import PhotoDrop from './PhotoDrop'
+import { ColorSwatch } from './ColorPick'
 
 export type SupplyDraft = Partial<Supply> & { name: string; category: string; quantity: number; unit: Supply['unit'] }
 
@@ -191,7 +192,12 @@ export default function SupplyForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Color" highlight={flag('color')}>
-          {(id) => <input id={id} className={inputClass} value={d.color ?? ''} placeholder="e.g. matte black" onChange={(e) => set('color', e.target.value || undefined)} />}
+          {(id) => (
+            <div className="flex items-center gap-2">
+              <input id={id} className={inputClass} value={d.color ?? ''} placeholder="e.g. matte black" onChange={(e) => set('color', e.target.value || undefined)} />
+              <ColorSwatch label={d.color || 'this item'} value={d.colorHex} onChange={(hex) => set('colorHex', hex)} />
+            </div>
+          )}
         </Field>
         <Field label="Finish">
           {(id) => (

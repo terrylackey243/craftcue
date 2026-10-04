@@ -45,3 +45,8 @@ export function nameOfHex(hex: string): string {
   )
   return best.w.replace(/\b\w/g, (c) => c.toUpperCase())
 }
+
+/** A supply's color as hex: the picked swatch if there is one, otherwise a guess from its name. */
+export function supplyHex(s: { colorHex?: string; color?: string; name?: string }): string {
+  return s.colorHex || guessHex(s.color || s.name)
+}

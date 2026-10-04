@@ -16,6 +16,7 @@ import { useAiGate } from './useAiGate'
 import BarcodeField from './BarcodeField'
 import { Button, Chip, Field, Notice, Spinner, Stepper, fieldClass, inputClass } from './ui'
 import PhotoDrop from './PhotoDrop'
+import { ColorPickSheet, ColorSwatch, hasEyeDropper } from './ColorPick'
 
 export interface AssortmentInitial {
   name?: string
@@ -59,6 +60,7 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
   const [packs, setPacks] = useState(1)
   const [price, setPrice] = useState('')
   const [pasting, setPasting] = useState(false)
+  const [picking, setPicking] = useState(false)
   const [pasted, setPasted] = useState('')
   const [reading, setReading] = useState(false)
   const [error, setError] = useState('')
@@ -356,7 +358,20 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
           <Button variant="ghost" onClick={() => setPasting(!pasting)} aria-expanded={pasting}>
             📋 Paste a list of colors
           </Button>
+          <Button variant="ghost" onClick={() => setPicking(true)} disabled={!rows.some((r) => r.color.trim())}>
+            🎨 Pick colors from a photo
+          </Button>
         </div>
+        <p className="text-sm text-stone-600">Tap 💧 by a color to pick its exact shade{hasEyeDropper() ? ' from anywhere on your screen, like a photo of the paper' : ''}, or pick them all in order from one photo.</p>
+        <ColorPickSheet
+          open={picking}
+          onClose={() => setPicking(false)}
+          targets={rows.filter((r) => r.color.trim()).map((r) => r.color.trim())}
+          onPick={(i, hex) => {
+            const named = rows.filter((r) => r.color.trim())
+            if (hex && named[i]) setRow(named[i].key, { hex })
+          }}
+        />
         {pasting && (
           <div className="flex flex-col gap-2 rounded-xl bg-stone-50 p-3">
             <label htmlFor="paste-colors" className="font-semibold">
@@ -454,6 +469,7 @@ function ColorRow({ row, index, label, onChange, onRemove, onEnter, autoFocus }:
       <span className="w-6 text-right text-sm font-semibold text-stone-500" aria-hidden>
         {index + 1}
       </span>
+      <ColorSwatch label={label} value={row.hex} onChange={(hex) => onChange({ hex })} />
       <label htmlFor={`color-${row.key}`} className="sr-only">
         Color {index + 1}
       </label>

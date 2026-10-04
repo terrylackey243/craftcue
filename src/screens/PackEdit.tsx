@@ -11,6 +11,8 @@ import { addColorsToPack, PACK_FIELDS, packValue, parseColorList, setPackBarcode
 import { formatMoney, parseMoney } from '../lib/money'
 import { isValidUpc, normalizeUpc } from '../lib/upc'
 import { ADHESIVES, UNITS, type Supply } from '../types'
+import { ColorPickSheet, ColorSwatch, hasEyeDropper } from '../components/ColorPick'
+import { setSupplyColorHex } from '../lib/repo'
 
 /** /pack/:setId — change a mixed-color pack's shared details for every color at once. */
 export default function PackEdit() {
@@ -187,14 +189,22 @@ function PackDetails({ items }: { items: Supply[] }) {
 }
 
 function Colors({ items }: { items: Supply[] }) {
+  const [picking, setPicking] = useState(false)
   return (
     <div className="flex flex-col gap-2 rounded-2xl bg-white p-4 ring-1 ring-stone-200">
       <h2 className="text-lg font-bold">Colors</h2>
-      <p className="text-sm text-stone-600">Tap a color to change just that one (its name, how many you have, its photo). To change the order, use “Change order” on the pack in My stash.</p>
+      <p className="text-sm text-stone-600">
+        Tap a color's name to change just that one (its name, how many you have, its photo). Tap 💧 to pick its exact shade{hasEyeDropper() ? ' from anywhere on your screen, like a photo of the paper' : ''}. To change the order, use “Change order” on the pack in My stash.
+      </p>
+      <Button variant="secondary" className="self-start" onClick={() => setPicking(true)}>
+        🎨 Pick all the colors from a photo
+      </Button>
+      <ColorPickSheet open={picking} onClose={() => setPicking(false)} targets={items.map((s) => s.color || s.name)} onPick={(i, hex) => hex && void setSupplyColorHex(items[i].id, hex)} />
       <ul className="divide-y divide-stone-100">
         {items.map((s) => (
-          <li key={s.id}>
-            <Link to={`/supply/${s.id}`} className="flex min-h-12 items-center justify-between gap-3 py-2 hover:bg-stone-50">
+          <li key={s.id} className="flex items-center gap-3 py-1">
+            <ColorSwatch label={s.color || s.name} value={s.colorHex} onChange={(hex) => void setSupplyColorHex(s.id, hex)} />
+            <Link to={`/supply/${s.id}`} className="flex min-h-12 flex-1 items-center justify-between gap-3 py-2 hover:bg-stone-50">
               <span className="font-medium">{s.color || s.name}</span>
               <span className="text-sm text-stone-600">
                 {Math.round(s.quantity * 1000) / 1000} {unitLabel(s.unit, s.quantity)} ›

@@ -30,7 +30,7 @@ test('first run, add supplies, back up, wipe, restore', async ({ page }, testInf
     ['Kraft cardstock', 'brown'],
   ]) {
     await page.getByLabel('Name', { exact: true }).fill(name)
-    await page.getByLabel('Color').fill(color)
+    await page.getByLabel('Color', { exact: true }).fill(color)
     await page.getByRole('button', { name: 'More quantity' }).click()
     await page.getByRole('button', { name: 'Save and add another' }).click()
     await expect(page.getByText(`Saved “${name}”`)).toBeVisible()
@@ -395,4 +395,38 @@ test('a project found elsewhere: SVG in, materials matched, priced', async ({ pa
   await expect(page.getByText('$19.00').first()).toBeVisible()
   await expect(page.getByText('$22.00')).toBeVisible()
   await expect(page.getByText('Commercial use by creating physical products allowed.')).toBeVisible()
+})
+
+test('pick a pack’s colors by tapping a photo of the paper', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: "Let's start" }).click()
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+  await page.getByRole('button', { name: 'Maybe later' }).click()
+  await page.getByRole('button', { name: "I'll do it later" }).click()
+  await expect(page.getByRole('heading', { name: 'What would you like to make?' })).toBeVisible()
+  await page.goto('/#/add/manual')
+  await page.getByRole('button', { name: 'A pack with several colors' }).click()
+  await page.getByLabel(/What is one .* \(without the color\)/).fill('Cardstock')
+  await page.getByLabel('Color 1', { exact: true }).fill('Rocket Red')
+  await page.getByLabel('Color 1', { exact: true }).press('Enter')
+  await page.getByLabel('Color 2', { exact: true }).fill('Lunar Blue')
+
+  await page.getByRole('button', { name: '🎨 Pick colors from a photo' }).click()
+  await page.getByLabel(/Choose a photo of the material/).setInputFiles('tests/fixtures/photos/two-colors.png')
+  const photo = page.getByLabel('Your photo: tap a color to pick it')
+  await expect(page.getByText('Tap Rocket Red (1 of 2)')).toBeVisible()
+  await photo.click({ position: { x: 20, y: 20 } })
+  await page.getByRole('button', { name: 'Use this for Rocket Red' }).click()
+  await expect(page.getByText('Tap Lunar Blue (2 of 2)')).toBeVisible()
+  const box = (await photo.boundingBox())!
+  await photo.click({ position: { x: box.width - 20, y: 20 } })
+  await page.getByRole('button', { name: 'Use this for Lunar Blue' }).click()
+
+  await expect(page.getByRole('button', { name: 'Color for Rocket Red: #c62828. Pick again' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Color for Lunar Blue: #1e6fd0. Pick again' })).toBeVisible()
+  await page.getByRole('button', { name: /Save 2 colors/ }).click()
+  await page.goto('/#/inventory')
+  await page.getByRole('button', { name: /Cardstock/ }).click()
+  await page.getByRole('link', { name: '✏️ Edit pack' }).click()
+  await expect(page.getByRole('button', { name: 'Color for Lunar Blue: #1e6fd0. Pick again' })).toBeVisible()
 })

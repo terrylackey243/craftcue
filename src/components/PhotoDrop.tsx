@@ -46,11 +46,15 @@ export default function PhotoDrop({
   const [msg, setMsg] = useState('')
   const latest = useRef(onFile)
   latest.current = onFile
+  const zone = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (disabled) return
     const onPaste = (e: ClipboardEvent) => {
       if (e.defaultPrevented) return
+      // While a dialog is open (e.g. the color picker), only drop zones inside it take pastes.
+      const dialog = document.querySelector('dialog[open]')
+      if (dialog && !dialog.contains(zone.current)) return
       const files = filesFrom(e.clipboardData, kind)
       if (!files.length) return // ordinary text paste, or the other kind of file: leave it alone
       e.preventDefault()
@@ -90,6 +94,7 @@ export default function PhotoDrop({
 
   return (
     <div
+      ref={zone}
       data-testid="photo-drop"
       className={`flex flex-col gap-2 rounded-2xl ${compact ? '' : 'border-2 border-dashed p-3 pointer-coarse:border-0 pointer-coarse:p-0'} ${over ? 'border-brand-600 bg-brand-50' : 'border-stone-300'}`}
       onDragEnter={(e) => {

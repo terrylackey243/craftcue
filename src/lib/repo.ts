@@ -110,6 +110,12 @@ export async function adjustQuantity(id: string, delta: number): Promise<void> {
   await noteChange()
 }
 
+/** Set (or clear) one supply's picked color. */
+export async function setSupplyColorHex(id: string, colorHex: string | undefined): Promise<void> {
+  await db.supplies.update(id, { colorHex, updatedAt: nowIso() })
+  await noteChange()
+}
+
 export async function deleteSupply(id: string): Promise<void> {
   await db.supplies.delete(id)
   await noteChange()

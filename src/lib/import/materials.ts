@@ -3,7 +3,7 @@
 import { area, bbox, boxH, boxW, pieces, transform, union, UNITS_PER_IN, type Shape } from '../design/geometry'
 import { cssToRgb, dist, readSvg } from '../design/importSvg'
 import { materialSize } from '../design/checks'
-import { guessHex } from '../colorGuess'
+import { supplyHex } from '../colorGuess'
 import type { Supply, SupplyUse } from '../../types'
 
 const IN = UNITS_PER_IN
@@ -122,7 +122,7 @@ export function layOut(parts: { w: number; h: number }[], sheetW: number, sheetH
 export function closestSupplies(hex: string, candidates: Supply[], limit = 5): { supply: Supply; distance: number }[] {
   const rgb = cssToRgb(hex) ?? [0, 0, 0]
   return candidates
-    .map((s) => ({ supply: s, distance: dist(cssToRgb(guessHex(s.color || s.name)) ?? [0, 0, 0], rgb) + (s.quantity > 0 ? 0 : 30) }))
+    .map((s) => ({ supply: s, distance: dist(cssToRgb(supplyHex(s)) ?? [0, 0, 0], rgb) + (s.quantity > 0 ? 0 : 30) }))
     .sort((a, b) => a.distance - b.distance)
     .slice(0, limit)
 }

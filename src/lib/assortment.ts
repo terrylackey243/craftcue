@@ -24,7 +24,8 @@ export function cleanColors(colors: PackColor[]): PackColor[] {
     if (!color || !(count > 0)) continue
     const key = color.toLowerCase()
     const prev = out.get(key)
-    out.set(key, { color: prev?.color ?? color, count: roundQty((prev?.count ?? 0) + count) })
+    const hex = prev?.hex || c.hex
+    out.set(key, { color: prev?.color ?? color, count: roundQty((prev?.count ?? 0) + count), ...(hex ? { hex } : {}) })
   }
   return [...out.values()]
 }
@@ -52,6 +53,7 @@ export async function saveAssortment(d: AssortmentDraft): Promise<Supply[]> {
       packOrder: i,
       name: d.base.name.trim(),
       color: c.color,
+      ...(c.hex ? { colorHex: c.hex } : {}),
       quantity: roundQty(c.count * packs),
       packSize: c.count,
       unitCost,

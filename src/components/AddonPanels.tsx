@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { db } from '../db'
 import imageModels from '../data/imageModels.json'
 import type { Project, Supply } from '../types'
-import { guessHex } from '../lib/colorGuess'
+import { supplyHex } from '../lib/colorGuess'
 import { downloadBlob, svgFilename } from '../lib/design/export'
 import { layoutSheet, renderSheet, toStoredImage } from '../lib/addons/stickers'
 import { buildVectorDesign, vectorPrompt, type ColorPick } from '../lib/addons/vectorDesign'
@@ -38,7 +38,7 @@ export function VectorArtPanel({ project, supplies }: { project: Project; suppli
   const available = supplies.filter((s) => s.category === category && s.quantity > 0)
   const catChoices = CUTTABLE.filter((c) => supplies.some((s) => s.category === c && s.quantity > 0))
   const toggle = (s: Supply) =>
-    setPicks((p) => (p.some((x) => x.supply.id === s.id) ? p.filter((x) => x.supply.id !== s.id) : p.length >= MAX_COLORS ? p : [...p, { supply: s, hex: guessHex(s.color || s.name) }]))
+    setPicks((p) => (p.some((x) => x.supply.id === s.id) ? p.filter((x) => x.supply.id !== s.id) : p.length >= MAX_COLORS ? p : [...p, { supply: s, hex: supplyHex(s) }]))
   const sameColor = new Set(picks.map((p) => p.hex.toLowerCase())).size < picks.length
 
   async function make() {
