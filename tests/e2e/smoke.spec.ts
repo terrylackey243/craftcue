@@ -281,8 +281,10 @@ test('paste a color list into a saved pack (Terry’s 30 markers)', async ({ pag
   const group = page.getByRole('button', { name: /Fine Point Pens/ })
   await expect(group).toContainText('30 colors')
   await group.click()
-  const names = await page.locator('li li a span.font-semibold').allTextContents()
-  expect(names).toEqual(list)
+  // Each row shows the plain color first and the brand name under it (e.g. "Blue" / "Bluebonnet").
+  const rows = await page.locator('li li a').allTextContents()
+  expect(rows).toHaveLength(list.length)
+  rows.forEach((text, i) => expect(text).toContain(list[i]))
 })
 
 test('a saved design: mock-up, cut layers, SVG download, and accessible', async ({ page }) => {

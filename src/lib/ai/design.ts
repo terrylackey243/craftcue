@@ -13,6 +13,7 @@ import type { Category, Project, Supply, UserSetup } from '../../types'
 import { AiResponseError, checkStop, firstText, getAiClient, logUsage } from './aiClient'
 import { recommendModel, supportsEffort } from './models'
 import { wire } from './schemas'
+import { colorLabel } from '../colorGuess'
 
 export const DESIGN_RULES = `You are CraftCue's designer. You turn a craft project idea into an exact layout that CraftCue draws and exports as a cut file for a home cutting machine (like a Cricut). You never draw: you describe the layout using only the fonts, shapes, icons and elements listed below, and CraftCue draws them precisely.
 
@@ -62,7 +63,7 @@ function materials(project: Project, supplies: Supply[], categories: Map<string,
   // The project's own materials first, then other colors of the same kinds (for extra layers).
   const pick = supplies.filter((s) => used.has(s.id) || (usedCats.has(s.category) && s.quantity > 0))
   const line = (s: Supply) =>
-    `${s.id} | ${s.name}${s.color ? ` — ${s.color}` : ''}${s.colorHex ? ` (${s.colorHex})` : ''} | ${categories.get(s.category)?.name ?? s.category} | ${s.dimensions || 'size unknown'} | have ${s.quantity} ${s.unit}${used.has(s.id) ? ' | PLANNED FOR THIS PROJECT' : ''}`
+    `${s.id} | ${s.name}${colorLabel(s) ? ` — ${colorLabel(s)}` : ''}${s.colorHex ? ` (${s.colorHex})` : ''} | ${categories.get(s.category)?.name ?? s.category} | ${s.dimensions || 'size unknown'} | have ${s.quantity} ${s.unit}${used.has(s.id) ? ' | PLANNED FOR THIS PROJECT' : ''}`
   return pick.slice(0, 150).map(line).join('\n') || '(no stash materials listed)'
 }
 

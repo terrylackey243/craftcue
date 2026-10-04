@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { db } from '../db'
 import imageModels from '../data/imageModels.json'
 import type { Project, Supply } from '../types'
-import { supplyHex } from '../lib/colorGuess'
+import { colorLabel, supplyHex } from '../lib/colorGuess'
 import { downloadBlob, svgFilename } from '../lib/design/export'
 import { layoutSheet, renderSheet, toStoredImage } from '../lib/addons/stickers'
 import { buildVectorDesign, vectorPrompt, type ColorPick } from '../lib/addons/vectorDesign'
@@ -79,7 +79,7 @@ export function VectorArtPanel({ project, supplies }: { project: Project; suppli
           <ul className="mt-1 flex flex-col gap-1">
             {available.map((s) => {
               const pick = picks.find((p) => p.supply.id === s.id)
-              const label = [s.color, s.name].filter(Boolean).join(' — ')
+              const label = [colorLabel(s), s.name].filter(Boolean).join(' — ')
               return (
                 <li key={s.id} className="flex min-h-12 items-center gap-3">
                   <input id={`pick-${s.id}`} type="checkbox" className="h-6 w-6" checked={Boolean(pick)} onChange={() => toggle(s)} disabled={!pick && picks.length >= MAX_COLORS} />

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { COLOR_FAMILIES, colorLabel, plainColor, supplyFamily } from '../lib/colorGuess'
 import { Link } from 'react-router-dom'
 import { useCategoryMap, useSupplies } from '../hooks'
 import { adjustQuantity } from '../lib/repo'
@@ -23,16 +24,17 @@ const barcodeDigits = (t: string) => t.replace(/\D/g, '').replace(/^0+/, '')
  * type or barcode. A query that is only digits (and spaces, as printed under the bars) is read
  * as one barcode, and part of a barcode matches too.
  */
-export function filterSupplies(supplies: Supply[], q: string, category: string, location: string, categoryName: (id: string) => string): Supply[] {
+export function filterSupplies(supplies: Supply[], q: string, category: string, location: string, categoryName: (id: string) => string, family = ''): Supply[] {
   const trimmed = q.trim()
   const asBarcode = /^[\d\s-]+$/.test(trimmed) && trimmed.replace(/\D/g, '').length >= 6 ? barcodeDigits(trimmed) : ''
   const words = asBarcode ? [] : trimmed.toLowerCase().split(/\s+/).filter(Boolean)
   return supplies.filter((s) => {
     if (category && s.category !== category) return false
     if (location && (s.location ?? '') !== location) return false
+    if (family && supplyFamily(s) !== family) return false
     if (asBarcode) return Boolean(s.upc) && barcodeDigits(s.upc!).includes(asBarcode)
     if (!words.length) return true
-    const hay = [s.name, s.setName, s.color, s.brand, s.subtype, s.finish, s.dimensions, s.location, s.notes, categoryName(s.category)].join(' ').toLowerCase()
+    const hay = [s.name, s.setName, s.color, plainColor(s)?.name, supplyFamily(s), s.brand, s.subtype, s.finish, s.dimensions, s.location, s.notes, categoryName(s.category)].join(' ').toLowerCase()
     // Long numbers are checked against the barcode; short ones ("12", "65") only against the text,
     // since barcodes contain almost every short number.
     return words.every((w) => (/^\d{6,}$/.test(w) ? Boolean(s.upc) && barcodeDigits(s.upc!).includes(barcodeDigits(w)) : hay.includes(w)))
@@ -89,9 +91,14 @@ function SupplyRow({ s, catName, indent = false }: { s: Supply; catName: (id: st
         </span>
       )}
       <Link to={`/supply/${s.id}`} className="min-w-40 flex-1">
-        <span className="block font-semibold text-stone-900 underline-offset-2 hover:underline">{indent ? s.color || s.name : s.name}</span>
+        <span className="block font-semibold text-stone-900 underline-offset-2 hover:underline">{indent ? plainColor(s)?.name || s.color || s.name : s.name}</span>
         <span className="block text-sm text-stone-600">
-          {(indent ? [s.dimensions, s.subtype] : [catName(s.category), s.color, s.dimensions, s.location]).filter(Boolean).join(' · ')}
+          {(indent
+            ? [plainColor(s) && s.color && plainColor(s)!.name.toLowerCase() !== s.color.toLowerCase() ? s.color : '', s.dimensions, s.subtype]
+            : [catName(s.category), colorLabel(s), s.dimensions, s.location]
+          )
+            .filter(Boolean)
+            .join(' · ')}
         </span>
       </Link>
       <LevelBadge s={s} />
@@ -222,6 +229,7 @@ export default function Inventory() {
   const [q, setQ] = useState('')
   const [category, setCategory] = useState('')
   const [location, setLocation] = useState('')
+  const [family, setFamily] = useState('')
   const [openSets, setOpenSets] = useState<Set<string>>(new Set())
   const [scanning, setScanning] = useState(false)
   const toggleSet = (id: string) =>
@@ -244,7 +252,8 @@ export default function Inventory() {
   const usedCats = useMemo(() => [...new Set((supplies ?? []).map((s) => s.category))], [supplies])
 
   if (!supplies) return <Spinner />
-  const shown = filterSupplies(supplies, q, category, location, catName)
+  const shown = filterSupplies(supplies, q, category, location, catName, family)
+  const families = COLOR_FAMILIES.filter((f) => supplies.some((x) => supplyFamily(x) === f))
 
   const setViewSaved = (v: 'list' | 'grid') => {
     setView(v)
@@ -276,7 +285,7 @@ export default function Inventory() {
         </EmptyState>
       ) : (
         <>
-          <div className="mb-4 grid gap-2 sm:grid-cols-[2fr_1fr_1fr_auto]">
+          <div className="mb-4 grid gap-2 sm:grid-cols-[2fr_1fr_1fr_1fr_auto]">
             <label className="sr-only" htmlFor="inv-search">
               Search your stash
             </label>
@@ -294,6 +303,17 @@ export default function Inventory() {
               {usedCats.map((c) => (
                 <option key={c} value={c}>
                   {catName(c)}
+                </option>
+              ))}
+            </select>
+            <label className="sr-only" htmlFor="inv-color">
+              Filter by color
+            </label>
+            <select id="inv-color" className={inputClass} value={family} onChange={(e) => setFamily(e.target.value)} disabled={!families.length}>
+              <option value="">All colors</option>
+              {families.map((f) => (
+                <option key={f} value={f}>
+                  {f === 'Gray' || f === 'Black' || f === 'White' ? f : `${f}s`}
                 </option>
               ))}
             </select>
@@ -325,7 +345,7 @@ export default function Inventory() {
                 entry.kind === 'single' ? (
                   <SupplyRow key={entry.supply.id} s={entry.supply} catName={catName} />
                 ) : (
-                  <SetRow key={entry.setId} entry={entry} open={Boolean(q.trim()) || openSets.has(entry.setId)} onToggle={() => toggleSet(entry.setId)} catName={catName} />
+                  <SetRow key={entry.setId} entry={entry} open={Boolean(q.trim()) || Boolean(family) || openSets.has(entry.setId)} onToggle={() => toggleSet(entry.setId)} catName={catName} />
                 ),
               )}
             </ul>
@@ -342,7 +362,7 @@ export default function Inventory() {
                       </span>
                     )}
                     <span className="font-semibold leading-tight">{s.name}</span>
-                    <span className="text-sm text-stone-600">{[s.color, s.dimensions].filter(Boolean).join(' · ') || catName(s.category)}</span>
+                    <span className="text-sm text-stone-600">{[colorLabel(s), s.dimensions].filter(Boolean).join(' · ') || catName(s.category)}</span>
                   </Link>
                   <div className="mt-auto flex flex-wrap items-center justify-between gap-1">
                     <QuickQty s={s} />

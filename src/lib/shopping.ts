@@ -1,5 +1,6 @@
 // Shopping list (spec 5.8): missing items from saved projects + low/out-of-stock supplies.
 import type { Project, Supply } from '../types'
+import { colorLabel } from './colorGuess'
 
 export interface ShoppingLine {
   key: string
@@ -43,7 +44,7 @@ export function buildShoppingList(projects: Project[], supplies: Supply[]): Shop
     const key = `s:${s.id}`
     lines.set(key, {
       key,
-      item: [s.name, s.color].filter(Boolean).join(' — '),
+      item: [s.name, colorLabel(s)].filter(Boolean).join(' — '),
       detail: level === 'out' ? 'Out of stock' : `Running low (${s.quantity} ${s.unit} left)`,
       kind: level,
       projectIds: [],

@@ -17,6 +17,7 @@ import { DEFAULT_HOURLY_RATE, DEFAULT_PROFIT_PCT, ETSY, priceProject } from '../
 import { formatMoney } from '../lib/money'
 import { GOAL_LABEL, STATUS_LABEL } from './Projects'
 import PhotoDrop from '../components/PhotoDrop'
+import { colorLabel } from '../lib/colorGuess'
 
 export default function ProjectDetail() {
   const { id } = useParams()
@@ -89,7 +90,7 @@ export default function ProjectDetail() {
                   {s ? (
                     <Link to={`/supply/${s.id}`} className="flex-1 font-semibold underline-offset-2 hover:underline">
                       {s.name}
-                      {s.color ? ` — ${s.color}` : ''}
+                      {colorLabel(s) ? ` — ${colorLabel(s)}` : ''}
                     </Link>
                   ) : (
                     <span className="flex-1 text-stone-500">(no longer in your stash)</span>

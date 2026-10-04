@@ -8,7 +8,7 @@ import { unitLabel } from '../components/SupplyForm'
 import { useAiGate } from '../components/useAiGate'
 import { Button, Card, Field, Notice, PageHeader, Spinner, Stepper, inputClass } from '../components/ui'
 import { friendlyError } from '../lib/ai/aiClient'
-import { nameOfHex } from '../lib/colorGuess'
+import { colorLabel, nameOfHex } from '../lib/colorGuess'
 import { makeThumbnail, makeVisionImage } from '../lib/images'
 import { analyzeSvgs, closestSupplies, amountFor, type ColorPart, type SvgAnalysis } from '../lib/import/materials'
 import { saveProject } from '../lib/repo'
@@ -202,7 +202,7 @@ export default function ImportProject() {
     const rest = (candidates.length ? candidates : supplies).filter((s) => !close.some((c) => c.supply.id === s.id)).sort((a, b) => (a.color ?? a.name).localeCompare(b.color ?? b.name))
     return { close: close.map((c) => c.supply), rest }
   }
-  const supplyLabel = (s: Supply) => `${s.color ? `${s.color} — ` : ''}${s.name}${s.dimensions ? ` (${s.dimensions})` : ''}${s.quantity > 0 ? '' : ' · none left'}`
+  const supplyLabel = (s: Supply) => `${colorLabel(s) ? `${colorLabel(s)} — ` : ''}${s.name}${s.dimensions ? ` (${s.dimensions})` : ''}${s.quantity > 0 ? '' : ' · none left'}`
 
   if (!setup) return <Spinner />
 

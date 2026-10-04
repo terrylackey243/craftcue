@@ -17,14 +17,36 @@ const WORDS: [string, string][] = [
   ['bronze', '#a97142'], ['gold', '#d4af37'], ['silver', '#c0c0c0'], ['charcoal', '#3a3a3a'],
   ['gray', '#8a8a8a'], ['grey', '#8a8a8a'], ['black', '#1a1a1a'], ['white', '#ffffff'],
   ['lavender', '#b8a2d8'], ['lilac', '#c8a2c8'], ['plum', '#6e3a6e'], ['violet', '#7f4fc9'],
-  ['purple', '#6a3fa0'], ['indigo', '#3f3f9f'], ['cobalt', '#1f4fbf'], ['denim', '#3d5a80'],
+  ['purple', '#6a3fa0'], ['orchid', '#da70d6'], ['grape', '#6f2da8'], ['periwinkle', '#8c9ce8'],
+  ['brick', '#a33a2a'], ['berry', '#990f4b'], ['bubble gum', '#ffc1cc'], ['bubblegum', '#ffc1cc'], ['fuchsia', '#d633a8'], ['fuchia', '#d633a8'],
+  ['goldenrod', '#daa520'], ['clay', '#b66a50'], ['tawny', '#cd5700'], ['moccasin', '#ffe4b5'],
+  ['jade', '#00a86b'], ['stone', '#a8a294'], ['granite', '#6b6b6b'], ['concrete', '#9a9a96'], ['burgundy', '#7a1f33'], ['indigo', '#3f3f9f'], ['cobalt', '#1f4fbf'], ['denim', '#3d5a80'],
   ['blue', '#1e6fd0'], ['emerald', '#1f9d55'], ['kelly', '#2ca02c'], ['green', '#2e8b3e'],
 ]
+
+/**
+ * The color word in a name: whole words first ("Martian Green" is green, not tan), then words
+ * inside others ("Blueberry" → blue).
+ */
+const BASIC = new Set(['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'brown', 'gray', 'grey', 'black', 'white'])
+
+function colorWordIn(name: string): [string, string] | undefined {
+  const n = name.toLowerCase()
+  // The first color named wins ("white with black pupils" is white), longer phrases first at a tie.
+  let best: { at: number; len: number; entry: [string, string] } | undefined
+  for (const entry of WORDS) {
+    const m = new RegExp(`\\b${entry[0]}\\b`).exec(n)
+    if (m && (!best || m.index < best.at || (m.index === best.at && entry[0].length > best.len))) best = { at: m.index, len: entry[0].length, entry }
+  }
+  if (best) return best.entry
+  // A basic color starting a longer word: "Blueberry", "Bluebonnet" (not "Honeysuckle" → honey).
+  return WORDS.find(([w]) => BASIC.has(w) && new RegExp(`\\b${w}`).test(n))
+}
 
 export function guessHex(name: string | undefined): string {
   const n = (name ?? '').toLowerCase()
   if (/^#[0-9a-f]{6}$/.test(n.trim())) return n.trim()
-  return WORDS.find(([w]) => n.includes(w))?.[1] ?? '#888888'
+  return colorWordIn(n)?.[1] ?? '#888888'
 }
 
 const rgbOf = (hex: string) => {
@@ -89,4 +111,73 @@ export function nameOfHex(hex: string): string {
 /** A supply's color as hex: the picked swatch if there is one, otherwise a guess from its name. */
 export function supplyHex(s: { colorHex?: string; color?: string; name?: string }): string {
   return s.colorHex || guessHex(s.color || s.name)
+}
+
+// ----- plain colors vs brand names -----
+// "Rocket Red" and "Astro White" are brand names; the colors are Red and White. A supply's plain
+// color comes from its picked swatch, or failing that from a color word in its name.
+
+/** Color words that are really brand-style names, and the plain color to show instead. */
+const ALIASES: Record<string, string> = { 'sour apple': 'Lime green', sunshine: 'Yellow', fuchia: 'Fuchsia', bubblegum: 'Bubble gum', grey: 'Gray' }
+
+const MODIFIERS = new Set(['light', 'dark', 'pale', 'hot', 'deep', 'bright', 'pastel', 'neon', 'matte', 'glossy', 'gloss', 'glitter', 'metallic', 'shimmer', 'satin', 'holographic', 'off', 'and', 'with', 'clear'])
+const COLOR_WORDS = new Set([...WORDS.filter(([w]) => !(w in ALIASES)).flatMap(([w]) => w.split(' ')), 'grey', 'off-white', 'transparent', 'multicolor', 'multi', 'rainbow'])
+
+const cap = (x: string) => x.replace(/\b\w/g, (c) => c.toUpperCase())
+
+/** True when a color is already written as a plain color ("Light Pink", "matte black"), not a brand name. */
+export function isPlainColor(name: string): boolean {
+  const words = name.toLowerCase().replace(/[^a-z\s-]/g, ' ').split(/\s+/).filter(Boolean)
+  return words.length > 0 && words.some((w) => COLOR_WORDS.has(w)) && words.every((w) => COLOR_WORDS.has(w) || MODIFIERS.has(w) || w.split('-').every((p) => COLOR_WORDS.has(p) || MODIFIERS.has(p)))
+}
+
+export interface PlainColor {
+  name: string
+  /** True when it came from a word in a brand name, not a picked swatch (pick one to be sure). */
+  guessed: boolean
+}
+
+export function plainColor(s: { colorHex?: string; color?: string }): PlainColor | null {
+  if (s.colorHex) return { name: nameOfHex(s.colorHex), guessed: false }
+  const c = (s.color ?? '').trim()
+  if (!c) return null
+  const alias = ALIASES[c.toLowerCase()]
+  if (alias) return { name: alias, guessed: true }
+  if (isPlainColor(c)) return { name: cap(c.toLowerCase()), guessed: false }
+  const word = colorWordIn(c)?.[0]
+  return word ? { name: ALIASES[word] ?? cap(word), guessed: true } : null
+}
+
+/** "Red (Rocket Red)", "Light Yellow", or the brand name when no color can be told. */
+export function colorLabel(s: { colorHex?: string; color?: string }): string {
+  const plain = plainColor(s)
+  const brand = (s.color ?? '').trim()
+  if (!plain) return brand
+  return brand && brand.toLowerCase() !== plain.name.toLowerCase() ? `${plain.name} (${brand})` : plain.name
+}
+
+export const COLOR_FAMILIES = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Pink', 'Brown', 'Gray', 'Black', 'White'] as const
+export type ColorFamily = (typeof COLOR_FAMILIES)[number]
+
+/** The basic color a hex belongs to, for "show me my reds". */
+export function familyOfHex(hex: string): ColorFamily {
+  const { h, s, l } = toHsl(hex)
+  if (l < 0.12) return 'Black'
+  if (l > 0.93 || (l > 0.85 && s < 0.5 && h >= 30 && h < 70)) return 'White'
+  if (s < 0.12 || (s < 0.2 && l < 0.35)) return 'Gray'
+  if (h >= 10 && h < 55 && ((l < 0.45 && s < 0.75) || (s < 0.45 && l < 0.82))) return 'Brown'
+  if (h < 10 || h >= 345) return l > 0.75 ? 'Pink' : 'Red'
+  if (h < 40) return 'Orange'
+  if (h < 66) return 'Yellow'
+  if (h < 175) return 'Green'
+  if (h < 250) return 'Blue'
+  if (h < 302) return 'Purple'
+  return 'Pink'
+}
+
+/** A supply's basic color family, or null if neither a swatch nor a color word says. */
+export function supplyFamily(s: { colorHex?: string; color?: string }): ColorFamily | null {
+  if (s.colorHex) return familyOfHex(s.colorHex)
+  const plain = plainColor(s)
+  return plain ? familyOfHex(guessHex(plain.name)) : null
 }

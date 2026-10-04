@@ -13,6 +13,7 @@ import { isValidUpc, normalizeUpc } from '../lib/upc'
 import { ADHESIVES, UNITS, type Supply } from '../types'
 import { ColorPickSheet, ColorSwatch, hasEyeDropper } from '../components/ColorPick'
 import { setSupplyColorHex } from '../lib/repo'
+import { plainColor } from '../lib/colorGuess'
 
 /** /pack/:setId — change a mixed-color pack's shared details for every color at once. */
 export default function PackEdit() {
@@ -205,7 +206,10 @@ function Colors({ items }: { items: Supply[] }) {
           <li key={s.id} className="flex items-center gap-3 py-1">
             <ColorSwatch label={s.color || s.name} value={s.colorHex} onChange={(hex) => void setSupplyColorHex(s.id, hex)} />
             <Link to={`/supply/${s.id}`} className="flex min-h-12 flex-1 items-center justify-between gap-3 py-2 hover:bg-stone-50">
-              <span className="font-medium">{s.color || s.name}</span>
+              <span>
+                <span className="block font-medium">{plainColor(s)?.name || s.color || s.name}</span>
+                {plainColor(s) && s.color && plainColor(s)!.name.toLowerCase() !== s.color.toLowerCase() && <span className="block text-sm text-stone-600">{s.color}</span>}
+              </span>
               <span className="text-sm text-stone-600">
                 {Math.round(s.quantity * 1000) / 1000} {unitLabel(s.unit, s.quantity)} ›
               </span>
