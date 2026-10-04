@@ -3,6 +3,7 @@ import { Suspense, useEffect } from 'react'
 import { Spinner } from './ui'
 import BackupReminder from './BackupReminder'
 import { SyncBadge, SyncBanner } from './SyncStatus'
+import { Toasts } from './Toast'
 
 const NAV = [
   { to: '/', label: 'Home', icon: '🏠', end: true },
@@ -61,6 +62,7 @@ export default function Layout() {
           <Outlet />
         </Suspense>
       </main>
+      <Toasts />
 
       <nav aria-label="Main" className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-stone-200 bg-white md:hidden">
         <ul className="mx-auto grid max-w-lg grid-cols-5">

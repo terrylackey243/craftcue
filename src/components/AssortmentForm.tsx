@@ -20,6 +20,7 @@ import { ColorPickSheet, ColorSwatch, hasEyeDropper } from './ColorPick'
 import { nameForHex } from '../lib/colorList'
 import ColorNameCheck from './ColorNameCheck'
 import { isReplaceableName } from '../lib/colorGuess'
+import { learnAndTell } from './Toast'
 
 export interface AssortmentInitial {
   name?: string
@@ -210,6 +211,7 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
         await cacheUpc(normalizeUpc(f.upc), product)
         void import('../lib/cloud/products').then((m) => m.contributeProduct(normalizeUpc(f.upc), product))
       }
+      void learnAndTell(colors.map((c) => ({ name: c.color, hex: c.hex })))
       finish({ saved })
     } catch (err) {
       setError((err as Error).message || "Couldn't save. Please try again.")

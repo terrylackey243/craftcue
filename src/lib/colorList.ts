@@ -1,7 +1,7 @@
 // The crafter's own list of color names (plain and expanded colors, never brand names), each with
 // one or more sample shades. Picked colors are named after the closest one on the list, compared
 // the way eyes see color (CIE Lab), and new shades can be added or taught to an existing name.
-import { nameOfHex } from './colorGuess'
+import { isPlainColor, nameOfHex } from './colorGuess'
 
 export interface ColorEntry {
   name: string
@@ -111,4 +111,40 @@ export function removeColor(list: ColorEntry[], name: string): ColorEntry[] {
 /** Replace a color's shades with one (when its swatch is re-picked in settings). */
 export function setColorShade(list: ColorEntry[], name: string, hex: string): ColorEntry[] {
   return list.map((e) => (same(e.name, name) ? { ...e, hexes: [hex] } : e))
+}
+
+// ----- learning from names the crafter typed -----
+
+export interface LearnResult {
+  list: ColorEntry[]
+  /** Names that got a new shade (or were added as plain colors). */
+  learned: string[]
+  /** Names that aren't color words (maybe brand names): ask before adding. */
+  ask: { name: string; hex: string }[]
+}
+
+/**
+ * When a picked swatch was saved under a different name than the list would give it, teach the
+ * list: a name already on it gets this shade; a new plain color is added; anything else is asked.
+ */
+export function learnFromNames(list: ColorEntry[], pairs: { name: string; hex?: string }[]): LearnResult {
+  let next = list
+  const learned: string[] = []
+  const ask: LearnResult['ask'] = []
+  for (const { name, hex } of pairs) {
+    const base = name.trim().replace(/\s+\d+$/, '') // "Light yellow 2" is still Light yellow
+    if (!hex || !base) continue
+    const match = matchColor(hex, next)
+    if (match && same(base, match.entry.name)) continue // the list already names it this
+    const entry = next.find((e) => same(e.name, base))
+    if (entry) {
+      if (Math.min(...entry.hexes.map((h) => deltaE(h, hex))) < 2) continue // already knows this shade
+      next = addColor(next, entry.name, hex)
+      learned.push(entry.name)
+    } else if (isPlainColor(base)) {
+      next = addColor(next, base, hex)
+      learned.push(base)
+    } else if (!ask.some((a) => same(a.name, base))) ask.push({ name: base, hex })
+  }
+  return { list: next, learned: [...new Set(learned)], ask }
 }

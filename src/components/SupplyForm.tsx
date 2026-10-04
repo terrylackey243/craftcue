@@ -12,6 +12,7 @@ import PhotoDrop from './PhotoDrop'
 import { ColorSwatch } from './ColorPick'
 import ColorNameCheck from './ColorNameCheck'
 import { isReplaceableName } from '../lib/colorGuess'
+import { learnAndTell } from './Toast'
 
 export type SupplyDraft = Partial<Supply> & { name: string; category: string; quantity: number; unit: Supply['unit'] }
 
@@ -114,6 +115,8 @@ export default function SupplyForm({
         source: d.source ?? 'manual',
         unitCost: d.unitCost === undefined || Number.isNaN(d.unitCost) ? undefined : d.unitCost,
       } as Supply)
+      // Only when the color or its name was changed in this edit.
+      if (saved.colorHex && saved.color && (saved.color !== initial.color || saved.colorHex !== initial.colorHex)) void learnAndTell([{ name: saved.color, hex: saved.colorHex }])
       onSaved(saved)
     } catch {
       setError("Couldn't save. Please try again.")

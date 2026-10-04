@@ -62,3 +62,35 @@ describe('a picked color that is not on the list', () => {
     await waitFor(() => expect(named).toBe('Blue'))
   })
 })
+
+describe('learning from names the crafter typed', () => {
+  it('teaches shades to names on the list, adds plain colors, asks about the rest', async () => {
+    const { learnFromNames } = await import('../../src/lib/colorList')
+    const list: ColorEntry[] = [{ name: 'Light green', hexes: ['#90d090'] }, { name: 'Mint', hexes: ['#98e0c0'] }, { name: 'Red', hexes: ['#c62828'] }]
+    const r = learnFromNames(list, [
+      { name: 'Mint', hex: '#8fd09a' }, // matched "Light green", renamed to Mint: learn
+      { name: 'Light green 2', hex: '#90d090' }, // unchanged suggestion: nothing
+      { name: 'Dark teal', hex: '#0e5555' }, // a plain color not on the list: add
+      { name: 'Rocket Red', hex: '#d02020' }, // brand-looking: ask
+      { name: 'Seafoam', hex: '#7fd8c0' }, // unknown word: ask
+      { name: 'Red' }, // no swatch: nothing
+    ])
+    expect(r.learned).toEqual(['Mint', 'Dark teal'])
+    expect(r.list.find((e) => e.name === 'Mint')!.hexes).toEqual(['#98e0c0', '#8fd09a'])
+    expect(r.ask.map((a) => a.name)).toEqual(['Rocket Red', 'Seafoam'])
+    expect(nameForHex('#8fd09a', r.list)).toBe('Mint') // next time it's Mint
+  })
+
+  it('saving a pack says what it learned and offers to add the rest', async () => {
+    const { learnAndTell } = await import('../../src/components/Toast')
+    const { render: r2, screen: s2 } = await import('@testing-library/react')
+    const { Toasts } = await import('../../src/components/Toast')
+    await saveSetup({ colorList: [{ name: 'Light green', hexes: ['#90d090'] }, { name: 'Mint', hexes: ['#98e0c0'] }] })
+    setColorList((await getSetup()).colorList)
+    r2(<Toasts />)
+    await learnAndTell([{ name: 'Mint', hex: '#8fd09a' }, { name: 'Seafoam', hex: '#7fd8c0' }])
+    expect(await s2.findByText(/Learned for your colors: Mint\. Add to your colors\?/)).toBeInTheDocument()
+    await userEvent.click(s2.getByRole('button', { name: '+ Seafoam' }))
+    await waitFor(async () => expect((await getSetup()).colorList?.map((e) => e.name)).toContain('Seafoam'))
+  })
+})

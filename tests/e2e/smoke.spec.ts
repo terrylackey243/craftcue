@@ -463,4 +463,7 @@ test('a pack photo with no color names: tap each color to add it', async ({ page
   await expect(page.getByRole('button', { name: 'Color for Lunar Blue: #1e6fd0. Pick again' })).toBeVisible()
   await page.getByRole('button', { name: /Save 2 colors/ }).click()
   await expect(page.getByText(/Saved “Cardstock/)).toBeVisible()
+  // Renamed to a brand-style name: not learned by itself, but offered.
+  await expect(page.getByText('Add to your colors?')).toBeVisible()
+  await expect(page.getByRole('button', { name: '+ Lunar Blue' })).toBeVisible()
 })
