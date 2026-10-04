@@ -267,3 +267,12 @@ export async function updatePack(items: Supply[], patch: PackPatch): Promise<voi
   })
   await noteChange()
 }
+
+/**
+ * After one color's pack price or count is changed on its own page, re-figure the cost per piece
+ * for the whole pack (pack price ÷ every color's count), so one color can't end up priced alone.
+ */
+export async function refigurePackCost(setId: string, packPrice: number | undefined): Promise<void> {
+  const items = await db.supplies.filter((s) => s.setId === setId).toArray()
+  if (items.length) await updatePack(items, { packPrice })
+}

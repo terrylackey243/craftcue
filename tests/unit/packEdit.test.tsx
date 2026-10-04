@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../../src/db'
-import { packValue, saveAssortment, updatePack } from '../../src/lib/assortment'
+import { packValue, refigurePackCost, saveAssortment, updatePack } from '../../src/lib/assortment'
 import { saveSetup } from '../../src/lib/repo'
 import PackEdit from '../../src/screens/PackEdit'
 
@@ -49,6 +49,17 @@ describe('editing a whole pack', () => {
     for (const s of await db.supplies.toArray()) {
       expect(s.packSize).toBe(1)
       expect(s.unitCost).toBeCloseTo(1.33)
+    }
+  })
+
+  it('changing one color’s count on its own page re-figures the whole pack (Sour Apple at $39.99 a pen)', async () => {
+    const saved = await pens()
+    // What Terry's data looked like: the single-item form priced one color alone.
+    await db.supplies.update(saved[0].id, { packSize: 1, packPrice: 39.99, unitCost: 39.99 })
+    await refigurePackCost(saved[0].setId!, 39.99)
+    for (const s of await db.supplies.toArray()) {
+      expect(s.packPrice).toBe(39.99)
+      expect(s.unitCost).toBeCloseTo(13.33) // 39.99 ÷ 3 pens in this test pack
     }
   })
 

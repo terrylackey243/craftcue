@@ -6,6 +6,7 @@ import SupplyForm, { emptyDraft } from '../components/SupplyForm'
 import AssortmentForm from '../components/AssortmentForm'
 import { Button, ButtonLink, Chip, Notice, PageHeader, Spinner } from '../components/ui'
 import { deleteSupply } from '../lib/repo'
+import { refigurePackCost } from '../lib/assortment'
 
 /** /add/manual (new) and /supply/:id (edit). */
 export default function SupplyEdit() {
@@ -39,7 +40,11 @@ export default function SupplyEdit() {
         )}
         <SupplyForm
           initial={existing}
-          onSaved={() => navigate(-1)}
+          onSaved={async (saved) => {
+            // A color of a pack: its price and count belong to the whole pack.
+            if (existing.setId && (saved.packPrice !== existing.packPrice || saved.packSize !== existing.packSize)) await refigurePackCost(existing.setId, saved.packPrice)
+            navigate(-1)
+          }}
           onCancel={() => navigate(-1)}
           onDelete={async () => {
             if (window.confirm(`Delete “${existing.name}” from your stash?`)) {
