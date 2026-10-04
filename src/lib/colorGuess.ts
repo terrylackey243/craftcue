@@ -32,18 +32,58 @@ const rgbOf = (hex: string) => {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
 }
 
-/** A plain name for a color from a file ("#f7931e" → "Orange"), for showing to the crafter. */
+function toHsl(hex: string): { h: number; s: number; l: number } {
+  const [r, g, b] = rgbOf(hex).map((v) => v / 255)
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const l = (max + min) / 2
+  const d = max - min
+  if (d === 0) return { h: 0, s: 0, l }
+  const s = d / (1 - Math.abs(2 * l - 1))
+  const h = max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+  return { h: h * 60, s, l }
+}
+
+/**
+ * A plain, predictable name for a color ("#f0e08a" → "Light yellow", "#a05c30" → "Brown"),
+ * built from its hue, lightness and strength. The crafter renames it to the pack's own name.
+ */
 export function nameOfHex(hex: string): string {
-  const [r, g, b] = rgbOf(hex)
-  const best = WORDS.filter(([w]) => w !== 'grey').reduce(
-    (a, [w, h]) => {
-      const [r2, g2, b2] = rgbOf(h)
-      const d = Math.hypot(r - r2, g - g2, b - b2)
-      return d < a.d ? { w, d } : a
-    },
-    { w: 'gray', d: Infinity },
-  )
-  return best.w.replace(/\b\w/g, (c) => c.toUpperCase())
+  const { h, s, l } = toHsl(hex)
+  const shade = (base: string) => (l > 0.86 ? `Pale ${base}` : l > 0.7 ? `Light ${base}` : l < 0.28 ? `Dark ${base}` : base)
+  const cap = (x: string) => x[0].toUpperCase() + x.slice(1).toLowerCase()
+
+  // Grays, black and white: almost no color in it.
+  if (l < 0.12) return 'Black'
+  if (l > 0.95) return 'White'
+  if (s < 0.12 || (s < 0.2 && l < 0.35)) return l > 0.85 ? 'Off-white' : cap(shade('gray'))
+
+  // Browns, tans and creams: orange-to-yellow hues that are dark or dull.
+  if (h >= 10 && h < 55) {
+    if (l < 0.45 && s < 0.75) return l < 0.25 ? 'Dark brown' : 'Brown'
+    if (s < 0.45 && l < 0.82) return 'Tan'
+    if (s < 0.5 && l >= 0.82) return 'Cream'
+  }
+
+  const pink = l > 0.86 ? 'Pale pink' : 'Pink'
+  if (h < 10 || h >= 345) return l > 0.75 ? pink : l < 0.35 ? 'Dark red' : 'Red'
+  if (h < 40) {
+    if (l > 0.82) return 'Pale peach'
+    if (l > 0.68) return 'Peach'
+    if (h < 20 && s > 0.5) return 'Red-orange'
+    return cap(shade('orange'))
+  }
+  if (h < 66) {
+    if (l < 0.5) return h < 50 ? 'Gold' : 'Mustard'
+    return cap(shade('yellow'))
+  }
+  if (h < 90) return l < 0.4 ? 'Olive' : cap(shade('lime green'))
+  if (h < 160) return cap(shade('green'))
+  if (h < 195) return cap(shade(l > 0.7 ? 'aqua' : 'teal'))
+  if (h < 250) return l < 0.3 ? 'Navy' : cap(shade('blue'))
+  if (h < 285) return l > 0.7 ? cap(shade('lavender').replace('Light lavender', 'Lavender')) : cap(shade('purple'))
+  if (h < 320) return l > 0.7 ? pink : cap(shade('magenta'))
+  return l > 0.75 || s < 0.6 ? pink : 'Hot pink'
 }
 
 /** A supply's color as hex: the picked swatch if there is one, otherwise a guess from its name. */
