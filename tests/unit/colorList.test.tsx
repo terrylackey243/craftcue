@@ -50,7 +50,7 @@ describe('a picked color that is not on the list', () => {
     expect(screen.getByLabelText('Name for the new color')).toHaveValue('Green')
     await userEvent.click(screen.getByRole('button', { name: 'Add to my colors' }))
     await waitFor(async () => expect((await getSetup()).colorList?.map((e) => e.name)).toEqual(['Red', 'Blue', 'Green']))
-    expect(named).toBe('Green')
+    await waitFor(() => expect(named).toBe('Green'))
   })
 
   it('or taught to the right color', async () => {
@@ -59,6 +59,6 @@ describe('a picked color that is not on the list', () => {
     render(<ColorNameCheck hex="#5aa0e8" onName={(n) => (named = n)} />)
     await userEvent.selectOptions(await screen.findByRole('combobox'), 'Blue')
     await waitFor(async () => expect((await getSetup()).colorList?.find((e) => e.name === 'Blue')?.hexes).toEqual(['#1e6fd0', '#5aa0e8']))
-    expect(named).toBe('Blue')
+    await waitFor(() => expect(named).toBe('Blue'))
   })
 })

@@ -14,8 +14,8 @@ export default function ColorNameCheck({ hex, onName }: { hex: string; onName?: 
   if (matchColor(hex, list)) return null
   const options = closestColors(hex, list).slice(0, 8)
   const choose = async (n: string) => {
-    await save(addColor(list, n, hex))
     onName?.(n)
+    await save(addColor(list, n, hex))
   }
   return (
     <div className="flex w-full flex-col gap-2 rounded-xl bg-amber-50 p-3 ring-1 ring-amber-200" role="group" aria-label="Color not on your list">
