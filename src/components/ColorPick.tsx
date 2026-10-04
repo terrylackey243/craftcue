@@ -84,36 +84,47 @@ export function ColorSwatch({ value, onChange, label }: { value?: string; onChan
 }
 
 /**
- * Pick colors by tapping a photo: one color (targets = [label]) or one after another, e.g. every
- * color of a pack in order. Also offers the color wheel for a single color.
+ * Pick colors by tapping a photo: one color (targets = [label]), one after another (every color of
+ * a pack in order), or `collect` (no names yet: each tap adds a color). Also offers the color wheel
+ * for a single color.
  */
 export function ColorPickSheet({
   open,
   onClose,
-  targets,
+  targets = [],
   current,
-  onPick,
+  onPick = () => {},
   startAt = 0,
+  collect = false,
+  onAdd,
+  photo,
 }: {
   open: boolean
   onClose: () => void
-  targets: string[]
+  targets?: string[]
   current?: string
-  onPick: (index: number, hex: string | undefined) => void
+  onPick?: (index: number, hex: string | undefined) => void
   startAt?: number
+  collect?: boolean
+  onAdd?: (hex: string) => void
+  /** Start with this photo already loaded (e.g. the one just used to read the pack). */
+  photo?: File | null
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const [img, setImg] = useState<ImageBitmap | HTMLImageElement | null>(null)
   const [sample, setSample] = useState<{ hex: string; x: number; y: number } | null>(null)
   const [index, setIndex] = useState(startAt)
-  const single = targets.length === 1
+  const [added, setAdded] = useState<string[]>([])
+  const single = !collect && targets.length === 1
 
   useEffect(() => {
     if (open) {
       setIndex(startAt)
       setSample(null)
+      setAdded([])
+      if (photo) void loadBitmap(photo).then(setImg)
     }
-  }, [open, startAt])
+  }, [open, startAt, photo])
 
   useEffect(() => {
     const c = canvas.current
@@ -143,6 +154,14 @@ export function ColorPickSheet({
   }
 
   function accept(hex: string | undefined) {
+    if (collect) {
+      if (hex) {
+        onAdd?.(hex)
+        setAdded((a) => [...a, hex])
+      }
+      setSample(null)
+      return
+    }
     onPick(index, hex)
     setSample(null)
     if (index + 1 < targets.length) setIndex(index + 1)
@@ -151,9 +170,21 @@ export function ColorPickSheet({
 
   const label = targets[index] ?? ''
   return (
-    <Sheet open={open} onClose={onClose} title={single ? `Color for ${label}` : 'Pick colors from a photo'}>
+    <Sheet open={open} onClose={onClose} title={collect ? 'Tap each color in the photo' : single ? `Color for ${label}` : 'Pick colors from a photo'}>
       <div className="flex flex-col gap-3">
-        {!single && (
+        {collect && (
+          <div className="flex flex-col gap-2">
+            <p className="text-stone-700">Tap a color, then “Add this color”. Do it for every color in the pack, in the order you want them listed. You can name them afterwards.</p>
+            {added.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1" aria-label={`${added.length} colors added`}>
+                {added.map((h, i) => (
+                  <span key={i} className="h-7 w-7 rounded-full ring-1 ring-stone-300" style={{ background: h }} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {!single && !collect && (
           <p className="font-semibold">
             Tap {label} ({index + 1} of {targets.length})
           </p>
@@ -181,12 +212,17 @@ export function ColorPickSheet({
         {sample && (
           <div className="flex flex-wrap items-center gap-3">
             <span className="h-12 w-12 rounded-xl ring-1 ring-stone-300" style={{ background: sample.hex }} aria-hidden />
-            <Button onClick={() => accept(sample.hex)}>Use this for {label}</Button>
+            <Button onClick={() => accept(sample.hex)}>{collect ? 'Add this color' : `Use this for ${label}`}</Button>
           </div>
         )}
-        {!single && (
+        {!single && !collect && (
           <Button variant="ghost" className="self-start" onClick={() => accept(undefined)}>
             Skip {label}
+          </Button>
+        )}
+        {collect && (
+          <Button className="self-start" variant={added.length ? 'primary' : 'secondary'} onClick={onClose}>
+            {added.length ? `Done: ${added.length} color${added.length === 1 ? '' : 's'}` : 'Close'}
           </Button>
         )}
         {img && (

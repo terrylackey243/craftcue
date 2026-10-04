@@ -17,6 +17,7 @@ import BarcodeField from './BarcodeField'
 import { Button, Chip, Field, Notice, Spinner, Stepper, fieldClass, inputClass } from './ui'
 import PhotoDrop from './PhotoDrop'
 import { ColorPickSheet, ColorSwatch, hasEyeDropper } from './ColorPick'
+import { nameOfHex } from '../lib/colorGuess'
 
 export interface AssortmentInitial {
   name?: string
@@ -60,7 +61,12 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
   const [packs, setPacks] = useState(1)
   const [price, setPrice] = useState('')
   const [pasting, setPasting] = useState(false)
-  const [picking, setPicking] = useState(false)
+  // Chosen when the picker opens: names typed → tap them in order; no names → each tap adds a color.
+  const [picking, setPicking] = useState<false | 'collect' | 'sequence'>(false)
+  const [lastPhoto, setLastPhoto] = useState<File | null>(null)
+  /** Set when the photo had no readable color names: explains, and offers tapping the colors. */
+  const [noNames, setNoNames] = useState<string | false>(false)
+  const [namesAreGuesses, setNamesAreGuesses] = useState(false)
   const [pasted, setPasted] = useState('')
   const [reading, setReading] = useState(false)
   const [error, setError] = useState('')
@@ -89,8 +95,23 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
     setFocusKey(key)
   }
 
+  /** A color tapped on a photo with no names yet: add it as a row with a plain suggested name. */
+  function addPicked(hex: string) {
+    setRows((rs) => {
+      const named = rs.filter((r) => r.color.trim())
+      const taken = new Set(named.map((r) => r.color.trim().toLowerCase()))
+      const base = nameOfHex(hex)
+      let name = base
+      for (let n = 2; taken.has(name.toLowerCase()); n++) name = `${base} ${n}`
+      return [...named, { color: name, hex, count: same || 1, key: ++rowKey }]
+    })
+    setNamesAreGuesses(true)
+  }
+
   async function readPhoto(file: File | undefined) {
     if (!file || !setup) return
+    setLastPhoto(file)
+    setNoNames(false)
     setReading(true)
     setError('')
     try {
@@ -110,10 +131,10 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
       if (r.colors.length) setRows(toRows(r.colors.map((c) => ({ color: c.color, count: c.count > 0 ? c.count : 1 }))))
       setCountsUncertain(!r.countsConfident || r.colors.some((c) => !(c.count > 0)))
       if (!r.colors.length)
-        setError(
+        setNoNames(
           r.totalCount > 0
-            ? `We read ${r.totalCount} ${unitLabel(r.unit || f.unit, r.totalCount)} but couldn't read the color names clearly. Photograph the edge of the pack where the names are printed, or type them in.`
-            : "We couldn't read the color names on that photo. Try the edge of the pack where they're printed, or type them in.",
+            ? `We read ${r.totalCount} ${unitLabel(r.unit || f.unit, r.totalCount)} but couldn't read the color names clearly. If no names are printed, tap each color on the photo instead.`
+            : "We couldn't read any color names on that photo. If no names are printed, tap each color on the photo instead, or type them in.",
         )
     } catch (e) {
       setError(friendlyError(e).message)
@@ -251,6 +272,14 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
         </PhotoDrop>
         <p className="text-sm text-stone-600">Photograph the edge or back of the pack where the color names are printed. You'll check everything before saving.</p>
         {reading && <Spinner label="Reading the colors…" />}
+        {noNames && !reading && (
+          <div className="flex flex-col gap-2">
+            <Notice tone="info">{noNames}</Notice>
+            <Button className="self-start" onClick={() => setPicking('collect')}>
+              🎨 Tap the colors on this photo
+            </Button>
+          </div>
+        )}
       </div>
 
       <Field label="Type of supply">
@@ -358,14 +387,20 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
           <Button variant="ghost" onClick={() => setPasting(!pasting)} aria-expanded={pasting}>
             📋 Paste a list of colors
           </Button>
-          <Button variant="ghost" onClick={() => setPicking(true)} disabled={!rows.some((r) => r.color.trim())}>
+          <Button variant="ghost" onClick={() => setPicking(rows.some((r) => r.color.trim()) ? 'sequence' : 'collect')}>
             🎨 Pick colors from a photo
           </Button>
         </div>
-        <p className="text-sm text-stone-600">Tap 💧 by a color to pick its exact shade{hasEyeDropper() ? ' from anywhere on your screen, like a photo of the paper' : ''}, or pick them all in order from one photo.</p>
+        <p className="text-sm text-stone-600">
+          Tap 💧 by a color to pick its exact shade{hasEyeDropper() ? ' from anywhere on your screen, like a photo of the paper' : ''}. Or use “Pick colors from a photo”: with names typed in, you tap each one in order; with no names, each color you tap is added to the list.
+        </p>
+        {namesAreGuesses && <p className="text-sm font-medium text-amber-900">⚠ Names like “Orange 2” are suggestions from the color. Change them to the names on the pack if it has them.</p>}
         <ColorPickSheet
-          open={picking}
+          open={picking !== false}
           onClose={() => setPicking(false)}
+          photo={lastPhoto}
+          collect={picking === 'collect'}
+          onAdd={addPicked}
           targets={rows.filter((r) => r.color.trim()).map((r) => r.color.trim())}
           onPick={(i, hex) => {
             const named = rows.filter((r) => r.color.trim())

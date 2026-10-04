@@ -119,3 +119,27 @@ describe('bulk add screen (spec Phase 3 acceptance)', () => {
     expect(await db.supplies.where('name').equals('Gold glitter HTV').count()).toBe(1)
   })
 })
+
+describe('a pack photo with colors but no printed names', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((t) => t.clear()))
+    await saveSetup({ setupComplete: true })
+    await setApiKey('sk-ant-test-key-0000000000000000000000')
+  })
+
+  it('says so and offers to tap the colors on that photo', async () => {
+    const base = fixture('mixed')
+    const noNames = { name: 'Cardstock', setName: '', brand: '', category: 'cardstock-paper', subtype: '', dimensions: '12 x 12 in', unit: 'sheet', upcDigits: '', totalCount: 0, colors: [], colorsReadable: false, countsConfident: false }
+    setAiClientForTests({ createMessage: async () => ({ ...base, content: [{ type: 'text', text: JSON.stringify(noNames), citations: null }] }) as Anthropic.Message })
+    const { default: AssortmentForm } = await import('../../src/components/AssortmentForm')
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <AssortmentForm onSaved={() => {}} />
+      </MemoryRouter>,
+    )
+    await user.upload(await screen.findByLabelText('Photo of the pack'), new File(['x'], 'pack.jpg', { type: 'image/jpeg' }))
+    expect(await screen.findByText(/If no names are printed, tap each color on the photo instead/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '🎨 Tap the colors on this photo' })).toBeInTheDocument()
+  })
+})
