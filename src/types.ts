@@ -124,6 +124,10 @@ export interface UserSetup {
   upcLookupEnabled: boolean
   backupReminder: BackupReminderSettings
   fontScale: number // 1 = default; accessibility setting
+  /** What the crafter pays themselves per hour when pricing (defaults to DEFAULT_HOURLY_RATE). */
+  hourlyRate?: number
+  /** Profit added on top of materials + time, in percent (defaults to DEFAULT_PROFIT_PCT). */
+  profitPct?: number
   setupComplete: boolean
   createdAt: string
   updatedAt: string
@@ -175,6 +179,14 @@ export interface SellInfo {
   batchNotes?: string
 }
 
+export interface ProjectSource {
+  url?: string
+  /** The designer's terms of use, as pasted by the crafter. */
+  license?: string
+  /** Names of the cut files the materials were worked out from. */
+  files?: string[]
+}
+
 export interface Project extends Timestamps {
   id: string
   title: string
@@ -199,6 +211,8 @@ export interface Project extends Timestamps {
   aiGenerated: boolean
   madeAt?: string
   madeCount?: number
+  /** For a project found elsewhere: where it came from and its terms of use. */
+  source?: ProjectSource
   /** Layout from the design engine (see src/lib/design/spec.ts); drawn on the device. */
   design?: import('./lib/design/spec').Design
   designedAt?: string

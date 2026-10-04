@@ -356,3 +356,43 @@ test('a photo can be dragged in or pasted, not only chosen', async ({ page }, te
   await send('drop')
   await expect(page.getByRole('dialog', { name: /quick one-time setup/ })).toBeVisible()
 })
+
+test('a project found elsewhere: SVG in, materials matched, priced', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: "Let's start" }).click()
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+  await page.getByRole('button', { name: 'Maybe later' }).click()
+  await page.getByRole('button', { name: "I'll do it later" }).click()
+  await expect(page.getByRole('heading', { name: 'What would you like to make?' })).toBeVisible()
+  // Two colors of cardstock in the stash, with prices.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        const req = indexedDB.open('craftcue')
+        req.onsuccess = () => {
+          const tx = req.result.transaction('supplies', 'readwrite')
+          const store = tx.objectStore('supplies')
+          const base = { name: 'Cardstock', category: 'cardstock-paper', dimensions: '12 x 12 in', quantity: 8, unit: 'sheet', unitCost: 0.14, source: 'manual', createdAt: '2026-01-01', updatedAt: '2026-01-01' }
+          store.put({ ...base, id: 'blk', color: 'Eclipse Black' })
+          store.put({ ...base, id: 'org', color: 'Orbit Orange' })
+          tx.oncomplete = () => resolve()
+        }
+      }),
+  )
+  await page.goto('/#/projects')
+  await page.getByRole('link', { name: /A project I found/ }).click()
+  await page.getByLabel('SVG cut files').setInputFiles('tests/fixtures/svg/ghost-test.svg')
+  await expect(page.getByText(/2 colors, 3 pieces, finished size about/)).toBeVisible()
+  await expect(page.getByLabel(/^Material for/).nth(0)).toHaveValue('org') // biggest color first
+  await expect(page.getByLabel(/^Material for/).nth(1)).toHaveValue('blk')
+  await expect(page.getByLabel('Name')).toHaveValue('ghost test')
+  await page.getByLabel(/terms of use/).fill('Commercial use by creating physical products allowed.')
+  await page.getByRole('button', { name: 'Save project' }).click()
+
+  await expect(page.getByRole('heading', { name: 'ghost test' })).toBeVisible()
+  await expect(page.getByText('Price it')).toBeVisible()
+  // 2 sheets × $0.14 + 1 hr × $15, + 20% → $19; Etsy covers fees → $22.
+  await expect(page.getByText('$19.00').first()).toBeVisible()
+  await expect(page.getByText('$22.00')).toBeVisible()
+  await expect(page.getByText('Commercial use by creating physical products allowed.')).toBeVisible()
+})

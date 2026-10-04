@@ -27,7 +27,7 @@ test('wizard is accessible', async ({ page }) => {
   await scan(page)
 })
 
-for (const path of ['/', '/inventory', '/add', '/add/manual', '/suggest/sell', '/suggest/gift', '/projects', '/shopping', '/people', '/settings', '/help', '/help/ai-key']) {
+for (const path of ['/', '/inventory', '/add', '/add/manual', '/suggest/sell', '/suggest/gift', '/projects', '/projects/import', '/shopping', '/people', '/settings', '/help', '/help/ai-key']) {
   test(`${path} is accessible`, async ({ page }) => {
     await finishSetup(page)
     await page.goto(`/#${path}`)

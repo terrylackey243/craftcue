@@ -63,11 +63,85 @@ function elementPath(el: Element): string | null {
   return null
 }
 
-function fillOf(el: Element, inherited: string | null): string | null {
+/** Fills set by class in the file's <style> (how Illustrator exports colors: .cls-1{fill:#f7931e}). */
+function classFills(doc: Document): Map<string, string> {
+  const fills = new Map<string, string>()
+  for (const style of Array.from(doc.getElementsByTagName('style'))) {
+    for (const [, selectors, body] of (style.textContent ?? '').matchAll(/([^{}]+)\{([^}]*)\}/g)) {
+      const fill = /(?:^|;)\s*fill\s*:\s*([^;]+)/.exec(body)?.[1]?.trim()
+      if (!fill) continue
+      for (const sel of selectors.split(',')) {
+        const m = /^\s*\.([\w-]+)\s*$/.exec(sel)
+        if (m) fills.set(m[1], fill)
+      }
+    }
+  }
+  return fills
+}
+
+function fillOf(el: Element, inherited: string | null, classes: Map<string, string>): string | null {
   const style = el.getAttribute('style') ?? ''
-  const fromStyle = /fill\s*:\s*([^;]+)/.exec(style)?.[1]?.trim()
-  const f = fromStyle ?? el.getAttribute('fill') ?? inherited
+  const fromStyle = /(?:^|;)\s*fill\s*:\s*([^;]+)/.exec(style)?.[1]?.trim()
+  const fromClass = (el.getAttribute('class') ?? '')
+    .split(/\s+/)
+    .map((c) => classes.get(c))
+    .filter(Boolean)
+    .pop()
+  const f = fromStyle ?? fromClass ?? el.getAttribute('fill') ?? inherited
   return f && f !== 'none' && f !== 'transparent' ? f : null
+}
+
+const hidden = (el: Element) => el.getAttribute('display') === 'none' || /display\s*:\s*none/.test(el.getAttribute('style') ?? '')
+
+export interface PaintedShape {
+  shape: Shape // in the SVG's own units
+  rgb: [number, number, number]
+}
+
+export interface ReadSvg {
+  painted: PaintedShape[]
+  /** SVG units per inch, from the file's width/height; null when the file doesn't say (px or no units). */
+  unitsPerInch: number | null
+  /** Shapes that couldn't be read (gradients, patterns, embedded pictures). */
+  skipped: number
+}
+
+const PER_INCH: Record<string, number> = { in: 1, cm: 2.54, mm: 25.4, pt: 72, pc: 6 }
+
+/** Every filled shape in paint order, with its color, plus the file's real-world scale if it states one. */
+export function readSvg(svgText: string): ReadSvg {
+  const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml')
+  const svg = doc.documentElement
+  if (!svg || svg.tagName.toLowerCase() !== 'svg') throw new Error('That file could not be read as an SVG.')
+  const classes = classFills(doc)
+  const painted: PaintedShape[] = []
+  let skipped = 0
+  const walk = (el: Element, m: Matrix, fill: string | null) => {
+    const tag = el.tagName.toLowerCase()
+    if (['defs', 'clippath', 'mask', 'style', 'title', 'metadata', 'symbol'].includes(tag) || hidden(el)) return
+    if (tag === 'image') {
+      skipped++
+      return
+    }
+    const here = mul(m, parseTransform(el.getAttribute('transform')))
+    const f = fillOf(el, fill, classes)
+    const d = elementPath(el)
+    const rgb = f ? cssToRgb(f) : null
+    if (d && rgb) painted.push({ shape: apply(flatten(svgToCmds(d), 0.25), here), rgb })
+    else if (d && f) skipped++
+    for (const child of Array.from(el.children)) walk(child, here, f)
+  }
+  walk(svg, IDENTITY, null)
+  // Real size: width="12in" with viewBox="0 0 864 …" → 72 units per inch.
+  const w = /^\s*([\d.]+)\s*([a-z]*)\s*$/i.exec(svg.getAttribute('width') ?? '')
+  const vb = (svg.getAttribute('viewBox') ?? '').trim().split(/[\s,]+/).map(Number)
+  let unitsPerInch: number | null = null
+  if (w && PER_INCH[w[2].toLowerCase()]) {
+    const widthIn = Number(w[1]) / PER_INCH[w[2].toLowerCase()]
+    const vbW = vb.length === 4 && vb[2] > 0 ? vb[2] : Number(w[1])
+    if (widthIn > 0) unitsPerInch = vbW / widthIn
+  }
+  return { painted, unitsPerInch, skipped }
 }
 
 export function cssToRgb(color: string): [number, number, number] | null {
@@ -88,7 +162,7 @@ export function cssToRgb(color: string): [number, number, number] | null {
   return null
 }
 
-const dist = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
+export const dist = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
 
 export interface ImportedLayer {
   color: string // one of the chosen colors
@@ -103,25 +177,11 @@ export interface ImportedLayer {
  * larger side is `sizeIn` and centered at (cx, cy) inches.
  */
 export function importVectorArt(svgText: string, chosen: string[], sizeIn: number, cx: number, cy: number): ImportedLayer[] {
-  const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml')
-  const svg = doc.documentElement
-  if (!svg || svg.tagName.toLowerCase() !== 'svg') throw new Error('That artwork could not be read.')
   const palette = chosen.map((c) => ({ color: c, rgb: cssToRgb(c) ?? [0, 0, 0] }))
   const whiteChosen = palette.some((p) => dist(p.rgb, [255, 255, 255]) < 40)
 
   // 1. Every filled shape in paint order, in the SVG's own units.
-  const painted: { shape: Shape; rgb: [number, number, number] }[] = []
-  const walk = (el: Element, m: Matrix, fill: string | null) => {
-    const tag = el.tagName.toLowerCase()
-    if (['defs', 'clippath', 'mask', 'style', 'title', 'metadata'].includes(tag)) return
-    const here = mul(m, parseTransform(el.getAttribute('transform')))
-    const f = fillOf(el, fill)
-    const d = elementPath(el)
-    const rgb = f ? cssToRgb(f) : null
-    if (d && rgb) painted.push({ shape: apply(flatten(svgToCmds(d), 0.25), here), rgb })
-    for (const child of Array.from(el.children)) walk(child, here, f)
-  }
-  walk(svg, IDENTITY, null)
+  const { painted } = readSvg(svgText)
 
   // 2. A white shape covering the whole artwork is the background, not part of the design.
   const isWhite = (rgb: number[]) => dist(rgb, [255, 255, 255]) < 40

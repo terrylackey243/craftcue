@@ -61,6 +61,17 @@ Primary hosting is GitHub Pages; the homelab copy (`craftcue.jkne.app`) is Terry
   with ready-made outlines in `design.art` (Claude never sees or writes `art`).
 - Both APIs allow browser CORS; their hosts are in `CONNECT_SRC`.
 
+## Projects found elsewhere + pricing (added 2026-10-03)
+
+- `#/projects/import`: SVG cut files are measured on the device (`src/lib/import/materials.ts`:
+  colors from fill/style/Illustrator classes, 72 per inch when the file has no real units, pieces
+  laid out on the matched stash sheet like the mat preview). A photo can add extras and time via
+  `src/lib/ai/importPhoto.ts` (stash ids are validated; pens/markers dropped). The designer's
+  terms are kept in `project.source` (private to the user, never shared).
+- Every project has a "Price it" card (`src/lib/pricing.ts`): stash unitCosts + minutes × hourly
+  rate + profit %, rounded up, plus an Etsy price that covers its fees. Rate/profit live in setup.
+- Live photo check: tests/record/importPhoto.record.test.ts uses Terry's local-only photo + stash.
+
 ## Invariants
 
 - `src/lib/ai/aiClient.ts` is the only module that calls Anthropic. Models come from `src/data/models.json`.

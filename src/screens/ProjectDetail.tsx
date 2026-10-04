@@ -11,7 +11,10 @@ import DesignView from '../components/DesignView'
 import { formatQty, unitLabel } from '../components/SupplyForm'
 import { toSupplyUnit } from '../lib/units'
 import { Badge, Button, Card, Field, Notice, Sheet, Spinner, Stepper, fieldClass, inputClass } from '../components/ui'
-import { EQUIPMENT, type Project, type ProjectStatus } from '../types'
+import { EQUIPMENT, type Project, type ProjectStatus, type Supply } from '../types'
+import { useSetupEditor } from '../hooks'
+import { DEFAULT_HOURLY_RATE, DEFAULT_PROFIT_PCT, ETSY, priceProject } from '../lib/pricing'
+import { formatMoney } from '../lib/money'
 import { GOAL_LABEL, STATUS_LABEL } from './Projects'
 import PhotoDrop from '../components/PhotoDrop'
 
@@ -43,6 +46,7 @@ export default function ProjectDetail() {
           {p.estMinutes && <Badge>about {p.estMinutes < 90 ? `${p.estMinutes} min` : `${Math.round(p.estMinutes / 60)} hr`}</Badge>}
           {p.madeCount ? <Badge tone="good">made {p.madeCount}×</Badge> : null}
           {p.aiGenerated && <Badge>AI idea</Badge>}
+          {p.source && <Badge>found elsewhere</Badge>}
         </div>
       </div>
 
@@ -163,9 +167,31 @@ export default function ProjectDetail() {
         </Card>
       )}
 
+      <PricingCard project={p} supplies={supplies} />
+
+      {p.source && (p.source.url || p.source.license || p.source.files?.length) && (
+        <Card>
+          <h2 className="mb-2 text-xl font-bold">Where it's from</h2>
+          {p.source.url && (
+            <p>
+              <a href={p.source.url} target="_blank" rel="noopener noreferrer" className="break-all font-semibold text-brand-700 underline">
+                {p.source.url}
+              </a>
+            </p>
+          )}
+          {p.source.files && p.source.files.length > 0 && <p className="text-stone-700">Cut files: {p.source.files.join(', ')}</p>}
+          {p.source.license && (
+            <div className="mt-2">
+              <h3 className="font-semibold">Designer's terms of use</h3>
+              <p className="whitespace-pre-line text-stone-700">{p.source.license}</p>
+            </div>
+          )}
+        </Card>
+      )}
+
       {p.sellInfo && (p.sellInfo.priceLow || p.sellInfo.unitCostEst) && (
         <Card>
-          <h2 className="mb-2 text-xl font-bold">Selling</h2>
+          <h2 className="mb-2 text-xl font-bold">Selling (smart suggestion's estimate)</h2>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
             {p.sellInfo.unitCostEst && (
               <>
@@ -237,6 +263,56 @@ export default function ProjectDetail() {
       <MarkMadeSheet open={making} onClose={() => setMaking(false)} project={p} />
       <AddUseSheet open={addingUse} onClose={() => setAddingUse(false)} project={p} />
     </div>
+  )
+}
+
+/** Materials (stash prices) + your time + profit = a price; plus what to ask on Etsy to cover its fees. */
+function PricingCard({ project: p, supplies }: { project: Project; supplies: Supply[] }) {
+  const [setup, patch] = useSetupEditor()
+  if (!setup) return null
+  const b = priceProject(p, supplies, setup)
+  const rate = setup.hourlyRate ?? DEFAULT_HOURLY_RATE
+  const pct = setup.profitPct ?? DEFAULT_PROFIT_PCT
+  return (
+    <Card>
+      <h2 className="mb-2 text-xl font-bold">Price it</h2>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold">How long one takes you (minutes)</p>
+          <Stepper label="minutes to make one" value={p.estMinutes ?? 0} step={15} onChange={(n) => void updateProject(p.id, { estMinutes: Math.max(0, n) })} />
+        </div>
+        <div className="flex flex-wrap gap-4">
+          <label className="flex flex-col gap-1 font-semibold">
+            Your time, per hour
+            <span className="flex items-center gap-1 font-normal">
+              $<input inputMode="decimal" className={`${fieldClass} w-24`} value={rate} onChange={(e) => patch({ hourlyRate: Math.max(0, Number(e.target.value.replace(/[^0-9.]/g, '')) || 0) })} />
+            </span>
+          </label>
+          <label className="flex flex-col gap-1 font-semibold">
+            Profit on top
+            <span className="flex items-center gap-1 font-normal">
+              <input inputMode="numeric" className={`${fieldClass} w-20`} value={pct} onChange={(e) => patch({ profitPct: Math.max(0, Number(e.target.value.replace(/[^0-9.]/g, '')) || 0) })} />%
+            </span>
+          </label>
+        </div>
+        <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 rounded-xl bg-stone-50 p-3">
+          <dt>Materials (your stash prices)</dt>
+          <dd className="text-right">{formatMoney(b.materials)}</dd>
+          <dt>Your time</dt>
+          <dd className="text-right">{formatMoney(b.labor)}</dd>
+          <dt>Profit ({pct}%)</dt>
+          <dd className="text-right">{formatMoney(b.profit)}</dd>
+          <dt className="border-t border-stone-200 pt-1 text-lg font-bold">Price (craft fair, in person)</dt>
+          <dd className="border-t border-stone-200 pt-1 text-right text-lg font-bold">{formatMoney(b.price)}</dd>
+          <dt className="font-semibold">On Etsy</dt>
+          <dd className="text-right font-semibold">{formatMoney(b.etsyPrice)}</dd>
+        </dl>
+        <p className="text-sm text-stone-600">
+          The Etsy price covers its fees (about {Math.round(ETSY.pct * 1000) / 10}% plus ${ETSY.flat.toFixed(2)} a sale) so you still get {formatMoney(b.price)}. Shipping and packaging are extra.
+        </p>
+        {b.unpriced.length > 0 && <Notice tone="warn">No price yet for: {b.unpriced.join(', ')}. Add what you paid on those items (or the pack) so the total is right.</Notice>}
+      </div>
+    </Card>
   )
 }
 

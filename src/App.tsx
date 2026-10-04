@@ -12,6 +12,7 @@ import Inventory from './screens/Inventory'
 import AddSupply from './screens/AddSupply'
 import SupplyEdit from './screens/SupplyEdit'
 import PackEdit from './screens/PackEdit'
+import ImportProject from './screens/ImportProject'
 import Projects from './screens/Projects'
 import ProjectDetail from './screens/ProjectDetail'
 import Shopping from './screens/Shopping'
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="pack/:setId" element={<PackEdit />} />
             <Route path="suggest/:goal" element={<Suggest />} />
             <Route path="projects" element={<Projects />} />
+            <Route path="projects/import" element={<ImportProject />} />
             <Route path="projects/:id" element={<ProjectDetail />} />
             <Route path="shopping" element={<Shopping />} />
             <Route path="people" element={<People />} />

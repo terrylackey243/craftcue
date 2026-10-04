@@ -7,7 +7,7 @@ import BarcodeField from '../components/BarcodeField'
 import { PasteSummary } from '../components/AssortmentForm'
 import { unitLabel } from '../components/SupplyForm'
 import { Button, Field, Notice, PageHeader, Spinner, Stepper, inputClass } from '../components/ui'
-import { addColorsToPack, packValue, parseColorList, setPackBarcode, updatePack, type PackField, type PackPatch } from '../lib/assortment'
+import { addColorsToPack, PACK_FIELDS, packValue, parseColorList, setPackBarcode, updatePack, type PackField, type PackPatch } from '../lib/assortment'
 import { formatMoney, parseMoney } from '../lib/money'
 import { isValidUpc, normalizeUpc } from '../lib/upc'
 import { ADHESIVES, UNITS, type Supply } from '../types'
@@ -58,7 +58,7 @@ function PackDetails({ items }: { items: Supply[] }) {
   const start = useMemo(() => {
     const d = {} as Draft
     const mixed = new Set<PackField>()
-    for (const k of ['setName', 'name', 'category', 'subtype', 'brand', 'finish', 'dimensions', 'unit', 'adhesive', 'lowAt', 'location', 'notes', 'packPrice'] as PackField[]) {
+    for (const k of PACK_FIELDS) {
       const v = packValue(items, k)
       if (v.mixed) mixed.add(k)
       d[k] = v.mixed || v.value === undefined ? '' : k === 'packPrice' ? (v.value as number).toFixed(2) : String(v.value)
@@ -78,7 +78,7 @@ function PackDetails({ items }: { items: Supply[] }) {
     setMsg('')
   }
   const hint = (k: PackField, normal?: string) => (start.mixed.has(k) && !touched.has(k) ? 'Different for each color now. Type here to set the same for all of them.' : normal)
-  const total = items.reduce((n, s) => n + (s.packSize ?? 0), 0)
+  const total = touched.has('packSize') ? (Number(d.packSize) || 0) * items.length : items.reduce((n, s) => n + (s.packSize ?? 0), 0)
   const price = parseMoney(d.packPrice)
 
   async function save(e: React.FormEvent) {
@@ -90,6 +90,7 @@ function PackDetails({ items }: { items: Supply[] }) {
       const v = d[k].trim()
       if (k === 'lowAt') patch.lowAt = Math.max(0, Number(v) || 0)
       else if (k === 'packPrice') patch.packPrice = parseMoney(v)
+      else if (k === 'packSize') patch.packSize = Number(v) > 0 ? Number(v) : undefined
       else if (k === 'unit') patch.unit = v as Supply['unit']
       else if (k === 'adhesive') patch.adhesive = (v || undefined) as Supply['adhesive']
       else (patch as Record<string, unknown>)[k] = v || undefined
@@ -144,6 +145,12 @@ function PackDetails({ items }: { items: Supply[] }) {
         }
       >
         {(id) => <input id={id} inputMode="decimal" className={inputClass} value={d.packPrice} placeholder="0.00" onChange={(e) => set('packPrice', e.target.value)} />}
+      </Field>
+      <Field
+        label="How many of each color come in one pack"
+        hint={hint('packSize', `So a full pack is ${total} in all. The cost per piece is worked out from this.`)}
+      >
+        {(id) => <input id={id} inputMode="numeric" className={`${inputClass} max-w-32`} value={d.packSize} onChange={(e) => set('packSize', e.target.value.replace(/[^0-9.]/g, ''))} />}
       </Field>
       <div className="flex flex-col gap-1">
         <p className="font-semibold">Warn me when each color is down to</p>

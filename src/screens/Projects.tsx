@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { db } from '../db'
 import { saveProject } from '../lib/repo'
-import { Badge, Button, EmptyState, Field, PageHeader, Sheet, Spinner, inputClass } from '../components/ui'
+import { Badge, Button, ButtonLink, EmptyState, Field, PageHeader, Sheet, Spinner, inputClass } from '../components/ui'
 import type { Goal, ProjectStatus } from '../types'
 
 export const STATUS_LABEL: Record<ProjectStatus, string> = { idea: '💡 Idea', planned: '📌 Planned', made: '✅ Made', dismissed: 'Set aside' }
@@ -32,9 +32,14 @@ export default function Projects() {
         title="Projects"
         subtitle="Ideas you've saved, what you're planning, and what you've made."
         action={
-          <Button variant="secondary" onClick={() => setAdding(true)}>
-            ➕ My own idea
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink to="/projects/import" variant="secondary">
+              📥 A project I found
+            </ButtonLink>
+            <Button variant="secondary" onClick={() => setAdding(true)}>
+              ➕ My own idea
+            </Button>
+          </div>
         }
       />
       <div className="mb-4 flex gap-2" role="tablist">

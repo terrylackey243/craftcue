@@ -16,3 +16,4 @@ dist-sync
 .design-preview
 tests/fixtures/project-coffee-ptc.json
 tests/fixtures/design-coffee-ptc.json
+tests/fixtures/photos/campfire-local.jpg

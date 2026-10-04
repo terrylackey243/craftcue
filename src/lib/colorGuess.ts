@@ -26,3 +26,22 @@ export function guessHex(name: string | undefined): string {
   if (/^#[0-9a-f]{6}$/.test(n.trim())) return n.trim()
   return WORDS.find(([w]) => n.includes(w))?.[1] ?? '#888888'
 }
+
+const rgbOf = (hex: string) => {
+  const n = parseInt(hex.replace('#', '').slice(0, 6), 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+
+/** A plain name for a color from a file ("#f7931e" → "Orange"), for showing to the crafter. */
+export function nameOfHex(hex: string): string {
+  const [r, g, b] = rgbOf(hex)
+  const best = WORDS.filter(([w]) => w !== 'grey').reduce(
+    (a, [w, h]) => {
+      const [r2, g2, b2] = rgbOf(h)
+      const d = Math.hypot(r - r2, g - g2, b - b2)
+      return d < a.d ? { w, d } : a
+    },
+    { w: 'gray', d: Infinity },
+  )
+  return best.w.replace(/\b\w/g, (c) => c.toUpperCase())
+}

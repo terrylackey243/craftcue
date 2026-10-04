@@ -40,6 +40,18 @@ describe('editing a whole pack', () => {
     expect(packValue(after as never, 'lowAt')).toEqual({ value: 0, mixed: false })
   })
 
+  it('fixes a wrong per-color count (Terry’s pens: one color said 30), re-figuring cost per piece', async () => {
+    const saved = await pens()
+    await db.supplies.update(saved[0].id, { packSize: 30 })
+    await updatePack(await db.supplies.toArray(), { packPrice: 3.99 })
+    expect((await db.supplies.get(saved[1].id))!.unitCost).toBeCloseTo(3.99 / 32) // wrong: 30 + 1 + 1
+    await updatePack(await db.supplies.toArray(), { packSize: 1 })
+    for (const s of await db.supplies.toArray()) {
+      expect(s.packSize).toBe(1)
+      expect(s.unitCost).toBeCloseTo(1.33)
+    }
+  })
+
   it('the Edit pack screen saves only what was changed, for all colors', async () => {
     const saved = await pens()
     await db.supplies.update(saved[1].id, { location: 'Desk' })

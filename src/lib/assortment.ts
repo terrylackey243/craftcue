@@ -235,7 +235,7 @@ export async function addColorsToPack(existing: Supply[], names: string[], count
 }
 
 /** Fields that are the same for every color of a pack and can be changed for the whole pack. */
-export const PACK_FIELDS = ['setName', 'name', 'category', 'subtype', 'brand', 'finish', 'dimensions', 'unit', 'adhesive', 'lowAt', 'location', 'notes', 'packPrice'] as const
+export const PACK_FIELDS = ['setName', 'name', 'category', 'subtype', 'brand', 'finish', 'dimensions', 'unit', 'adhesive', 'lowAt', 'location', 'notes', 'packPrice', 'packSize'] as const
 export type PackField = (typeof PACK_FIELDS)[number]
 export type PackPatch = Partial<Pick<Supply, PackField>>
 
@@ -255,9 +255,11 @@ export async function updatePack(items: Supply[], patch: PackPatch): Promise<voi
   if (!keys.length) return
   const changes: Partial<Supply> = {}
   for (const k of keys) (changes as Record<string, unknown>)[k] = patch[k] === '' ? undefined : patch[k]
-  if ('packPrice' in patch) {
-    const total = roundQty(items.reduce((n, s) => n + (s.packSize ?? 0), 0))
-    changes.unitCost = patch.packPrice !== undefined && total > 0 ? patch.packPrice / total : undefined
+  if ('packPrice' in patch || 'packSize' in patch) {
+    // Cost per piece = pack price ÷ everything in the pack (each color's count added up).
+    const price = 'packPrice' in patch ? patch.packPrice : items[0]?.packPrice
+    const total = 'packSize' in patch ? (patch.packSize ?? 0) * items.length : roundQty(items.reduce((n, s) => n + (s.packSize ?? 0), 0))
+    changes.unitCost = price !== undefined && total > 0 ? price / total : undefined
   }
   const now = new Date().toISOString()
   await db.transaction('rw', db.supplies, async () => {
