@@ -1,9 +1,10 @@
-// The crafter's own list of color names (plain and expanded colors, never brand names), each with
-// one or more sample shades. It starts from the xkcd color survey (the names ~220,000 people gave
-// colors; public domain). Picked colors are named after the closest one on the list, compared the
-// way eyes see color (CIEDE2000), and new shades can be added or taught to an existing name.
+// The crafter's own list of color names (plain and familiar expanded colors, never brand names),
+// each with one or more sample shades. A picked color is named in two steps, the way people do:
+// first which color it is (brown, blue, yellow…), then the closest name of that color on the list
+// (compared with CIEDE2000), with plain names preferred unless a fancier one is clearly closer.
+// New shades can be added or taught to an existing name.
 import xkcd from '../data/xkcdColors.json'
-import { isPlainColor, nameOfHex } from './colorGuess'
+import { familyOfHex, isPlainColor, nameOfHex } from './colorGuess'
 
 export interface ColorEntry {
   name: string
@@ -13,10 +14,8 @@ export interface ColorEntry {
 
 const D = (name: string, ...hexes: string[]): ColorEntry => ({ name, hexes })
 
-/** The standard list: the xkcd survey names (crude ones removed). */
-export const DEFAULT_COLORS: ColorEntry[] = (xkcd.colors as [string, string][]).map(([name, hex]) => D(name, hex))
-/** Which standard list a saved list was built on; older saved lists are moved onto this one. */
-export const COLOR_LIST_BASE = 'xkcd-1'
+/** The xkcd survey list, the standard list from 2026-10-05 to 10-06: kept to move saved lists off it. */
+export const XKCD_COLORS: ColorEntry[] = (xkcd.colors as [string, string][]).map(([name, hex]) => D(name, hex))
 
 /** The first standard list (before 2026-10-05), kept to find what a crafter changed on it. */
 export const LEGACY_COLORS: ColorEntry[] = [
@@ -34,6 +33,15 @@ export const LEGACY_COLORS: ColorEntry[] = [
   D('Indigo', '#3f3f9f'), D('Purple', '#6a3fa0'), D('Dark purple', '#3e2160'), D('Violet', '#7f4fc9'), D('Grape', '#6f2da8'), D('Plum', '#6e3a6e'), D('Lavender', '#b8a2d8'), D('Pale lavender', '#e4dcf0'), D('Lilac', '#c8a2c8'), D('Orchid', '#da70d6'),
   D('Rose gold', '#b76e79'),
 ]
+
+/** The standard list: plain colors with light/dark shades, and familiar expanded colors. */
+export const DEFAULT_COLORS: ColorEntry[] = [
+  ...LEGACY_COLORS,
+  D('Light brown', '#a87a52'), D('Sand', '#e2ca76'), D('Khaki', '#c3b091'), D('Taupe', '#9c8a7a'), D('Mauve', '#b784a7'),
+  D('Light red', '#e57373'), D('Light purple', '#b39ddb'), D('Seafoam', '#9fe2bf'), D('Light teal', '#7fcdcd'), D('Dark pink', '#c2185b'),
+]
+/** Which standard list a saved list was built on; older saved lists are moved onto this one. */
+export const COLOR_LIST_BASE = 'basic-2'
 
 // ----- color science: compare colors the way people see them -----
 
@@ -60,9 +68,10 @@ const lab = (hex: string) => {
 
 /**
  * How different two colors look (CIEDE2000): about 1 is barely noticeable, 5+ clearly different.
- * Better than straight-line Lab distance in yellows, tans and blues.
+ * Better than straight-line Lab distance in yellows, tans and blues. `kL` 2+ cares less about
+ * light vs dark (the textile setting): shadow and shine on one material.
  */
-export function deltaE(hexA: string, hexB: string): number {
+export function deltaE(hexA: string, hexB: string, kL = 1): number {
   const [L1, a1, b1] = lab(hexA)
   const [L2, a2, b2] = lab(hexB)
   const rad = Math.PI / 180
@@ -93,11 +102,11 @@ export function deltaE(hexA: string, hexB: string): number {
   const Sc = 1 + 0.045 * Cmp
   const Sh = 1 + 0.015 * Cmp * T
   const Rt = -Math.sin(2 * dTheta * rad) * Rc
-  return Math.sqrt((dLp / Sl) ** 2 + (dCp / Sc) ** 2 + (dHp / Sh) ** 2 + Rt * (dCp / Sc) * (dHp / Sh))
+  return Math.sqrt((dLp / (kL * Sl)) ** 2 + (dCp / Sc) ** 2 + (dHp / Sh) ** 2 + Rt * (dCp / Sc) * (dHp / Sh))
 }
 
 /** Close enough to a color on the list to just use its name. */
-export const CLOSE = 8
+export const CLOSE = 12
 
 // ----- the current list (set from the crafter's settings when the app loads) -----
 
@@ -115,11 +124,32 @@ export interface ColorMatch {
   distance: number
 }
 
-/** Colors on the list, closest first. */
+const familyCache = new Map<string, string>()
+const familyOf = (hex: string) => {
+  let f = familyCache.get(hex)
+  if (!f) familyCache.set(hex, (f = familyOfHex(hex)))
+  return f
+}
+/** Plain names (Red, Light blue, Dark brown) win over fancier ones unless those are clearly closer. */
+const PLAIN = /^((light|pale|dark|hot) )?(red|orange|yellow|green|blue|purple|pink|brown|gray|black|white|tan|navy|teal)$/i
+const PLAIN_BONUS = 0.75
+
+/**
+ * Colors on the list, closest first. Only shades of the same basic color (brown, blue…) compete,
+ * so a pale aqua is never "Light gray" and a mid brown never "Leather"; if the list has nothing
+ * of that color, everything competes.
+ */
 export function closestColors(hex: string, list = current): ColorMatch[] {
-  return list
-    .map((entry) => ({ entry, distance: Math.min(...entry.hexes.map((h) => deltaE(h, hex))) }))
-    .sort((a, b) => a.distance - b.distance)
+  const fam = familyOf(hex)
+  const score = (entry: ColorEntry, hexes: string[]) => {
+    const d = Math.min(...hexes.map((h) => deltaE(h, hex)))
+    return { entry, distance: d, rank: PLAIN.test(entry.name) ? d * PLAIN_BONUS : d }
+  }
+  const sameColor = list.map((e) => ({ e, hexes: e.hexes.filter((h) => familyOf(h) === fam) })).filter((x) => x.hexes.length)
+  const pool = sameColor.length ? sameColor.map((x) => score(x.e, x.hexes)) : list.map((e) => score(e, e.hexes))
+  // Other colors follow, for "Or it's really…" choices.
+  const rest = sameColor.length ? list.filter((e) => !sameColor.some((x) => x.e === e)).map((e) => ({ ...score(e, e.hexes), rank: Infinity })) : []
+  return [...pool.sort((a, b) => a.rank - b.rank), ...rest.sort((a, b) => a.distance - b.distance)].map(({ entry, distance }) => ({ entry, distance }))
 }
 
 /** The list color a pick is close to, or null when nothing on the list is close. */
@@ -200,19 +230,22 @@ export function learnFromNames(list: ColorEntry[], pairs: { name: string; hex?: 
   return { list: next, learned: [...new Set(learned)], ask }
 }
 
+/** The standard list each older base was, to tell what the crafter changed on it. */
+const OLD_STANDARD: Record<string, ColorEntry[]> = { legacy: LEGACY_COLORS, 'xkcd-1': XKCD_COLORS }
+
 /**
- * Move a list saved on the first standard list onto the current one, keeping what the crafter
- * changed: colors they added and shades they taught. (Removals and renames of old standard
- * colors don't carry over: those names may not exist any more.)
+ * Move a list saved on an older standard list onto the current one, keeping what the crafter
+ * changed: colors they added and shades they taught. (Removals and renames of old standard colors
+ * don't carry over: those names may not exist any more.)
  */
 export function migrateColorList(saved: ColorEntry[] | undefined, base: string | undefined): ColorEntry[] | undefined {
   if (!saved?.length || base === COLOR_LIST_BASE) return saved
-  const legacy = new Map(LEGACY_COLORS.map((e) => [e.name.toLowerCase(), e.hexes]))
+  const old = new Map((OLD_STANDARD[base ?? 'legacy'] ?? []).map((e) => [e.name.toLowerCase(), e.hexes]))
   let next = DEFAULT_COLORS
   let changed = false
   for (const e of saved) {
-    const old = legacy.get(e.name.toLowerCase()) ?? []
-    for (const hex of e.hexes.filter((h) => !old.includes(h))) {
+    const was = old.get(e.name.toLowerCase()) ?? []
+    for (const hex of e.hexes.filter((h) => !was.includes(h))) {
       next = addColor(next, e.name, hex)
       changed = true
     }

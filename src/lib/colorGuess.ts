@@ -171,7 +171,7 @@ export function familyOfHex(hex: string): ColorFamily {
   if (h < 10 || h >= 345) return l > 0.75 ? 'Pink' : 'Red'
   if (h < 40) return 'Orange'
   if (h < 66) return 'Yellow'
-  if (h < 175) return 'Green'
+  if (h < 165) return 'Green' // blue-greens past this look aqua or blue to most people
   if (h < 250) return 'Blue'
   if (h < 302) return 'Purple'
   return 'Pink'

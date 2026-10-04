@@ -97,8 +97,8 @@ lettering and icons in exported files may be used for items you sell.
 
 ## Credits
 
-- Color names: the [xkcd color survey](https://xkcd.com/color/rgb.txt) by Randall Munroe (CC0),
-  with crude names removed.
+- The [xkcd color survey](https://xkcd.com/color/rgb.txt) by Randall Munroe (CC0) briefly supplied
+  the color names; it's kept only to move saved color lists onto the current list.
 
 ## Disclaimer
 

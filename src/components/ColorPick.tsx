@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { loadBitmap } from '../lib/images'
+import { findColors, isBackground, type FoundColor } from '../lib/colorClusters'
 import PhotoDrop from './PhotoDrop'
 import { Button, Sheet } from './ui'
 
@@ -139,6 +140,17 @@ export function ColorPickSheet({
   // The photo as loaded, so the lighting fix can be redone or undone.
   const original = useRef<ImageData | null>(null)
   const [lighting, setLighting] = useState<'off' | 'tapWhite' | 'fixed'>('off')
+  // Colors found automatically: which are ticked, and how strictly similar shades are merged.
+  const [found, setFound] = useState<(FoundColor & { on: boolean })[] | null>(null)
+  const [mergeAt, setMergeAt] = useState(7)
+
+  function detect(merge = mergeAt) {
+    const c = canvas.current
+    const ctx = c?.getContext('2d', { willReadFrequently: true })
+    if (!c || !ctx) return
+    setMergeAt(merge)
+    setFound(findColors(ctx.getImageData(0, 0, c.width, c.height).data, c.width, c.height, merge).map((f) => ({ ...f, on: !isBackground(f) })))
+  }
   const single = !collect && targets.length === 1
 
   useEffect(() => {
@@ -162,6 +174,7 @@ export function ColorPickSheet({
     ctx?.drawImage(img, 0, 0, c.width, c.height)
     original.current = ctx ? ctx.getImageData(0, 0, c.width, c.height) : null
     setLighting('off')
+    setFound(null)
   }, [img, open])
 
   function fixLighting(white: string) {
@@ -171,6 +184,7 @@ export function ColorPickSheet({
     ctx.putImageData(new ImageData(whiteBalance(original.current.data, rgbOfHex(white)), c.width, c.height), 0, 0)
     setLighting('fixed')
     setSample(null)
+    setFound(null)
   }
 
   function undoLighting() {
@@ -281,6 +295,54 @@ export function ColorPickSheet({
                 </Button>
               )}
             </div>
+          </div>
+        )}
+        {collect && img && !found && (
+          <Button variant="secondary" className="self-start" onClick={() => detect()}>
+            ✨ Find the colors automatically
+          </Button>
+        )}
+        {collect && found && (
+          <div className="flex flex-col gap-2 rounded-xl bg-stone-50 p-3">
+            <p className="font-semibold">
+              Found {found.length} color{found.length === 1 ? '' : 's'}. Tap any that aren't the material (like the table) to leave them out.
+            </p>
+            <ul className="flex flex-wrap gap-2" aria-label="Colors found in the photo">
+              {found.map((f, i) => (
+                <li key={`${f.hex}-${i}`}>
+                  <button
+                    type="button"
+                    aria-pressed={f.on}
+                    aria-label={`Color ${i + 1}, ${f.hex}${isBackground(f) ? ', probably the background' : ''}`}
+                    onClick={() => setFound((fs) => fs!.map((x, j) => (j === i ? { ...x, on: !x.on } : x)))}
+                    className={`flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold ring-2 ${f.on ? 'ring-brand-600' : 'opacity-40 ring-stone-300'}`}
+                    style={{ background: f.hex }}
+                  >
+                    {f.on ? '' : '×'}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="ghost" onClick={() => detect(Math.min(16, mergeAt + 3))}>
+                Fewer colors
+              </Button>
+              <Button variant="ghost" onClick={() => detect(Math.max(2, mergeAt - 2))}>
+                More colors
+              </Button>
+              <span className="text-sm text-stone-600">Two papers merged into one? Tap “More colors”. Shadows showing as extra colors? “Fewer colors”.</span>
+            </div>
+            <Button
+              className="self-start"
+              disabled={!found.some((f) => f.on)}
+              onClick={() => {
+                for (const f of found.filter((x) => x.on)) onAdd?.(f.hex)
+                setFound(null)
+                onClose()
+              }}
+            >
+              Add {found.filter((f) => f.on).length} colors
+            </Button>
           </div>
         )}
         {sample && (

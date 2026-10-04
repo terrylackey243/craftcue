@@ -139,7 +139,7 @@ describe('a pack photo with colors but no printed names', () => {
       </MemoryRouter>,
     )
     await user.upload(await screen.findByLabelText('Photo of the pack'), new File(['x'], 'pack.jpg', { type: 'image/jpeg' }))
-    expect(await screen.findByText(/If no names are printed, tap each color on the photo instead/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '🎨 Tap the colors on this photo' })).toBeInTheDocument()
+    expect(await screen.findByText(/If no names are printed, get the colors from the photo instead/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '🎨 Get the colors from this photo' })).toBeInTheDocument()
   })
 })

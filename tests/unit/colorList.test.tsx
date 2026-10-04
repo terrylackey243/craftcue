@@ -15,11 +15,13 @@ afterEach(() => setColorList(undefined))
 describe('the color list', () => {
   it('names Terry’s picked swatches after the closest color, the way eyes see it', () => {
     expect(deltaE('#ffffff', '#ffffff')).toBe(0)
-    expect(nameForHex('#e0c878')).toBe('Sand') // Terry's tan: was "Light yellow"
-    expect(nameForHex('#f0e08a')).toBe('Sandy') // was "Peach"
-    expect(nameForHex('#b0c4e0')).toBe('Light blue gray')
-    expect(nameForHex('#f4c4a0')).toBe('Light peach')
-    expect(nameForHex('#c62828')).toBe('Scarlet')
+    expect(nameForHex('#a05c30')).toBe('Brown') // was "Leather"
+    expect(nameForHex('#cce0e0')).toBe('Pale aqua') // was "Light gray"
+    expect(nameForHex('#e0c878')).toBe('Sand') // was "Light yellow"
+    expect(nameForHex('#f0e08a')).toBe('Light yellow') // was "Peach"
+    expect(nameForHex('#b0c4e0')).toBe('Light blue')
+    expect(nameForHex('#f4c4a0')).toBe('Peach')
+    expect(nameForHex('#c62828')).toBe('Red')
   })
 
   it('says when nothing on the list is close, and learns shades for a name', () => {
@@ -104,5 +106,13 @@ describe('moving a saved list onto the new standard list', () => {
     expect(nameForHex('#cfc648', moved)).toBe('Light green')
     expect(migrateColorList(LEGACY_COLORS, undefined)).toBeUndefined() // nothing changed: just use the standard list
     expect(migrateColorList(saved, COLOR_LIST_BASE)).toBe(saved)
+  })
+
+  it('moves a list saved on the survey list, keeping added colors', async () => {
+    const { XKCD_COLORS, migrateColorList } = await import('../../src/lib/colorList')
+    const saved = [...XKCD_COLORS, { name: 'Sparkle mint', hexes: ['#98e0c0'] }]
+    const moved = migrateColorList(saved, 'xkcd-1')!
+    expect(moved.some((e) => e.name === 'Leather')).toBe(false)
+    expect(moved.find((e) => e.name === 'Sparkle mint')?.hexes).toEqual(['#98e0c0'])
   })
 })

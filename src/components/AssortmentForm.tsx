@@ -136,8 +136,8 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
       if (!r.colors.length)
         setNoNames(
           r.totalCount > 0
-            ? `We read ${r.totalCount} ${unitLabel(r.unit || f.unit, r.totalCount)} but couldn't read the color names clearly. If no names are printed, tap each color on the photo instead.`
-            : "We couldn't read any color names on that photo. If no names are printed, tap each color on the photo instead, or type them in.",
+            ? `We read ${r.totalCount} ${unitLabel(r.unit || f.unit, r.totalCount)} but couldn't read the color names clearly. If no names are printed, get the colors from the photo instead: CraftCue can find them for you.`
+            : "We couldn't read any color names on that photo. If no names are printed, get the colors from the photo instead (CraftCue can find them for you), or type them in.",
         )
     } catch (e) {
       setError(friendlyError(e).message)
@@ -280,7 +280,7 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
           <div className="flex flex-col gap-2">
             <Notice tone="info">{noNames}</Notice>
             <Button className="self-start" onClick={() => setPicking('collect')}>
-              🎨 Tap the colors on this photo
+              🎨 Get the colors from this photo
             </Button>
           </div>
         )}

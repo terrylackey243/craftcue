@@ -456,8 +456,8 @@ test('a pack photo with no color names: tap each color to add it', async ({ page
   await page.getByRole('button', { name: 'Add this color' }).click()
   await page.getByRole('button', { name: 'Done: 2 colors' }).click()
 
-  await expect(page.getByLabel('Color 1', { exact: true })).toHaveValue('Scarlet')
-  await expect(page.getByLabel('Color 2', { exact: true })).toHaveValue('Medium blue')
+  await expect(page.getByLabel('Color 1', { exact: true })).toHaveValue('Red')
+  await expect(page.getByLabel('Color 2', { exact: true })).toHaveValue('Blue')
   await expect(page.getByText(/are suggestions from the color/)).toBeVisible()
   await page.getByLabel('Color 2', { exact: true }).fill('Lunar Blue')
   await expect(page.getByRole('button', { name: 'Color for Lunar Blue: #1e6fd0. Pick again' })).toBeVisible()
@@ -490,4 +490,28 @@ test('the photo picker can fix yellow indoor lighting', async ({ page }) => {
   await photo.click({ position: { x: box.width - 20, y: 20 } })
   await page.getByRole('button', { name: 'Use this for Orange' }).click()
   await expect(page.getByRole('button', { name: 'Color for Orange: #c48352. Pick again' })).toBeVisible()
+})
+
+test('find all the colors in a pack photo automatically', async ({ page }) => {
+  await page.addInitScript(() => {
+    delete (window as { EyeDropper?: unknown }).EyeDropper
+  })
+  await page.goto('/')
+  await page.getByRole('button', { name: "Let's start" }).click()
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+  await page.getByRole('button', { name: 'Maybe later' }).click()
+  await page.getByRole('button', { name: "I'll do it later" }).click()
+  await expect(page.getByRole('heading', { name: 'What would you like to make?' })).toBeVisible()
+  await page.goto('/#/add/manual')
+  await page.getByRole('button', { name: 'A pack with several colors' }).click()
+  await page.getByLabel(/What is one .* \(without the color\)/).fill('Cardstock')
+  await page.getByRole('button', { name: '🎨 Pick colors from a photo' }).click()
+  await page.getByLabel(/Choose a photo of the material/).setInputFiles('tests/fixtures/photos/twenty-colors.png')
+  await page.getByRole('button', { name: '✨ Find the colors automatically' }).click()
+  await expect(page.getByText(/Found 21 colors/)).toBeVisible() // 20 papers + the table
+  await expect(page.getByRole('button', { name: /probably the background/ })).toHaveAttribute('aria-pressed', 'false')
+  await page.getByRole('button', { name: 'Add 20 colors' }).click()
+  await expect(page.getByLabel('Color 20', { exact: true })).toBeVisible()
+  await expect(page.getByLabel('Color 21', { exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Save 20 colors/ })).toBeVisible()
 })

@@ -187,7 +187,7 @@ function ColorsSection() {
     <Section id="colors" title="Color names" summary={`${list.length} colors${custom ? ' (your list)' : ''}`}>
       <div className="flex flex-col gap-4">
         <p>
-          Picked colors are named after the closest color here, like Scarlet, Sand, Navy or Light peach. The list starts with the names people most often give colors (from the xkcd color survey). Brand names (Rocket Red, Astro White) aren't colors, so they don't belong here. When a picked
+          Picked colors are named in two steps: first which color it is (brown, blue, yellow…), then the closest name of that color here, like Brown, Light blue, Tan, Navy or Peach. Brand names (Rocket Red, Astro White) aren't colors, so they don't belong here. When a picked
           shade isn't close to any of these, CraftCue asks you to add it or say which color it is.
         </p>
         <div className="flex flex-col gap-2 rounded-xl bg-stone-50 p-3">
