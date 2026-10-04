@@ -2,7 +2,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { db, getMeta } from '../db'
-import { useAccount, useApiKey, useSecret, useSetupEditor } from '../hooks'
+import { useAccount, useApiKey, useColorList, useSecret, useSetupEditor } from '../hooks'
+import { ColorSwatch } from '../components/ColorPick'
+import { addColor, DEFAULT_COLORS, removeColor, renameColor, setColorShade, type ColorEntry } from '../lib/colorList'
 import AccountForm from '../components/AccountForm'
 import { cloudEnabled } from '../lib/cloud/config'
 import { authMethod, changePassword, deleteAccount, signOut, signupOpen, syncNow } from '../lib/cloud/account'
@@ -70,6 +72,7 @@ export default function Settings() {
       </Section>
       <AiSection setup={setup} patch={patch} />
       <ExtrasSection />
+      <ColorsSection />
       <Section title="People" summary="Gift recipients">
         <Link to="/people" className="font-semibold text-brand-700 underline">
           Manage the people you make gifts for →
@@ -164,6 +167,94 @@ function AiSection({ setup, patch }: { setup: UserSetup; patch: (p: Partial<User
         </Link>
       </div>
     </Section>
+  )
+}
+
+/** The crafter's own color names: plain and expanded colors (never brand names), editable. */
+function ColorsSection() {
+  const [list, save] = useColorList()
+  const [q, setQ] = useState('')
+  const [newName, setNewName] = useState('')
+  const [newHex, setNewHex] = useState<string | undefined>()
+  const shown = list.filter((e) => e.name.toLowerCase().includes(q.trim().toLowerCase()))
+  const custom = list !== DEFAULT_COLORS
+  return (
+    <Section id="colors" title="Color names" summary={`${list.length} colors${custom ? ' (your list)' : ''}`}>
+      <div className="flex flex-col gap-4">
+        <p>
+          Picked colors are named after the closest color here, like Red, Light yellow, Navy or Tan. Brand names (Rocket Red, Astro White) aren't colors, so they don't belong here. When a picked
+          shade isn't close to any of these, CraftCue asks you to add it or say which color it is.
+        </p>
+        <div className="flex flex-col gap-2 rounded-xl bg-stone-50 p-3">
+          <p className="font-semibold">Add a color</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <ColorSwatch label={newName || 'the new color'} value={newHex} onChange={setNewHex} />
+            <label className="sr-only" htmlFor="add-color-name">
+              New color name
+            </label>
+            <input id="add-color-name" className={`${fieldClass} w-48`} placeholder="e.g. Mint" value={newName} onChange={(e) => setNewName(e.target.value)} />
+            <Button
+              variant="secondary"
+              disabled={!newName.trim() || !newHex}
+              onClick={async () => {
+                await save(addColor(list, newName, newHex!))
+                setNewName('')
+                setNewHex(undefined)
+              }}
+            >
+              Add
+            </Button>
+          </div>
+          <p className="text-sm text-stone-600">Pick its swatch with 💧, then name it.</p>
+        </div>
+        <div>
+          <label className="sr-only" htmlFor="color-search">
+            Find a color
+          </label>
+          <input id="color-search" type="search" className={inputClass} placeholder="🔍 Find a color" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {shown.map((e) => (
+            <ColorNameRow key={e.name} entry={e} onRename={(to) => void save(renameColor(list, e.name, to))} onShade={(hex) => void save(setColorShade(list, e.name, hex))} onRemove={() => void save(removeColor(list, e.name))} />
+          ))}
+        </ul>
+        {custom && (
+          <Button
+            variant="ghost"
+            className="self-start"
+            onClick={() => {
+              if (window.confirm('Go back to the standard color list? Colors you added and shades CraftCue learned will be removed.')) void save([])
+            }}
+          >
+            Reset to the standard list
+          </Button>
+        )}
+      </div>
+    </Section>
+  )
+}
+
+function ColorNameRow({ entry, onRename, onShade, onRemove }: { entry: ColorEntry; onRename: (to: string) => void; onShade: (hex: string) => void; onRemove: () => void }) {
+  const [name, setName] = useState(entry.name)
+  const id = `cn-${entry.name.replace(/\W+/g, '-')}`
+  return (
+    <li className="flex items-center gap-2 rounded-xl bg-white p-2 ring-1 ring-stone-200">
+      <ColorSwatch label={entry.name} value={entry.hexes[0]} onChange={(hex) => hex && onShade(hex)} />
+      <label className="sr-only" htmlFor={id}>
+        Name for {entry.name}
+      </label>
+      <input
+        id={id}
+        className={`${fieldClass} min-w-0 flex-1`}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onBlur={() => (name.trim() && name.trim() !== entry.name ? onRename(name) : setName(entry.name))}
+      />
+      {entry.hexes.length > 1 && <span className="text-xs text-stone-500" title="Shades CraftCue learned for this color">+{entry.hexes.length - 1}</span>}
+      <button type="button" aria-label={`Remove ${entry.name}`} className="min-h-11 min-w-11 rounded-full text-xl text-stone-500 hover:bg-stone-100" onClick={onRemove}>
+        ×
+      </button>
+    </li>
   )
 }
 

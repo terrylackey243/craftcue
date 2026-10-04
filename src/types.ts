@@ -130,6 +130,8 @@ export interface UserSetup {
   hourlyRate?: number
   /** Profit added on top of materials + time, in percent (defaults to DEFAULT_PROFIT_PCT). */
   profitPct?: number
+  /** The crafter's color names (see src/lib/colorList.ts); unset = the standard list. */
+  colorList?: import('./lib/colorList').ColorEntry[]
   setupComplete: boolean
   createdAt: string
   updatedAt: string

@@ -1,5 +1,7 @@
 // A best guess at a hex color from a craft color name ("Rocket Red", "Sour Apple", "Rose Gold").
 // Used to prefill color pickers; the crafter can always correct it.
+import { nameForHex } from './colorList'
+
 
 // Longer, more specific words first so "rose gold" wins over "rose" and "gold".
 const WORDS: [string, string][] = [
@@ -138,7 +140,7 @@ export interface PlainColor {
 }
 
 export function plainColor(s: { colorHex?: string; color?: string }): PlainColor | null {
-  if (s.colorHex) return { name: nameOfHex(s.colorHex), guessed: false }
+  if (s.colorHex) return { name: nameForHex(s.colorHex), guessed: false }
   const c = (s.color ?? '').trim()
   if (!c) return null
   const alias = ALIASES[c.toLowerCase()]
@@ -180,4 +182,10 @@ export function supplyFamily(s: { colorHex?: string; color?: string }): ColorFam
   if (s.colorHex) return familyOfHex(s.colorHex)
   const plain = plainColor(s)
   return plain ? familyOfHex(guessHex(plain.name)) : null
+}
+
+/** True when a color name is empty or plain (one the app could have suggested), so it may be replaced. */
+export function isReplaceableName(name: string | undefined): boolean {
+  const n = (name ?? '').trim().replace(/\s+\d+$/, '')
+  return !n || isPlainColor(n)
 }

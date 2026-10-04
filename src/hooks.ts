@@ -4,6 +4,7 @@ import { accountStore, type AccountState } from './lib/cloud/account'
 import { db, type SecretKey } from './db'
 import { allCategories, getApiKey, getSecret, getSetup, saveSetup } from './lib/repo'
 import type { Category, UserSetup } from './types'
+import { DEFAULT_COLORS, setColorList, type ColorEntry } from './lib/colorList'
 
 export function useSetup(): UserSetup | undefined {
   return useLiveQuery(() => getSetup(), [])
@@ -21,6 +22,17 @@ export function useSetupEditor(): [UserSetup | undefined, (p: Partial<UserSetup>
     void saveSetup(p)
   }, [])
   return [stored ? { ...stored, ...pending } : undefined, patch]
+}
+
+/** The crafter's color list, and a way to save a changed one (synced with their settings). */
+export function useColorList(): [ColorEntry[], (list: ColorEntry[]) => Promise<void>] {
+  const setup = useSetup()
+  const list = setup?.colorList?.length ? setup.colorList : DEFAULT_COLORS
+  const save = useCallback(async (next: ColorEntry[]) => {
+    setColorList(next)
+    await saveSetup({ colorList: next })
+  }, [])
+  return [list, save]
 }
 
 export function useCategories(): Category[] {

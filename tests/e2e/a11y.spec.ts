@@ -44,3 +44,22 @@ test('extra abilities settings are accessible', async ({ page }) => {
   await page.getByText('How to get a Recraft key').click()
   await scan(page)
 })
+
+test('color names in settings: add a color, accessible', async ({ page }) => {
+  // Use the in-app picker everywhere (Chrome's screen eyedropper can't be driven by a test).
+  await page.addInitScript(() => {
+    delete (window as { EyeDropper?: unknown }).EyeDropper
+  })
+  await finishSetup(page)
+  await page.goto('/#/settings')
+  await page.getByText('Color names').click()
+  await expect(page.getByLabel('Name for Light yellow')).toBeVisible()
+  await page.getByRole('button', { name: 'Pick the color for the new color' }).click()
+  await page.getByLabel('Or choose from the color wheel').fill('#98e0c0')
+  await page.getByRole('button', { name: 'Close' }).click()
+  await page.getByLabel('New color name').fill('Seafoam')
+  await page.getByRole('button', { name: 'Add', exact: true }).click()
+  await expect(page.getByLabel('Name for Seafoam')).toBeVisible()
+  await expect(page.getByText('(your list)')).toBeVisible()
+  await scan(page)
+})

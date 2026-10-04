@@ -10,6 +10,8 @@ import { formatMoney, parseMoney, perUnitFromPack } from '../lib/money'
 import BarcodeField from './BarcodeField'
 import PhotoDrop from './PhotoDrop'
 import { ColorSwatch } from './ColorPick'
+import ColorNameCheck from './ColorNameCheck'
+import { isReplaceableName } from '../lib/colorGuess'
 
 export type SupplyDraft = Partial<Supply> & { name: string; category: string; quantity: number; unit: Supply['unit'] }
 
@@ -199,6 +201,11 @@ export default function SupplyForm({
             </div>
           )}
         </Field>
+        {d.colorHex && (
+          <div className="sm:col-span-2">
+            <ColorNameCheck hex={d.colorHex} onName={(name) => isReplaceableName(d.color) && set('color', name)} />
+          </div>
+        )}
         <Field label="Finish">
           {(id) => (
             <input id={id} className={inputClass} list="finish-list" value={d.finish ?? ''} placeholder="matte, glossy, glitter…" onChange={(e) => set('finish', e.target.value || undefined)} />

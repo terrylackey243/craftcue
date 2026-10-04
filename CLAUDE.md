@@ -72,6 +72,14 @@ Primary hosting is GitHub Pages; the homelab copy (`craftcue.jkne.app`) is Terry
   rate + profit %, rounded up, plus an Etsy price that covers its fees. Rate/profit live in setup.
 - Live photo check: tests/record/importPhoto.record.test.ts uses Terry's local-only photo + stash.
 
+## Colors (added 2026-10-04)
+
+- Colors are plain/expanded names (Red, Light yellow, Navy, Tan), never brand names (Rocket Red is
+  a brand name). `colorLabel()` shows "Red (Rocket Red)"; `supplyFamily()` drives the stash filter.
+- Picked swatches (`colorHex`) are named from the crafter's editable list (`src/lib/colorList.ts`,
+  `setup.colorList`, Settings → Color names) by CIE Lab ΔE; nothing within `CLOSE` → the
+  ColorNameCheck prompt (add it, or teach the shade to an existing name).
+
 ## Invariants
 
 - `src/lib/ai/aiClient.ts` is the only module that calls Anthropic. Models come from `src/data/models.json`.

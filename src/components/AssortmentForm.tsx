@@ -17,7 +17,9 @@ import BarcodeField from './BarcodeField'
 import { Button, Chip, Field, Notice, Spinner, Stepper, fieldClass, inputClass } from './ui'
 import PhotoDrop from './PhotoDrop'
 import { ColorPickSheet, ColorSwatch, hasEyeDropper } from './ColorPick'
-import { nameOfHex } from '../lib/colorGuess'
+import { nameForHex } from '../lib/colorList'
+import ColorNameCheck from './ColorNameCheck'
+import { isReplaceableName } from '../lib/colorGuess'
 
 export interface AssortmentInitial {
   name?: string
@@ -100,7 +102,7 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
     setRows((rs) => {
       const named = rs.filter((r) => r.color.trim())
       const taken = new Set(named.map((r) => r.color.trim().toLowerCase()))
-      const base = nameOfHex(hex)
+      const base = nameForHex(hex)
       let name = base
       for (let n = 2; taken.has(name.toLowerCase()); n++) name = `${base} ${n}`
       return [...named, { color: name, hex, count: same || 1, key: ++rowKey }]
@@ -526,6 +528,7 @@ function ColorRow({ row, index, label, onChange, onRemove, onEnter, autoFocus }:
       <button type="button" aria-label={`Remove ${label}`} className="min-h-11 min-w-11 rounded-full text-xl text-stone-500 hover:bg-stone-100" onClick={onRemove}>
         ×
       </button>
+      {row.hex && <ColorNameCheck hex={row.hex} onName={(name) => isReplaceableName(row.color) && onChange({ color: name })} />}
     </li>
   )
 }

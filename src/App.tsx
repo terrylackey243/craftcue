@@ -1,6 +1,7 @@
 import { lazy, useEffect, useState } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { useSetup } from './hooks'
+import { setColorList } from './lib/colorList'
 import { firstRunInit } from './lib/storage'
 import { initAccount } from './lib/cloud/account'
 import { useAccount } from './hooks'
@@ -39,6 +40,9 @@ export default function App() {
     void firstRunInit()
     void initAccount()
   }, [])
+
+  // Picked colors are named from the crafter's own color list.
+  setColorList(setup?.colorList)
 
   useEffect(() => {
     if (setup) document.documentElement.style.setProperty('--cc-font-scale', String(setup.fontScale || 1))

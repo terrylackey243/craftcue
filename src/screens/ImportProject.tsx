@@ -8,7 +8,8 @@ import { unitLabel } from '../components/SupplyForm'
 import { useAiGate } from '../components/useAiGate'
 import { Button, Card, Field, Notice, PageHeader, Spinner, Stepper, inputClass } from '../components/ui'
 import { friendlyError } from '../lib/ai/aiClient'
-import { colorLabel, nameOfHex } from '../lib/colorGuess'
+import { colorLabel } from '../lib/colorGuess'
+import { nameForHex } from '../lib/colorList'
 import { makeThumbnail, makeVisionImage } from '../lib/images'
 import { analyzeSvgs, closestSupplies, amountFor, type ColorPart, type SvgAnalysis } from '../lib/import/materials'
 import { saveProject } from '../lib/repo'
@@ -84,7 +85,7 @@ export default function ImportProject() {
       const supplyId = best && best.distance < 140 ? best.supply.id : ''
       const s = supplyId ? byId.get(supplyId) : undefined
       const use = s ? amountFor(part, s) : { amount: 1, unit: 'sheet', tooBig: 0 }
-      return { key: key(), hex: part.hex, label: nameOfHex(part.hex), part, supplyId, amount: use.amount, unit: use.unit, tooBig: use.tooBig }
+      return { key: key(), hex: part.hex, label: nameForHex(part.hex), part, supplyId, amount: use.amount, unit: use.unit, tooBig: use.tooBig }
     })
   }
 
