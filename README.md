@@ -95,6 +95,11 @@ Designs are drawn with open-license fonts from Google Fonts (SIL Open Font Licen
 2.0; see `public/licenses/`) and [Phosphor Icons](https://phosphoricons.com) (MIT). Cut shapes,
 lettering and icons in exported files may be used for items you sell.
 
+## Credits
+
+- Color names: the [xkcd color survey](https://xkcd.com/color/rgb.txt) by Randall Munroe (CC0),
+  with crude names removed.
+
 ## Disclaimer
 
 CraftCue is an independent open-source project. It is **not affiliated with or endorsed by

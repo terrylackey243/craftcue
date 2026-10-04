@@ -56,3 +56,13 @@ describe('picked colors', () => {
     expect(onChange).toHaveBeenLastCalledWith(undefined)
   })
 })
+
+describe('fixing the lighting', () => {
+  it('makes a yellowed white come out white, and corrects other colors the same way', async () => {
+    const { whiteBalance } = await import('../../src/components/ColorPick')
+    // Warm indoor light: white paper photographs as (250, 225, 180).
+    const out = whiteBalance(new Uint8ClampedArray([250, 225, 180, 255, 200, 120, 60, 255]), [250, 225, 180])
+    expect([...out.slice(0, 4)]).toEqual([245, 245, 245, 255])
+    expect([...out.slice(4, 7)]).toEqual([196, 131, 82]) // the orange loses its yellow cast too
+  })
+})

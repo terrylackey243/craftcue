@@ -456,8 +456,8 @@ test('a pack photo with no color names: tap each color to add it', async ({ page
   await page.getByRole('button', { name: 'Add this color' }).click()
   await page.getByRole('button', { name: 'Done: 2 colors' }).click()
 
-  await expect(page.getByLabel('Color 1', { exact: true })).toHaveValue('Red')
-  await expect(page.getByLabel('Color 2', { exact: true })).toHaveValue('Blue')
+  await expect(page.getByLabel('Color 1', { exact: true })).toHaveValue('Scarlet')
+  await expect(page.getByLabel('Color 2', { exact: true })).toHaveValue('Medium blue')
   await expect(page.getByText(/are suggestions from the color/)).toBeVisible()
   await page.getByLabel('Color 2', { exact: true }).fill('Lunar Blue')
   await expect(page.getByRole('button', { name: 'Color for Lunar Blue: #1e6fd0. Pick again' })).toBeVisible()
@@ -466,4 +466,28 @@ test('a pack photo with no color names: tap each color to add it', async ({ page
   // Renamed to a brand-style name: not learned by itself, but offered.
   await expect(page.getByText('Add to your colors?')).toBeVisible()
   await expect(page.getByRole('button', { name: '+ Lunar Blue' })).toBeVisible()
+})
+
+test('the photo picker can fix yellow indoor lighting', async ({ page }) => {
+  await page.addInitScript(() => {
+    delete (window as { EyeDropper?: unknown }).EyeDropper
+  })
+  await page.goto('/')
+  await page.getByRole('button', { name: "Let's start" }).click()
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+  await page.getByRole('button', { name: 'Maybe later' }).click()
+  await page.getByRole('button', { name: "I'll do it later" }).click()
+  await expect(page.getByRole('heading', { name: 'What would you like to make?' })).toBeVisible()
+  await page.goto('/#/add/manual')
+  await page.getByLabel('Color', { exact: true }).fill('Orange')
+  await page.getByRole('button', { name: 'Pick the color for Orange' }).click()
+  await page.getByLabel(/Choose a photo of the material/).setInputFiles('tests/fixtures/photos/warm-light.png')
+  const photo = page.getByLabel('Your photo: tap a color to pick it')
+  await page.getByRole('button', { name: /Fix the lighting/ }).click()
+  await photo.click({ position: { x: 20, y: 20 } }) // the white paper (yellowed in the photo)
+  await expect(page.getByText('✓ Lighting fixed')).toBeVisible()
+  const box = (await photo.boundingBox())!
+  await photo.click({ position: { x: box.width - 20, y: 20 } })
+  await page.getByRole('button', { name: 'Use this for Orange' }).click()
+  await expect(page.getByRole('button', { name: 'Color for Orange: #c48352. Pick again' })).toBeVisible()
 })

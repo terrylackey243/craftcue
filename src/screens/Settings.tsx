@@ -176,13 +176,18 @@ function ColorsSection() {
   const [q, setQ] = useState('')
   const [newName, setNewName] = useState('')
   const [newHex, setNewHex] = useState<string | undefined>()
-  const shown = list.filter((e) => e.name.toLowerCase().includes(q.trim().toLowerCase()))
   const custom = list !== DEFAULT_COLORS
+  // ~900 colors: show the crafter's own (added or taught) until they search.
+  const standard = new Map(DEFAULT_COLORS.map((e) => [e.name, e.hexes.join()]))
+  const mine = list.filter((e) => standard.get(e.name) !== e.hexes.join())
+  const term = q.trim().toLowerCase()
+  const matches = term ? list.filter((e) => e.name.toLowerCase().includes(term)) : mine
+  const shown = matches.slice(0, 60)
   return (
     <Section id="colors" title="Color names" summary={`${list.length} colors${custom ? ' (your list)' : ''}`}>
       <div className="flex flex-col gap-4">
         <p>
-          Picked colors are named after the closest color here, like Red, Light yellow, Navy or Tan. Brand names (Rocket Red, Astro White) aren't colors, so they don't belong here. When a picked
+          Picked colors are named after the closest color here, like Scarlet, Sand, Navy or Light peach. The list starts with the names people most often give colors (from the xkcd color survey). Brand names (Rocket Red, Astro White) aren't colors, so they don't belong here. When a picked
           shade isn't close to any of these, CraftCue asks you to add it or say which color it is.
         </p>
         <div className="flex flex-col gap-2 rounded-xl bg-stone-50 p-3">
@@ -213,6 +218,13 @@ function ColorsSection() {
           </label>
           <input id="color-search" type="search" className={inputClass} placeholder="🔍 Find a color" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
+        <p className="text-sm text-stone-600">
+          {term
+            ? `${matches.length} match${matches.length === 1 ? '' : 'es'}${matches.length > shown.length ? `, showing the first ${shown.length}` : ''}.`
+            : mine.length
+              ? `Colors you added or taught (${mine.length}). Search to see any of the ${list.length}.`
+              : `Search to see any of the ${list.length} colors. Colors you add or teach will show here.`}
+        </p>
         <ul className="grid gap-2 sm:grid-cols-2">
           {shown.map((e) => (
             <ColorNameRow key={e.name} entry={e} onRename={(to) => void save(renameColor(list, e.name, to))} onShade={(hex) => void save(setColorShade(list, e.name, hex))} onRemove={() => void save(removeColor(list, e.name))} />

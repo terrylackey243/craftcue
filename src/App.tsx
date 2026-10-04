@@ -1,7 +1,8 @@
 import { lazy, useEffect, useState } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { useSetup } from './hooks'
-import { setColorList } from './lib/colorList'
+import { COLOR_LIST_BASE, migrateColorList, setColorList } from './lib/colorList'
+import { saveSetup } from './lib/repo'
 import { firstRunInit } from './lib/storage'
 import { initAccount } from './lib/cloud/account'
 import { useAccount } from './hooks'
@@ -41,8 +42,13 @@ export default function App() {
     void initAccount()
   }, [])
 
-  // Picked colors are named from the crafter's own color list.
-  setColorList(setup?.colorList)
+  // Picked colors are named from the crafter's own color list (older saved lists are moved onto
+  // the current standard list, keeping what the crafter added or taught).
+  const colorList = setup?.colorListBase === COLOR_LIST_BASE ? setup.colorList : migrateColorList(setup?.colorList, setup?.colorListBase)
+  setColorList(colorList)
+  useEffect(() => {
+    if (setup?.colorList?.length && setup.colorListBase !== COLOR_LIST_BASE) void saveSetup({ colorList: migrateColorList(setup.colorList, setup.colorListBase) ?? [], colorListBase: COLOR_LIST_BASE })
+  }, [setup?.colorList, setup?.colorListBase])
 
   useEffect(() => {
     if (setup) document.documentElement.style.setProperty('--cc-font-scale', String(setup.fontScale || 1))

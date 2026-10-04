@@ -26,7 +26,7 @@ describe('plain colors, not brand names', () => {
   })
 
   it('a picked swatch beats the name, and unknown brand names stay as they are', () => {
-    expect(plainColor({ color: 'Outrageous Orchid', colorHex: '#c050b0' })).toEqual({ name: 'Orchid', guessed: false }) // closest on the color list
+    expect(plainColor({ color: 'Outrageous Orchid', colorHex: '#c050b0' })).toEqual({ name: 'Pinky purple', guessed: false }) // closest on the color list
     expect(colorLabel({ color: 'Husk' })).toBe('Husk') // no color word, no swatch: pick one
     expect(plainColor({ color: 'Husk' })).toBeNull()
     expect(plainColor({ color: 'Rocket Red' })?.guessed).toBe(true)
@@ -49,7 +49,7 @@ describe('finding supplies by color', () => {
     const ids = (r: { id: string }[]) => r.map((s) => s.id)
     const cat = () => 'Cardstock'
     expect(ids(filterSupplies(stash, 'red', '', '', cat))).toEqual(['1', '2'])
-    expect(ids(filterSupplies(stash, 'orchid', '', '', cat))).toEqual(['4'])
+    expect(ids(filterSupplies(stash, 'pinky purple', '', '', cat))).toEqual(['4'])
     expect(ids(filterSupplies(stash, '', '', '', cat, 'Blue'))).toEqual(['3'])
     expect(ids(filterSupplies(stash, '', '', '', cat, 'Pink'))).toEqual(['4'])
     expect(ids(filterSupplies(stash, 'husk', '', '', cat))).toEqual(['5']) // brand names still searchable

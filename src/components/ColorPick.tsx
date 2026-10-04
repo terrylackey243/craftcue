@@ -54,6 +54,27 @@ export function averageAt(data: Uint8ClampedArray, width: number, height: number
   return `#${hex(rs)}${hex(gs)}${hex(bs)}`
 }
 
+/**
+ * White balance: scale each channel so a patch that should be white comes out white. Warm indoor
+ * light makes white paper look yellow-orange in photos, which shifts every color tapped after it.
+ */
+export function whiteBalance(data: Uint8ClampedArray, white: [number, number, number]): Uint8ClampedArray<ArrayBuffer> {
+  const gains = white.map((v) => Math.min(3, 245 / Math.max(1, v)))
+  const out = new Uint8ClampedArray(data.length)
+  for (let i = 0; i < data.length; i += 4) {
+    out[i] = data[i] * gains[0]
+    out[i + 1] = data[i + 1] * gains[1]
+    out[i + 2] = data[i + 2] * gains[2]
+    out[i + 3] = data[i + 3]
+  }
+  return out
+}
+
+const rgbOfHex = (hex: string): [number, number, number] => {
+  const n = parseInt(hex.slice(1), 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+
 /** A round swatch that picks a color: eyedropper in Chrome, the photo/color-wheel sheet elsewhere. */
 export function ColorSwatch({ value, onChange, label }: { value?: string; onChange: (hex: string | undefined) => void; label: string }) {
   const [open, setOpen] = useState(false)
@@ -115,6 +136,9 @@ export function ColorPickSheet({
   const [sample, setSample] = useState<{ hex: string; x: number; y: number } | null>(null)
   const [index, setIndex] = useState(startAt)
   const [added, setAdded] = useState<string[]>([])
+  // The photo as loaded, so the lighting fix can be redone or undone.
+  const original = useRef<ImageData | null>(null)
+  const [lighting, setLighting] = useState<'off' | 'tapWhite' | 'fixed'>('off')
   const single = !collect && targets.length === 1
 
   useEffect(() => {
@@ -134,8 +158,27 @@ export function ColorPickSheet({
     const scale = Math.min(1, 1200 / Math.max(w0, h0))
     c.width = Math.round(w0 * scale)
     c.height = Math.round(h0 * scale)
-    c.getContext('2d', { willReadFrequently: true })?.drawImage(img, 0, 0, c.width, c.height)
+    const ctx = c.getContext('2d', { willReadFrequently: true })
+    ctx?.drawImage(img, 0, 0, c.width, c.height)
+    original.current = ctx ? ctx.getImageData(0, 0, c.width, c.height) : null
+    setLighting('off')
   }, [img, open])
+
+  function fixLighting(white: string) {
+    const c = canvas.current
+    const ctx = c?.getContext('2d', { willReadFrequently: true })
+    if (!c || !ctx || !original.current) return
+    ctx.putImageData(new ImageData(whiteBalance(original.current.data, rgbOfHex(white)), c.width, c.height), 0, 0)
+    setLighting('fixed')
+    setSample(null)
+  }
+
+  function undoLighting() {
+    const ctx = canvas.current?.getContext('2d', { willReadFrequently: true })
+    if (ctx && original.current) ctx.putImageData(original.current, 0, 0)
+    setLighting('off')
+    setSample(null)
+  }
 
   async function openPhoto(f: File) {
     setSample(null)
@@ -149,6 +192,11 @@ export function ColorPickSheet({
     const rect = c.getBoundingClientRect()
     const x = Math.round(((e.clientX - rect.left) / rect.width) * c.width)
     const y = Math.round(((e.clientY - rect.top) / rect.height) * c.height)
+    if (lighting === 'tapWhite' && original.current) {
+      // Measure white on the photo as it was taken, then correct the whole photo.
+      fixLighting(averageAt(original.current.data, c.width, c.height, x, y, 6))
+      return
+    }
     const data = ctx.getImageData(0, 0, c.width, c.height).data
     setSample({ hex: averageAt(data, c.width, c.height, x, y), x: (x / c.width) * 100, y: (y / c.height) * 100 })
   }
@@ -208,7 +256,33 @@ export function ColorPickSheet({
             </label>
           </PhotoDrop>
         )}
-        {img && <p className="text-sm text-stone-600">Tap the middle of a color, away from shadows and shine.</p>}
+        {img && (
+          <div className="flex flex-col gap-1">
+            {lighting === 'tapWhite' ? (
+              <p className="font-semibold text-brand-700">Now tap something white in the photo: white paper, a label, a wall.</p>
+            ) : (
+              <p className="text-sm text-stone-600">Tap the middle of a color, away from shadows and shine.</p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {lighting === 'fixed' ? (
+                <>
+                  <span className="self-center text-sm font-semibold text-green-800">✓ Lighting fixed</span>
+                  <Button variant="ghost" onClick={undoLighting}>
+                    Undo lighting fix
+                  </Button>
+                </>
+              ) : lighting === 'tapWhite' ? (
+                <Button variant="ghost" onClick={() => setLighting('off')}>
+                  Cancel
+                </Button>
+              ) : (
+                <Button variant="ghost" onClick={() => setLighting('tapWhite')}>
+                  ⚪ Photo looks yellow or blue? Fix the lighting
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
         {sample && (
           <div className="flex flex-wrap items-center gap-3">
             <span className="h-12 w-12 rounded-xl ring-1 ring-stone-300" style={{ background: sample.hex }} aria-hidden />

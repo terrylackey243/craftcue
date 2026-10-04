@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { saveSetup } from '../lib/repo'
-import { addColor, getColorList, learnFromNames, setColorList } from '../lib/colorList'
+import { addColor, COLOR_LIST_BASE, getColorList, learnFromNames, setColorList } from '../lib/colorList'
 
 // Short notes that outlive the screen that made them (e.g. "Learned: Mint" after saving and
 // going back). One at a time; actions keep it up longer.
@@ -31,7 +31,7 @@ export function hideToast() {
 
 async function saveList(list: ReturnType<typeof getColorList>) {
   setColorList(list)
-  await saveSetup({ colorList: list })
+  await saveSetup({ colorList: list, colorListBase: COLOR_LIST_BASE })
 }
 
 /** After saving: teach the color list from renamed swatches, and say what happened. */

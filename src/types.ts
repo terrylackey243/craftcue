@@ -132,6 +132,8 @@ export interface UserSetup {
   profitPct?: number
   /** The crafter's color names (see src/lib/colorList.ts); unset = the standard list. */
   colorList?: import('./lib/colorList').ColorEntry[]
+  /** Which standard color list `colorList` was built on (older lists are moved over on load). */
+  colorListBase?: string
   setupComplete: boolean
   createdAt: string
   updatedAt: string

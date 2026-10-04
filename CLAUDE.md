@@ -77,7 +77,8 @@ Primary hosting is GitHub Pages; the homelab copy (`craftcue.jkne.app`) is Terry
 - Colors are plain/expanded names (Red, Light yellow, Navy, Tan), never brand names (Rocket Red is
   a brand name). `colorLabel()` shows "Red (Rocket Red)"; `supplyFamily()` drives the stash filter.
 - Picked swatches (`colorHex`) are named from the crafter's editable list (`src/lib/colorList.ts`,
-  `setup.colorList`, Settings → Color names) by CIE Lab ΔE; nothing within `CLOSE` → the
+  `setup.colorList`, Settings → Color names) by CIEDE2000 against the xkcd survey list (`src/data/xkcdColors.json`, CC0; never Coolors:
+  its license forbids reuse); older saved lists migrate via `colorListBase`. Nothing within `CLOSE` → the
   ColorNameCheck prompt (add it, or teach the shade to an existing name).
 
 ## Invariants

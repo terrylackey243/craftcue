@@ -1,0 +1,3514 @@
+{
+"source": "xkcd color survey (https://xkcd.com/color/rgb.txt), names people most often gave each color; crude names removed; Kraft and Rose gold added for crafting; single-word \"-ish\" names dropped, \"grey\" spelled \"gray\", survey typos fixed (toupe, kelley)",
+"license": "CC0 1.0 (public domain) https://creativecommons.org/publicdomain/zero/1.0/",
+"colors": [
+[
+"Cloudy blue",
+"#acc2d9"
+],
+[
+"Dark pastel green",
+"#56ae57"
+],
+[
+"Dust",
+"#b2996e"
+],
+[
+"Electric lime",
+"#a8ff04"
+],
+[
+"Fresh green",
+"#69d84f"
+],
+[
+"Light eggplant",
+"#894585"
+],
+[
+"Really light blue",
+"#d4ffff"
+],
+[
+"Tea",
+"#65ab7c"
+],
+[
+"Warm purple",
+"#952e8f"
+],
+[
+"Yellowish tan",
+"#fcfc81"
+],
+[
+"Cement",
+"#a5a391"
+],
+[
+"Dark grass green",
+"#388004"
+],
+[
+"Dusty teal",
+"#4c9085"
+],
+[
+"Gray teal",
+"#5e9b8a"
+],
+[
+"Macaroni and cheese",
+"#efb435"
+],
+[
+"Pinkish tan",
+"#d99b82"
+],
+[
+"Spruce",
+"#0a5f38"
+],
+[
+"Strong blue",
+"#0c06f7"
+],
+[
+"Toxic green",
+"#61de2a"
+],
+[
+"Blue blue",
+"#2242c7"
+],
+[
+"Blue with a hint of purple",
+"#533cc6"
+],
+[
+"Bright sea green",
+"#05ffa6"
+],
+[
+"Dark green blue",
+"#1f6357"
+],
+[
+"Deep turquoise",
+"#017374"
+],
+[
+"Green teal",
+"#0cb577"
+],
+[
+"Strong pink",
+"#ff0789"
+],
+[
+"Deep aqua",
+"#08787f"
+],
+[
+"Lavender pink",
+"#dd85d7"
+],
+[
+"Light moss green",
+"#a6c875"
+],
+[
+"Light seafoam green",
+"#a7ffb5"
+],
+[
+"Olive yellow",
+"#c2b709"
+],
+[
+"Pig pink",
+"#e78ea5"
+],
+[
+"Deep lilac",
+"#966ebd"
+],
+[
+"Desert",
+"#ccad60"
+],
+[
+"Dusty lavender",
+"#ac86a8"
+],
+[
+"Purpley gray",
+"#947e94"
+],
+[
+"Purply",
+"#983fb2"
+],
+[
+"Candy pink",
+"#ff63e9"
+],
+[
+"Light pastel green",
+"#b2fba5"
+],
+[
+"Kiwi green",
+"#8ee53f"
+],
+[
+"Light gray green",
+"#b7e1a1"
+],
+[
+"Orange pink",
+"#ff6f52"
+],
+[
+"Tea green",
+"#bdf8a3"
+],
+[
+"Very light brown",
+"#d3b683"
+],
+[
+"Egg shell",
+"#fffcc4"
+],
+[
+"Eggplant purple",
+"#430541"
+],
+[
+"Powder pink",
+"#ffb2d0"
+],
+[
+"Reddish gray",
+"#997570"
+],
+[
+"Liliac",
+"#c48efd"
+],
+[
+"Stormy blue",
+"#507b9c"
+],
+[
+"Custard",
+"#fffd78"
+],
+[
+"Darkish pink",
+"#da467d"
+],
+[
+"Deep brown",
+"#410200"
+],
+[
+"Greenish beige",
+"#c9d179"
+],
+[
+"Manilla",
+"#fffa86"
+],
+[
+"Off blue",
+"#5684ae"
+],
+[
+"Battleship gray",
+"#6b7c85"
+],
+[
+"Browny green",
+"#6f6c0a"
+],
+[
+"Bruise",
+"#7e4071"
+],
+[
+"Kelly green",
+"#009337"
+],
+[
+"Sunny yellow",
+"#fff917"
+],
+[
+"Azul",
+"#1d5dec"
+],
+[
+"Darkgreen",
+"#054907"
+],
+[
+"Green-yellow",
+"#b5ce08"
+],
+[
+"Lichen",
+"#8fb67b"
+],
+[
+"Light light green",
+"#c8ffb0"
+],
+[
+"Pale gold",
+"#fdde6c"
+],
+[
+"Sun yellow",
+"#ffdf22"
+],
+[
+"Tan green",
+"#a9be70"
+],
+[
+"Burple",
+"#6832e3"
+],
+[
+"Butterscotch",
+"#fdb147"
+],
+[
+"Taupe",
+"#c7ac7d"
+],
+[
+"Dark cream",
+"#fff39a"
+],
+[
+"Indian red",
+"#850e04"
+],
+[
+"Light lavendar",
+"#efc0fe"
+],
+[
+"Poison green",
+"#40fd14"
+],
+[
+"Bright yellow green",
+"#9dff00"
+],
+[
+"Charcoal gray",
+"#3c4142"
+],
+[
+"Squash",
+"#f2ab15"
+],
+[
+"Cinnamon",
+"#ac4f06"
+],
+[
+"Light pea green",
+"#c4fe82"
+],
+[
+"Radioactive green",
+"#2cfa1f"
+],
+[
+"Raw sienna",
+"#9a6200"
+],
+[
+"Baby purple",
+"#ca9bf7"
+],
+[
+"Cocoa",
+"#875f42"
+],
+[
+"Light royal blue",
+"#3a2efe"
+],
+[
+"Rust brown",
+"#8b3103"
+],
+[
+"Sand brown",
+"#cba560"
+],
+[
+"Tealish green",
+"#0cdc73"
+],
+[
+"Burnt siena",
+"#b75203"
+],
+[
+"Camo",
+"#7f8f4e"
+],
+[
+"Dusk blue",
+"#26538d"
+],
+[
+"Fern",
+"#63a950"
+],
+[
+"Old rose",
+"#c87f89"
+],
+[
+"Pale light green",
+"#b1fc99"
+],
+[
+"Peachy pink",
+"#ff9a8a"
+],
+[
+"Rosy pink",
+"#f6688e"
+],
+[
+"Light bluish green",
+"#76fda8"
+],
+[
+"Light bright green",
+"#53fe5c"
+],
+[
+"Light neon green",
+"#4efd54"
+],
+[
+"Light seafoam",
+"#a0febf"
+],
+[
+"Tiffany blue",
+"#7bf2da"
+],
+[
+"Washed out green",
+"#bcf5a6"
+],
+[
+"Browny orange",
+"#ca6b02"
+],
+[
+"Sapphire",
+"#2138ab"
+],
+[
+"Grayish teal",
+"#719f91"
+],
+[
+"Orangey yellow",
+"#fdb915"
+],
+[
+"Parchment",
+"#fefcaf"
+],
+[
+"Straw",
+"#fcf679"
+],
+[
+"Very dark brown",
+"#1d0200"
+],
+[
+"Terracota",
+"#cb6843"
+],
+[
+"Clear blue",
+"#247afd"
+],
+[
+"Creme",
+"#ffffb6"
+],
+[
+"Foam green",
+"#90fda9"
+],
+[
+"Gray-green",
+"#86a17d"
+],
+[
+"Light gold",
+"#fddc5c"
+],
+[
+"Seafoam blue",
+"#78d1b6"
+],
+[
+"Topaz",
+"#13bbaf"
+],
+[
+"Violet pink",
+"#fb5ffc"
+],
+[
+"Wintergreen",
+"#20f986"
+],
+[
+"Yellow tan",
+"#ffe36e"
+],
+[
+"Dark fuchsia",
+"#9d0759"
+],
+[
+"Indigo blue",
+"#3a18b1"
+],
+[
+"Light yellowish green",
+"#c2ff89"
+],
+[
+"Pale magenta",
+"#d767ad"
+],
+[
+"Rich purple",
+"#720058"
+],
+[
+"Sunflower yellow",
+"#ffda03"
+],
+[
+"Green-blue",
+"#01c08d"
+],
+[
+"Leather",
+"#ac7434"
+],
+[
+"Racing green",
+"#014600"
+],
+[
+"Vivid purple",
+"#9900fa"
+],
+[
+"Dark royal blue",
+"#02066f"
+],
+[
+"Hazel",
+"#8e7618"
+],
+[
+"Muted pink",
+"#d1768f"
+],
+[
+"Canary",
+"#fdff63"
+],
+[
+"Cool gray",
+"#95a3a6"
+],
+[
+"Dark taupe",
+"#7f684e"
+],
+[
+"Darkish purple",
+"#751973"
+],
+[
+"True green",
+"#089404"
+],
+[
+"Coral pink",
+"#ff6163"
+],
+[
+"Dark sage",
+"#598556"
+],
+[
+"Dark slate blue",
+"#214761"
+],
+[
+"Flat blue",
+"#3c73a8"
+],
+[
+"Mushroom",
+"#ba9e88"
+],
+[
+"Rich blue",
+"#021bf9"
+],
+[
+"Greenblue",
+"#23c48b"
+],
+[
+"Light khaki",
+"#e6f2a2"
+],
+[
+"Warm blue",
+"#4b57db"
+],
+[
+"Dark hot pink",
+"#d90166"
+],
+[
+"Deep sea blue",
+"#015482"
+],
+[
+"Carmine",
+"#9d0216"
+],
+[
+"Dark yellow green",
+"#728f02"
+],
+[
+"Pale peach",
+"#ffe5ad"
+],
+[
+"Plum purple",
+"#4e0550"
+],
+[
+"Golden rod",
+"#f9bc08"
+],
+[
+"Neon red",
+"#ff073a"
+],
+[
+"Old pink",
+"#c77986"
+],
+[
+"Very pale blue",
+"#d6fffe"
+],
+[
+"Blood orange",
+"#fe4b03"
+],
+[
+"Grapefruit",
+"#fd5956"
+],
+[
+"Sand yellow",
+"#fce166"
+],
+[
+"Clay brown",
+"#b2713d"
+],
+[
+"Dark blue gray",
+"#1f3b4d"
+],
+[
+"Flat green",
+"#699d4c"
+],
+[
+"Light green blue",
+"#56fca2"
+],
+[
+"Warm pink",
+"#fb5581"
+],
+[
+"Dodger blue",
+"#3e82fc"
+],
+[
+"Ice",
+"#d6fffa"
+],
+[
+"Metallic blue",
+"#4f738e"
+],
+[
+"Pale salmon",
+"#ffb19a"
+],
+[
+"Sap green",
+"#5c8b15"
+],
+[
+"Algae",
+"#54ac68"
+],
+[
+"Bluey gray",
+"#89a0b0"
+],
+[
+"Greeny gray",
+"#7ea07a"
+],
+[
+"Highlighter green",
+"#1bfc06"
+],
+[
+"Light light blue",
+"#cafffb"
+],
+[
+"Light mint",
+"#b6ffbb"
+],
+[
+"Raw umber",
+"#a75e09"
+],
+[
+"Vivid blue",
+"#152eff"
+],
+[
+"Deep lavender",
+"#8d5eb7"
+],
+[
+"Dull teal",
+"#5f9e8f"
+],
+[
+"Light greenish blue",
+"#63f7b4"
+],
+[
+"Pinky",
+"#fc86aa"
+],
+[
+"Red wine",
+"#8c0034"
+],
+[
+"Tan brown",
+"#ab7e4c"
+],
+[
+"Darkblue",
+"#030764"
+],
+[
+"Rosa",
+"#fe86a4"
+],
+[
+"Lipstick",
+"#d5174e"
+],
+[
+"Pale mauve",
+"#fed0fc"
+],
+[
+"Claret",
+"#680018"
+],
+[
+"Dandelion",
+"#fedf08"
+],
+[
+"Orangered",
+"#fe420f"
+],
+[
+"Ruby",
+"#ca0147"
+],
+[
+"Dark",
+"#1b2431"
+],
+[
+"Greenish turquoise",
+"#00fbb0"
+],
+[
+"Pastel red",
+"#db5856"
+],
+[
+"Bright cyan",
+"#41fdfe"
+],
+[
+"Dark coral",
+"#cf524e"
+],
+[
+"Algae green",
+"#21c36f"
+],
+[
+"Darkish red",
+"#a90308"
+],
+[
+"Reddy brown",
+"#6e1005"
+],
+[
+"Blush pink",
+"#fe828c"
+],
+[
+"Camouflage green",
+"#4b6113"
+],
+[
+"Lawn green",
+"#4da409"
+],
+[
+"Putty",
+"#beae8a"
+],
+[
+"Vibrant blue",
+"#0339f8"
+],
+[
+"Dark sand",
+"#a88f59"
+],
+[
+"Purple-blue",
+"#5d21d0"
+],
+[
+"Saffron",
+"#feb209"
+],
+[
+"Twilight",
+"#4e518b"
+],
+[
+"Warm brown",
+"#964e02"
+],
+[
+"Bluegrey",
+"#85a3b2"
+],
+[
+"Bubble gum pink",
+"#ff69af"
+],
+[
+"Duck egg blue",
+"#c3fbf4"
+],
+[
+"Greenish cyan",
+"#2afeb7"
+],
+[
+"Petrol",
+"#005f6a"
+],
+[
+"Royal",
+"#0c1793"
+],
+[
+"Butter",
+"#ffff81"
+],
+[
+"Dusty orange",
+"#f0833a"
+],
+[
+"Off yellow",
+"#f1f33f"
+],
+[
+"Pale olive green",
+"#b1d27b"
+],
+[
+"Leaf",
+"#71aa34"
+],
+[
+"Light blue gray",
+"#b7c9e2"
+],
+[
+"Dried blood",
+"#4b0101"
+],
+[
+"Lightish purple",
+"#a552e6"
+],
+[
+"Rusty red",
+"#af2f0d"
+],
+[
+"Lavender blue",
+"#8b88f8"
+],
+[
+"Light grass green",
+"#9af764"
+],
+[
+"Light mint green",
+"#a6fbb2"
+],
+[
+"Sunflower",
+"#ffc512"
+],
+[
+"Velvet",
+"#750851"
+],
+[
+"Brick orange",
+"#c14a09"
+],
+[
+"Lightish red",
+"#fe2f4a"
+],
+[
+"Pure blue",
+"#0203e2"
+],
+[
+"Twilight blue",
+"#0a437a"
+],
+[
+"Violet red",
+"#a50055"
+],
+[
+"Yellowy brown",
+"#ae8b0c"
+],
+[
+"Carnation",
+"#fd798f"
+],
+[
+"Dark seafoam green",
+"#3eaf76"
+],
+[
+"Deep rose",
+"#c74767"
+],
+[
+"Dusty red",
+"#b9484e"
+],
+[
+"Gray-blue",
+"#647d8e"
+],
+[
+"Lemon lime",
+"#bffe28"
+],
+[
+"Purple-pink",
+"#d725de"
+],
+[
+"Brown yellow",
+"#b29705"
+],
+[
+"Purple brown",
+"#673a3f"
+],
+[
+"Wisteria",
+"#a87dc2"
+],
+[
+"Banana yellow",
+"#fafe4b"
+],
+[
+"Lipstick red",
+"#c0022f"
+],
+[
+"Water blue",
+"#0e87cc"
+],
+[
+"Brown gray",
+"#8d8468"
+],
+[
+"Vibrant purple",
+"#ad03de"
+],
+[
+"Baby green",
+"#8cff9e"
+],
+[
+"Eggshell blue",
+"#c4fff7"
+],
+[
+"Sandy yellow",
+"#fdee73"
+],
+[
+"Cool green",
+"#33b864"
+],
+[
+"Pale",
+"#fff9d0"
+],
+[
+"Blue-gray",
+"#758da3"
+],
+[
+"Hot magenta",
+"#f504c9"
+],
+[
+"Grayblue",
+"#77a1b5"
+],
+[
+"Purpley",
+"#8756e4"
+],
+[
+"Brownish pink",
+"#c27e79"
+],
+[
+"Dark aquamarine",
+"#017371"
+],
+[
+"Light mustard",
+"#f7d560"
+],
+[
+"Pale sky blue",
+"#bdf6fe"
+],
+[
+"Turtle green",
+"#75b84f"
+],
+[
+"Bright olive",
+"#9cbb04"
+],
+[
+"Dark gray blue",
+"#29465b"
+],
+[
+"Greeny brown",
+"#696006"
+],
+[
+"Lemon green",
+"#adf802"
+],
+[
+"Light periwinkle",
+"#c1c6fc"
+],
+[
+"Seaweed green",
+"#35ad6b"
+],
+[
+"Sunshine yellow",
+"#fffd37"
+],
+[
+"Medium pink",
+"#f36196"
+],
+[
+"Very light pink",
+"#fff4f2"
+],
+[
+"Viridian",
+"#1e9167"
+],
+[
+"Faded yellow",
+"#feff7f"
+],
+[
+"Very pale green",
+"#cffdbc"
+],
+[
+"Vibrant green",
+"#0add08"
+],
+[
+"Bright lime",
+"#87fd05"
+],
+[
+"Spearmint",
+"#1ef876"
+],
+[
+"Light aquamarine",
+"#7bfdc7"
+],
+[
+"Light sage",
+"#bcecac"
+],
+[
+"Yellowgreen",
+"#bbf90f"
+],
+[
+"Dark seafoam",
+"#1fb57a"
+],
+[
+"Deep teal",
+"#00555a"
+],
+[
+"Heather",
+"#a484ac"
+],
+[
+"Rust orange",
+"#c45508"
+],
+[
+"Fern green",
+"#548d44"
+],
+[
+"Bright lilac",
+"#c95efb"
+],
+[
+"Weird green",
+"#3ae57f"
+],
+[
+"Peacock blue",
+"#016795"
+],
+[
+"Avocado green",
+"#87a922"
+],
+[
+"Faded orange",
+"#f0944d"
+],
+[
+"Grape purple",
+"#5d1451"
+],
+[
+"Hot green",
+"#25ff29"
+],
+[
+"Lime yellow",
+"#d0fe1d"
+],
+[
+"Mango",
+"#ffa62b"
+],
+[
+"Shamrock",
+"#01b44c"
+],
+[
+"Bubblegum",
+"#ff6cb5"
+],
+[
+"Purplish brown",
+"#6b4247"
+],
+[
+"Pale cyan",
+"#b7fffa"
+],
+[
+"Key lime",
+"#aeff6e"
+],
+[
+"Tomato red",
+"#ec2d01"
+],
+[
+"Lightgreen",
+"#76ff7b"
+],
+[
+"Merlot",
+"#730039"
+],
+[
+"Night blue",
+"#040348"
+],
+[
+"Purpleish pink",
+"#df4ec8"
+],
+[
+"Apple",
+"#6ecb3c"
+],
+[
+"Green apple",
+"#5edc1f"
+],
+[
+"Heliotrope",
+"#d94ff5"
+],
+[
+"Yellow-green",
+"#c8fd3d"
+],
+[
+"Almost black",
+"#070d0d"
+],
+[
+"Cool blue",
+"#4984b8"
+],
+[
+"Leafy green",
+"#51b73b"
+],
+[
+"Mustard brown",
+"#ac7e04"
+],
+[
+"Dusk",
+"#4e5481"
+],
+[
+"Dull brown",
+"#876e4b"
+],
+[
+"Frog green",
+"#58bc08"
+],
+[
+"Vivid green",
+"#2fef10"
+],
+[
+"Bright light green",
+"#2dfe54"
+],
+[
+"Fluro green",
+"#0aff02"
+],
+[
+"Kiwi",
+"#9cef43"
+],
+[
+"Seaweed",
+"#18d17b"
+],
+[
+"Navy green",
+"#35530a"
+],
+[
+"Ultramarine blue",
+"#1805db"
+],
+[
+"Iris",
+"#6258c4"
+],
+[
+"Pastel orange",
+"#ff964f"
+],
+[
+"Yellowish orange",
+"#ffab0f"
+],
+[
+"Perrywinkle",
+"#8f8ce7"
+],
+[
+"Dark plum",
+"#3f012c"
+],
+[
+"Pear",
+"#cbf85f"
+],
+[
+"Pinkish orange",
+"#ff724c"
+],
+[
+"Midnight purple",
+"#280137"
+],
+[
+"Light urple",
+"#b36ff6"
+],
+[
+"Dark mint",
+"#48c072"
+],
+[
+"Greenish tan",
+"#bccb7a"
+],
+[
+"Light burgundy",
+"#a8415b"
+],
+[
+"Turquoise blue",
+"#06b1c4"
+],
+[
+"Sandy",
+"#f1da7a"
+],
+[
+"Electric pink",
+"#ff0490"
+],
+[
+"Muted purple",
+"#805b87"
+],
+[
+"Mid green",
+"#50a747"
+],
+[
+"Neon yellow",
+"#cfff04"
+],
+[
+"Banana",
+"#ffff7e"
+],
+[
+"Carnation pink",
+"#ff7fa7"
+],
+[
+"Tomato",
+"#ef4026"
+],
+[
+"Sea",
+"#3c9992"
+],
+[
+"Turquoise green",
+"#04f489"
+],
+[
+"Buff",
+"#fef69e"
+],
+[
+"Fawn",
+"#cfaf7b"
+],
+[
+"Muted blue",
+"#3b719f"
+],
+[
+"Pale rose",
+"#fdc1c5"
+],
+[
+"Dark mint green",
+"#20c073"
+],
+[
+"Amethyst",
+"#9b5fc0"
+],
+[
+"Blue-green",
+"#0f9b8e"
+],
+[
+"Chestnut",
+"#742802"
+],
+[
+"Pea",
+"#a4bf20"
+],
+[
+"Rusty orange",
+"#cd5909"
+],
+[
+"Stone",
+"#ada587"
+],
+[
+"Rose red",
+"#be013c"
+],
+[
+"Pale aqua",
+"#b8ffeb"
+],
+[
+"Deep orange",
+"#dc4d01"
+],
+[
+"Earth",
+"#a2653e"
+],
+[
+"Mossy green",
+"#638b27"
+],
+[
+"Grassy green",
+"#419c03"
+],
+[
+"Pale lime green",
+"#b1ff65"
+],
+[
+"Light gray blue",
+"#9dbcd4"
+],
+[
+"Pale gray",
+"#fdfdfe"
+],
+[
+"Asparagus",
+"#77ab56"
+],
+[
+"Blueberry",
+"#464196"
+],
+[
+"Purple red",
+"#990147"
+],
+[
+"Pale lime",
+"#befd73"
+],
+[
+"Greenish teal",
+"#32bf84"
+],
+[
+"Caramel",
+"#af6f09"
+],
+[
+"Deep magenta",
+"#a0025c"
+],
+[
+"Light peach",
+"#ffd8b1"
+],
+[
+"Milk chocolate",
+"#7f4e1e"
+],
+[
+"Ocher",
+"#bf9b0c"
+],
+[
+"Off green",
+"#6ba353"
+],
+[
+"Purply pink",
+"#f075e6"
+],
+[
+"Lightblue",
+"#7bc8f6"
+],
+[
+"Dusky blue",
+"#475f94"
+],
+[
+"Golden",
+"#f5bf03"
+],
+[
+"Light beige",
+"#fffeb6"
+],
+[
+"Butter yellow",
+"#fffd74"
+],
+[
+"Dusky purple",
+"#895b7b"
+],
+[
+"French blue",
+"#436bad"
+],
+[
+"Greeny yellow",
+"#c6f808"
+],
+[
+"Orangish red",
+"#f43605"
+],
+[
+"Shamrock green",
+"#02c14d"
+],
+[
+"Orangish brown",
+"#b25f03"
+],
+[
+"Tree green",
+"#2a7e19"
+],
+[
+"Deep violet",
+"#490648"
+],
+[
+"Gunmetal",
+"#536267"
+],
+[
+"Blue-purple",
+"#5a06ef"
+],
+[
+"Cherry",
+"#cf0234"
+],
+[
+"Sandy brown",
+"#c4a661"
+],
+[
+"Warm gray",
+"#978a84"
+],
+[
+"Dark indigo",
+"#1f0954"
+],
+[
+"Midnight",
+"#03012d"
+],
+[
+"Bluey green",
+"#2bb179"
+],
+[
+"Gray pink",
+"#c3909b"
+],
+[
+"Soft purple",
+"#a66fb5"
+],
+[
+"Blood",
+"#770001"
+],
+[
+"Brown red",
+"#922b05"
+],
+[
+"Medium gray",
+"#7d7f7c"
+],
+[
+"Berry",
+"#990f4b"
+],
+[
+"Purpley pink",
+"#c83cb9"
+],
+[
+"Light salmon",
+"#fea993"
+],
+[
+"Easter purple",
+"#c071fe"
+],
+[
+"Light yellow green",
+"#ccfd7f"
+],
+[
+"Dark navy blue",
+"#00022e"
+],
+[
+"Drab",
+"#828344"
+],
+[
+"Light rose",
+"#ffc5cb"
+],
+[
+"Rouge",
+"#ab1239"
+],
+[
+"Purplish red",
+"#b0054b"
+],
+[
+"Irish green",
+"#019529"
+],
+[
+"Pink-purple",
+"#ef1de7"
+],
+[
+"Dark navy",
+"#000435"
+],
+[
+"Greeny blue",
+"#42b395"
+],
+[
+"Light plum",
+"#9d5783"
+],
+[
+"Pinkish gray",
+"#c8aca9"
+],
+[
+"Rust red",
+"#aa2704"
+],
+[
+"Pale lilac",
+"#e4cbff"
+],
+[
+"Orangey red",
+"#fa4224"
+],
+[
+"Primary blue",
+"#0804f9"
+],
+[
+"Kermit green",
+"#5cb200"
+],
+[
+"Brownish purple",
+"#76424e"
+],
+[
+"Murky green",
+"#6c7a0e"
+],
+[
+"Wheat",
+"#fbdd7e"
+],
+[
+"Very dark purple",
+"#2a0134"
+],
+[
+"Bottle green",
+"#044a05"
+],
+[
+"Watermelon",
+"#fd4659"
+],
+[
+"Deep sky blue",
+"#0d75f8"
+],
+[
+"Fire engine red",
+"#fe0002"
+],
+[
+"Yellow ochre",
+"#cb9d06"
+],
+[
+"Pumpkin orange",
+"#fb7d07"
+],
+[
+"Pale olive",
+"#b9cc81"
+],
+[
+"Light lilac",
+"#edc8ff"
+],
+[
+"Lightish green",
+"#61e160"
+],
+[
+"Carolina blue",
+"#8ab8fe"
+],
+[
+"Mulberry",
+"#920a4e"
+],
+[
+"Shocking pink",
+"#fe02a2"
+],
+[
+"Auburn",
+"#9a3001"
+],
+[
+"Bright lime green",
+"#65fe08"
+],
+[
+"Celadon",
+"#befdb7"
+],
+[
+"Pinkish brown",
+"#b17261"
+],
+[
+"Bright sky blue",
+"#02ccfe"
+],
+[
+"Celery",
+"#c1fd95"
+],
+[
+"Dirt brown",
+"#836539"
+],
+[
+"Strawberry",
+"#fb2943"
+],
+[
+"Dark lime",
+"#84b701"
+],
+[
+"Copper",
+"#b66325"
+],
+[
+"Medium brown",
+"#7f5112"
+],
+[
+"Muted green",
+"#5fa052"
+],
+[
+"Robin's egg",
+"#6dedfd"
+],
+[
+"Bright aqua",
+"#0bf9ea"
+],
+[
+"Bright lavender",
+"#c760ff"
+],
+[
+"Ivory",
+"#ffffcb"
+],
+[
+"Very light purple",
+"#f6cefc"
+],
+[
+"Light navy",
+"#155084"
+],
+[
+"Pink red",
+"#f5054f"
+],
+[
+"Olive brown",
+"#645403"
+],
+[
+"Mustard green",
+"#a8b504"
+],
+[
+"Ocean green",
+"#3d9973"
+],
+[
+"Very dark blue",
+"#000133"
+],
+[
+"Dusty green",
+"#76a973"
+],
+[
+"Light navy blue",
+"#2e5a88"
+],
+[
+"Minty green",
+"#0bf77d"
+],
+[
+"Adobe",
+"#bd6c48"
+],
+[
+"Barney",
+"#ac1db8"
+],
+[
+"Jade green",
+"#2baf6a"
+],
+[
+"Bright light blue",
+"#26f7fd"
+],
+[
+"Light lime",
+"#aefd6c"
+],
+[
+"Dark khaki",
+"#9b8f55"
+],
+[
+"Orange yellow",
+"#ffad01"
+],
+[
+"Ocre",
+"#c69c04"
+],
+[
+"Maize",
+"#f4d054"
+],
+[
+"Faded pink",
+"#de9dac"
+],
+[
+"British racing green",
+"#05480d"
+],
+[
+"Sandstone",
+"#c9ae74"
+],
+[
+"Light sea green",
+"#98f6b0"
+],
+[
+"Robin egg blue",
+"#8af1fe"
+],
+[
+"Aqua marine",
+"#2ee8bb"
+],
+[
+"Dark sea green",
+"#11875d"
+],
+[
+"Soft pink",
+"#fdb0c0"
+],
+[
+"Orangey brown",
+"#b16002"
+],
+[
+"Cherry red",
+"#f7022a"
+],
+[
+"Burnt yellow",
+"#d5ab09"
+],
+[
+"Brownish gray",
+"#86775f"
+],
+[
+"Camel",
+"#c69f59"
+],
+[
+"Purplish gray",
+"#7a687f"
+],
+[
+"Marine",
+"#042e60"
+],
+[
+"Grayish pink",
+"#c88d94"
+],
+[
+"Pale turquoise",
+"#a5fbd5"
+],
+[
+"Pastel yellow",
+"#fffe71"
+],
+[
+"Bluey purple",
+"#6241c7"
+],
+[
+"Canary yellow",
+"#fffe40"
+],
+[
+"Faded red",
+"#d3494e"
+],
+[
+"Sepia",
+"#985e2b"
+],
+[
+"Coffee",
+"#a6814c"
+],
+[
+"Bright magenta",
+"#ff08e8"
+],
+[
+"Mocha",
+"#9d7651"
+],
+[
+"Ecru",
+"#feffca"
+],
+[
+"Cranberry",
+"#9e003a"
+],
+[
+"Darkish green",
+"#287c37"
+],
+[
+"Brown orange",
+"#b96902"
+],
+[
+"Dusky rose",
+"#ba6873"
+],
+[
+"Melon",
+"#ff7855"
+],
+[
+"Silver",
+"#c5c9c7"
+],
+[
+"Purply blue",
+"#661aee"
+],
+[
+"Purpleish blue",
+"#6140ef"
+],
+[
+"Hospital green",
+"#9be5aa"
+],
+[
+"Mid blue",
+"#276ab3"
+],
+[
+"Amber",
+"#feb308"
+],
+[
+"Easter green",
+"#8cfd7e"
+],
+[
+"Soft blue",
+"#6488ea"
+],
+[
+"Cerulean blue",
+"#056eee"
+],
+[
+"Golden brown",
+"#b27a01"
+],
+[
+"Bright turquoise",
+"#0ffef9"
+],
+[
+"Red pink",
+"#fa2a55"
+],
+[
+"Red purple",
+"#820747"
+],
+[
+"Grayish brown",
+"#7a6a4f"
+],
+[
+"Vermillion",
+"#f4320c"
+],
+[
+"Russet",
+"#a13905"
+],
+[
+"Steel gray",
+"#6f828a"
+],
+[
+"Lighter purple",
+"#a55af4"
+],
+[
+"Bright violet",
+"#ad0afd"
+],
+[
+"Prussian blue",
+"#004577"
+],
+[
+"Slate green",
+"#658d6d"
+],
+[
+"Dark blue green",
+"#005249"
+],
+[
+"Pine",
+"#2b5d34"
+],
+[
+"Yellowy green",
+"#bff128"
+],
+[
+"Dark gold",
+"#b59410"
+],
+[
+"Darkish blue",
+"#014182"
+],
+[
+"Dull red",
+"#bb3f3f"
+],
+[
+"Pinky red",
+"#fc2647"
+],
+[
+"Bronze",
+"#a87900"
+],
+[
+"Pale teal",
+"#82cbb2"
+],
+[
+"Military green",
+"#667c3e"
+],
+[
+"Barbie pink",
+"#fe46a5"
+],
+[
+"Bubblegum pink",
+"#fe83cc"
+],
+[
+"Pea soup green",
+"#94a617"
+],
+[
+"Dark mustard",
+"#a88905"
+],
+[
+"Medium purple",
+"#9e43a2"
+],
+[
+"Very dark green",
+"#062e03"
+],
+[
+"Dirt",
+"#8a6e45"
+],
+[
+"Dusky pink",
+"#cc7a8b"
+],
+[
+"Red violet",
+"#9e0168"
+],
+[
+"Lemon yellow",
+"#fdff38"
+],
+[
+"Pistachio",
+"#c0fa8b"
+],
+[
+"Dull yellow",
+"#eedc5b"
+],
+[
+"Dark lime green",
+"#7ebd01"
+],
+[
+"Denim blue",
+"#3b5b92"
+],
+[
+"Teal blue",
+"#01889f"
+],
+[
+"Lightish blue",
+"#3d7afd"
+],
+[
+"Purpley blue",
+"#5f34e7"
+],
+[
+"Light indigo",
+"#6d5acf"
+],
+[
+"Brown green",
+"#706c11"
+],
+[
+"Dark maroon",
+"#3c0008"
+],
+[
+"Hot purple",
+"#cb00f5"
+],
+[
+"Dark forest green",
+"#002d04"
+],
+[
+"Faded blue",
+"#658cbb"
+],
+[
+"Drab green",
+"#749551"
+],
+[
+"Light lime green",
+"#b9ff66"
+],
+[
+"Light blue green",
+"#7efbb3"
+],
+[
+"Bordeaux",
+"#7b002c"
+],
+[
+"Light mauve",
+"#c292a1"
+],
+[
+"Ocean",
+"#017b92"
+],
+[
+"Marigold",
+"#fcc006"
+],
+[
+"Dull orange",
+"#d8863b"
+],
+[
+"Steel",
+"#738595"
+],
+[
+"Electric purple",
+"#aa23ff"
+],
+[
+"Fluorescent green",
+"#08ff08"
+],
+[
+"Yellowish brown",
+"#9b7a01"
+],
+[
+"Blush",
+"#f29e8e"
+],
+[
+"Soft green",
+"#6fc276"
+],
+[
+"Bright orange",
+"#ff5b00"
+],
+[
+"Lemon",
+"#fdff52"
+],
+[
+"Purple gray",
+"#866f85"
+],
+[
+"Acid green",
+"#8ffe09"
+],
+[
+"Pale lavender",
+"#eecffe"
+],
+[
+"Violet blue",
+"#510ac9"
+],
+[
+"Light forest green",
+"#4f9153"
+],
+[
+"Burnt red",
+"#9f2305"
+],
+[
+"Khaki green",
+"#728639"
+],
+[
+"Cerise",
+"#de0c62"
+],
+[
+"Faded purple",
+"#916e99"
+],
+[
+"Apricot",
+"#ffb16d"
+],
+[
+"Dark olive green",
+"#3c4d03"
+],
+[
+"Gray brown",
+"#7f7053"
+],
+[
+"Green gray",
+"#77926f"
+],
+[
+"True blue",
+"#010fcc"
+],
+[
+"Pale violet",
+"#ceaefa"
+],
+[
+"Periwinkle blue",
+"#8f99fb"
+],
+[
+"Light sky blue",
+"#c6fcff"
+],
+[
+"Blurple",
+"#5539cc"
+],
+[
+"Green brown",
+"#544e03"
+],
+[
+"Bluegreen",
+"#017a79"
+],
+[
+"Bright teal",
+"#01f9c6"
+],
+[
+"Brownish yellow",
+"#c9b003"
+],
+[
+"Pea soup",
+"#929901"
+],
+[
+"Forest",
+"#0b5509"
+],
+[
+"Barney purple",
+"#a00498"
+],
+[
+"Ultramarine",
+"#2000b1"
+],
+[
+"Bluish gray",
+"#748b97"
+],
+[
+"Dark periwinkle",
+"#665fd1"
+],
+[
+"Dark lilac",
+"#9c6da5"
+],
+[
+"Light maroon",
+"#a24857"
+],
+[
+"Dusty purple",
+"#825f87"
+],
+[
+"Terra cotta",
+"#c9643b"
+],
+[
+"Avocado",
+"#90b134"
+],
+[
+"Marine blue",
+"#01386a"
+],
+[
+"Teal green",
+"#25a36f"
+],
+[
+"Slate gray",
+"#59656d"
+],
+[
+"Lighter green",
+"#75fd63"
+],
+[
+"Electric green",
+"#21fc0d"
+],
+[
+"Dusty blue",
+"#5a86ad"
+],
+[
+"Golden yellow",
+"#fec615"
+],
+[
+"Bright yellow",
+"#fffd01"
+],
+[
+"Light lavender",
+"#dfc5fe"
+],
+[
+"Umber",
+"#b26400"
+],
+[
+"Dark peach",
+"#de7e5d"
+],
+[
+"Jungle green",
+"#048243"
+],
+[
+"Eggshell",
+"#ffffd4"
+],
+[
+"Denim",
+"#3b638c"
+],
+[
+"Yellow brown",
+"#b79400"
+],
+[
+"Dull purple",
+"#84597e"
+],
+[
+"Chocolate brown",
+"#411900"
+],
+[
+"Wine red",
+"#7b0323"
+],
+[
+"Neon blue",
+"#04d9ff"
+],
+[
+"Light tan",
+"#fbeeac"
+],
+[
+"Ice blue",
+"#d7fffe"
+],
+[
+"Cadet blue",
+"#4e7496"
+],
+[
+"Dark mauve",
+"#874c62"
+],
+[
+"Very light blue",
+"#d5ffff"
+],
+[
+"Gray purple",
+"#826d8c"
+],
+[
+"Pastel pink",
+"#ffbacd"
+],
+[
+"Very light green",
+"#d1ffbd"
+],
+[
+"Dark sky blue",
+"#448ee4"
+],
+[
+"Evergreen",
+"#05472a"
+],
+[
+"Dull pink",
+"#d5869d"
+],
+[
+"Aubergine",
+"#3d0734"
+],
+[
+"Mahogany",
+"#4a0100"
+],
+[
+"Reddish orange",
+"#f8481c"
+],
+[
+"Deep green",
+"#02590f"
+],
+[
+"Purple pink",
+"#e03fd8"
+],
+[
+"Dusty pink",
+"#d58a94"
+],
+[
+"Faded green",
+"#7bb274"
+],
+[
+"Camo green",
+"#526525"
+],
+[
+"Pinky purple",
+"#c94cbe"
+],
+[
+"Pink purple",
+"#db4bda"
+],
+[
+"Brownish red",
+"#9e3623"
+],
+[
+"Dark rose",
+"#b5485d"
+],
+[
+"Emerald green",
+"#028f1e"
+],
+[
+"Pale brown",
+"#b1916e"
+],
+[
+"Dull blue",
+"#49759c"
+],
+[
+"Burnt umber",
+"#a0450e"
+],
+[
+"Medium green",
+"#39ad48"
+],
+[
+"Clay",
+"#b66a50"
+],
+[
+"Light aqua",
+"#8cffdb"
+],
+[
+"Light olive green",
+"#a4be5c"
+],
+[
+"Brownish orange",
+"#cb7723"
+],
+[
+"Dark aqua",
+"#05696b"
+],
+[
+"Purplish pink",
+"#ce5dae"
+],
+[
+"Dark salmon",
+"#c85a53"
+],
+[
+"Greenish gray",
+"#96ae8d"
+],
+[
+"Jade",
+"#1fa774"
+],
+[
+"Dark beige",
+"#ac9362"
+],
+[
+"Emerald",
+"#01a049"
+],
+[
+"Pale red",
+"#d9544d"
+],
+[
+"Light magenta",
+"#fa5ff7"
+],
+[
+"Sky",
+"#82cafc"
+],
+[
+"Light cyan",
+"#acfffc"
+],
+[
+"Yellow orange",
+"#fcb001"
+],
+[
+"Reddish purple",
+"#910951"
+],
+[
+"Reddish pink",
+"#fe2c54"
+],
+[
+"Orchid",
+"#c875c4"
+],
+[
+"Orange red",
+"#fd411e"
+],
+[
+"Deep red",
+"#9a0200"
+],
+[
+"Orange brown",
+"#be6400"
+],
+[
+"Cobalt blue",
+"#030aa7"
+],
+[
+"Neon pink",
+"#fe019a"
+],
+[
+"Rose pink",
+"#f7879a"
+],
+[
+"Grayish purple",
+"#887191"
+],
+[
+"Raspberry",
+"#b00149"
+],
+[
+"Aqua green",
+"#12e193"
+],
+[
+"Salmon pink",
+"#fe7b7c"
+],
+[
+"Tangerine",
+"#ff9408"
+],
+[
+"Brownish green",
+"#6a6e09"
+],
+[
+"Red brown",
+"#8b2e16"
+],
+[
+"Greenish brown",
+"#696112"
+],
+[
+"Pumpkin",
+"#e17701"
+],
+[
+"Pine green",
+"#0a481e"
+],
+[
+"Charcoal",
+"#343837"
+],
+[
+"Baby pink",
+"#ffb7ce"
+],
+[
+"Cornflower",
+"#6a79f7"
+],
+[
+"Blue violet",
+"#5d06e9"
+],
+[
+"Chocolate",
+"#3d1c02"
+],
+[
+"Grayish green",
+"#82a67d"
+],
+[
+"Scarlet",
+"#be0119"
+],
+[
+"Green yellow",
+"#c9ff27"
+],
+[
+"Dark olive",
+"#373e02"
+],
+[
+"Sienna",
+"#a9561e"
+],
+[
+"Pastel purple",
+"#caa0ff"
+],
+[
+"Terracotta",
+"#ca6641"
+],
+[
+"Aqua blue",
+"#02d8e9"
+],
+[
+"Sage green",
+"#88b378"
+],
+[
+"Blood red",
+"#980002"
+],
+[
+"Deep pink",
+"#cb0162"
+],
+[
+"Grass",
+"#5cac2d"
+],
+[
+"Moss",
+"#769958"
+],
+[
+"Pastel blue",
+"#a2bffe"
+],
+[
+"Bluish green",
+"#10a674"
+],
+[
+"Green blue",
+"#06b48b"
+],
+[
+"Dark tan",
+"#af884a"
+],
+[
+"Greenish blue",
+"#0b8b87"
+],
+[
+"Pale orange",
+"#ffa756"
+],
+[
+"Forrest green",
+"#154406"
+],
+[
+"Dark lavender",
+"#856798"
+],
+[
+"Dark violet",
+"#34013f"
+],
+[
+"Purple blue",
+"#632de9"
+],
+[
+"Dark cyan",
+"#0a888a"
+],
+[
+"Olive drab",
+"#6f7632"
+],
+[
+"Cobalt",
+"#1e488f"
+],
+[
+"Neon purple",
+"#bc13fe"
+],
+[
+"Light turquoise",
+"#7ef4cc"
+],
+[
+"Apple green",
+"#76cd26"
+],
+[
+"Dull green",
+"#74a662"
+],
+[
+"Wine",
+"#80013f"
+],
+[
+"Powder blue",
+"#b1d1fc"
+],
+[
+"Off white",
+"#ffffe4"
+],
+[
+"Electric blue",
+"#0652ff"
+],
+[
+"Dark turquoise",
+"#045c5a"
+],
+[
+"Blue purple",
+"#5729ce"
+],
+[
+"Azure",
+"#069af3"
+],
+[
+"Bright red",
+"#ff000d"
+],
+[
+"Pinkish red",
+"#f10c45"
+],
+[
+"Cornflower blue",
+"#5170d7"
+],
+[
+"Light olive",
+"#acbf69"
+],
+[
+"Grape",
+"#6c3461"
+],
+[
+"Grayish blue",
+"#5e819d"
+],
+[
+"Purplish blue",
+"#601ef9"
+],
+[
+"Yellowish green",
+"#b0dd16"
+],
+[
+"Greenish yellow",
+"#cdfd02"
+],
+[
+"Medium blue",
+"#2c6fbb"
+],
+[
+"Dusty rose",
+"#c0737a"
+],
+[
+"Light violet",
+"#d6b4fc"
+],
+[
+"Midnight blue",
+"#020035"
+],
+[
+"Bluish purple",
+"#703be7"
+],
+[
+"Red orange",
+"#fd3c06"
+],
+[
+"Dark magenta",
+"#960056"
+],
+[
+"Ocean blue",
+"#03719c"
+],
+[
+"Coral",
+"#fc5a50"
+],
+[
+"Cream",
+"#ffffc2"
+],
+[
+"Reddish brown",
+"#7f2b0a"
+],
+[
+"Burnt sienna",
+"#b04e0f"
+],
+[
+"Brick",
+"#a03623"
+],
+[
+"Sage",
+"#87ae73"
+],
+[
+"Gray green",
+"#789b73"
+],
+[
+"White",
+"#ffffff"
+],
+[
+"Robin's egg blue",
+"#98eff9"
+],
+[
+"Moss green",
+"#658b38"
+],
+[
+"Steel blue",
+"#5a7d9a"
+],
+[
+"Eggplant",
+"#380835"
+],
+[
+"Light yellow",
+"#fffe7a"
+],
+[
+"Leaf green",
+"#5ca904"
+],
+[
+"Light gray",
+"#d8dcd6"
+],
+[
+"Pinkish purple",
+"#d648d7"
+],
+[
+"Sea blue",
+"#047495"
+],
+[
+"Pale purple",
+"#b790d4"
+],
+[
+"Slate blue",
+"#5b7c99"
+],
+[
+"Blue gray",
+"#607c8e"
+],
+[
+"Hunter green",
+"#0b4008"
+],
+[
+"Fuchsia",
+"#ed0dd9"
+],
+[
+"Crimson",
+"#8c000f"
+],
+[
+"Pale yellow",
+"#ffff84"
+],
+[
+"Ochre",
+"#bf9005"
+],
+[
+"Mustard yellow",
+"#d2bd0a"
+],
+[
+"Light red",
+"#ff474c"
+],
+[
+"Cerulean",
+"#0485d1"
+],
+[
+"Pale pink",
+"#ffcfdc"
+],
+[
+"Deep blue",
+"#040273"
+],
+[
+"Rust",
+"#a83c09"
+],
+[
+"Light teal",
+"#90e4c1"
+],
+[
+"Slate",
+"#516572"
+],
+[
+"Goldenrod",
+"#fac205"
+],
+[
+"Dark yellow",
+"#d5b60a"
+],
+[
+"Dark gray",
+"#363737"
+],
+[
+"Army green",
+"#4b5d16"
+],
+[
+"Gray blue",
+"#6b8ba4"
+],
+[
+"Seafoam",
+"#80f9ad"
+],
+[
+"Puce",
+"#a57e52"
+],
+[
+"Spring green",
+"#a9f971"
+],
+[
+"Dark orange",
+"#c65102"
+],
+[
+"Sand",
+"#e2ca76"
+],
+[
+"Pastel green",
+"#b0ff9d"
+],
+[
+"Mint",
+"#9ffeb0"
+],
+[
+"Light orange",
+"#fdaa48"
+],
+[
+"Bright pink",
+"#fe01b1"
+],
+[
+"Chartreuse",
+"#c1f80a"
+],
+[
+"Deep purple",
+"#36013f"
+],
+[
+"Dark brown",
+"#341c02"
+],
+[
+"Pea green",
+"#8eab12"
+],
+[
+"Seafoam green",
+"#7af9ab"
+],
+[
+"Blue green",
+"#137e6d"
+],
+[
+"Khaki",
+"#aaa662"
+],
+[
+"Burgundy",
+"#610023"
+],
+[
+"Dark teal",
+"#014d4e"
+],
+[
+"Brick red",
+"#8f1402"
+],
+[
+"Royal purple",
+"#4b006e"
+],
+[
+"Plum",
+"#580f41"
+],
+[
+"Mint green",
+"#8fff9f"
+],
+[
+"Gold",
+"#dbb40c"
+],
+[
+"Baby blue",
+"#a2cffe"
+],
+[
+"Yellow green",
+"#c0fb2d"
+],
+[
+"Bright purple",
+"#be03fd"
+],
+[
+"Dark red",
+"#840000"
+],
+[
+"Pale blue",
+"#d0fefe"
+],
+[
+"Grass green",
+"#3f9b0b"
+],
+[
+"Navy",
+"#01153e"
+],
+[
+"Aquamarine",
+"#04d8b2"
+],
+[
+"Burnt orange",
+"#c04e01"
+],
+[
+"Neon green",
+"#0cff0c"
+],
+[
+"Bright blue",
+"#0165fc"
+],
+[
+"Rose",
+"#cf6275"
+],
+[
+"Light pink",
+"#ffd1df"
+],
+[
+"Mustard",
+"#ceb301"
+],
+[
+"Indigo",
+"#380282"
+],
+[
+"Lime",
+"#aaff32"
+],
+[
+"Sea green",
+"#53fca1"
+],
+[
+"Periwinkle",
+"#8e82fe"
+],
+[
+"Dark pink",
+"#cb416b"
+],
+[
+"Olive green",
+"#677a04"
+],
+[
+"Peach",
+"#ffb07c"
+],
+[
+"Pale green",
+"#c7fdb5"
+],
+[
+"Light brown",
+"#ad8150"
+],
+[
+"Hot pink",
+"#ff028d"
+],
+[
+"Black",
+"#000000"
+],
+[
+"Lilac",
+"#cea2fd"
+],
+[
+"Navy blue",
+"#001146"
+],
+[
+"Royal blue",
+"#0504aa"
+],
+[
+"Beige",
+"#e6daa6"
+],
+[
+"Salmon",
+"#ff796c"
+],
+[
+"Olive",
+"#6e750e"
+],
+[
+"Maroon",
+"#650021"
+],
+[
+"Bright green",
+"#01ff07"
+],
+[
+"Dark purple",
+"#35063e"
+],
+[
+"Mauve",
+"#ae7181"
+],
+[
+"Forest green",
+"#06470c"
+],
+[
+"Aqua",
+"#13eac9"
+],
+[
+"Cyan",
+"#00ffff"
+],
+[
+"Tan",
+"#d1b26f"
+],
+[
+"Dark blue",
+"#00035b"
+],
+[
+"Lavender",
+"#c79fef"
+],
+[
+"Turquoise",
+"#06c2ac"
+],
+[
+"Dark green",
+"#033500"
+],
+[
+"Violet",
+"#9a0eea"
+],
+[
+"Light purple",
+"#bf77f6"
+],
+[
+"Lime green",
+"#89fe05"
+],
+[
+"Gray",
+"#929591"
+],
+[
+"Sky blue",
+"#75bbfd"
+],
+[
+"Yellow",
+"#ffff14"
+],
+[
+"Magenta",
+"#c20078"
+],
+[
+"Light green",
+"#96f97b"
+],
+[
+"Orange",
+"#f97306"
+],
+[
+"Teal",
+"#029386"
+],
+[
+"Light blue",
+"#95d0fc"
+],
+[
+"Red",
+"#e50000"
+],
+[
+"Brown",
+"#653700"
+],
+[
+"Pink",
+"#ff81c0"
+],
+[
+"Blue",
+"#0343df"
+],
+[
+"Green",
+"#15b01a"
+],
+[
+"Purple",
+"#7e1e9c"
+],
+[
+"Kraft",
+"#c8a47e"
+],
+[
+"Rose gold",
+"#b76e79"
+]
+]
+}
