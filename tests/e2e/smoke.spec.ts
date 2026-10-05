@@ -483,13 +483,13 @@ test('the photo picker can fix yellow indoor lighting', async ({ page }) => {
   await page.getByRole('button', { name: 'Pick the color for Orange' }).click()
   await page.getByLabel(/Choose a photo of the material/).setInputFiles('tests/fixtures/photos/warm-light.png')
   const photo = page.getByLabel('Your photo: tap a color to pick it')
-  await page.getByRole('button', { name: /Fix the lighting/ }).click()
-  await photo.click({ position: { x: 20, y: 20 } }) // the white paper (yellowed in the photo)
-  await expect(page.getByText('✓ Lighting fixed')).toBeVisible()
+  // The yellowed white paper is found and corrected for as soon as the photo loads.
+  await expect(page.getByText(/Colors corrected for lighting \(using the white in the photo\)/)).toBeVisible()
   const box = (await photo.boundingBox())!
   await photo.click({ position: { x: box.width - 20, y: 20 } })
   await page.getByRole('button', { name: 'Use this for Orange' }).click()
-  await expect(page.getByRole('button', { name: 'Color for Orange: #c48352. Pick again' })).toBeVisible()
+  // (200, 120, 60) under light that made white (250, 225, 180) → corrected to #c88553.
+  await expect(page.getByRole('button', { name: 'Color for Orange: #c88553. Pick again' })).toBeVisible()
 })
 
 test('find all the colors in a pack photo automatically', async ({ page }) => {
@@ -508,10 +508,39 @@ test('find all the colors in a pack photo automatically', async ({ page }) => {
   await page.getByRole('button', { name: '🎨 Pick colors from a photo' }).click()
   await page.getByLabel(/Choose a photo of the material/).setInputFiles('tests/fixtures/photos/twenty-colors.png')
   await page.getByRole('button', { name: '✨ Find the colors automatically' }).click()
-  await expect(page.getByText(/Found 21 colors/)).toBeVisible() // 20 papers + the table
-  await expect(page.getByRole('button', { name: /probably the background/ })).toHaveAttribute('aria-pressed', 'false')
+  // Strips side by side are found by position, in order; the table around them is left out.
+  await expect(page.getByText(/Found 20 sheets, in the pack's order/)).toBeVisible()
   await page.getByRole('button', { name: 'Add 20 colors' }).click()
   await expect(page.getByLabel('Color 20', { exact: true })).toBeVisible()
   await expect(page.getByLabel('Color 21', { exact: true })).toHaveCount(0)
   await expect(page.getByRole('button', { name: /Save 20 colors/ })).toBeVisible()
+})
+
+test('a neutral pack photo in warm light: 20 sheets in order, real names, no numbers', async ({ page }) => {
+  await page.addInitScript(() => {
+    delete (window as { EyeDropper?: unknown }).EyeDropper
+  })
+  await page.goto('/')
+  await page.getByRole('button', { name: "Let's start" }).click()
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Skip' }).click()
+  await page.getByRole('button', { name: 'Maybe later' }).click()
+  await page.getByRole('button', { name: "I'll do it later" }).click()
+  await expect(page.getByRole('heading', { name: 'What would you like to make?' })).toBeVisible()
+  await page.goto('/#/add/manual')
+  await page.getByRole('button', { name: 'A pack with several colors' }).click()
+  await page.getByLabel(/What is one .* \(without the color\)/).fill('Printed cardstock')
+  await page.getByRole('button', { name: '🎨 Pick colors from a photo' }).click()
+  await page.getByLabel(/Choose a photo of the material/).setInputFiles('tests/fixtures/photos/neutral-pack-standin.png')
+  await expect(page.getByText(/Colors corrected for lighting \(using the white in the photo\)/)).toBeVisible()
+  await page.getByRole('button', { name: '✨ Find the colors automatically' }).click()
+  await expect(page.getByText("Found 20 sheets, in the pack's order.", { exact: false })).toBeVisible()
+  await page.getByRole('button', { name: 'Add 20 colors' }).click()
+  const names: string[] = []
+  for (let i = 1; i <= 20; i++) names.push(await page.getByLabel(`Color ${i}`, { exact: true }).inputValue())
+  expect(names.every((n) => !/\d/.test(n))).toBe(true)
+  expect(new Set(names.map((n) => n.toLowerCase())).size).toBe(20)
+  expect(names[13]).toMatch(/espresso/i) // not "Charcoal"
+  expect(names[14]).toMatch(/sage/i) // not "Mustard"
+  expect(names[15]).toMatch(/sage|olive/i)
+  expect(names[16]).toMatch(/slate/i) // not "Gray"
 })

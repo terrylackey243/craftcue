@@ -72,15 +72,22 @@ Primary hosting is GitHub Pages; the homelab copy (`craftcue.jkne.app`) is Terry
   rate + profit %, rounded up, plus an Etsy price that covers its fees. Rate/profit live in setup.
 - Live photo check: tests/record/importPhoto.record.test.ts uses Terry's local-only photo + stash.
 
-## Colors (added 2026-10-04)
+## Colors (added 2026-10-04, reworked 2026-10-07)
 
-- Colors are plain/expanded names (Red, Light yellow, Navy, Tan), never brand names (Rocket Red is
-  a brand name). `colorLabel()` shows "Red (Rocket Red)"; `supplyFamily()` drives the stash filter.
-- Picked swatches (`colorHex`) are named from the crafter's editable list (`src/lib/colorList.ts`,
-  `setup.colorList`, Settings → Color names) in two steps: basic color family first (`familyOfHex`), then the closest CIEDE2000 name of that
-  family, plain names favored (Terry: "Leather" should be Brown). The xkcd list was too fancy; it's
-  kept only for migration. Never Coolors (license forbids reuse). Saved lists migrate via `colorListBase`. Nothing within `CLOSE` → the
-  ColorNameCheck prompt (add it, or teach the shade to an existing name).
+- Colors are plain/expanded names (Red, Sage, Espresso), never brand names. Matching never depends
+  on a name: every color has a family (11 basic colors) from the nearest *named* color, whose
+  family is declared in `DEFAULT_COLORS` (`src/lib/colorList.ts`, base `named-3`); never HSL
+  cutoffs (`familyOfHex` only remains for suggestion names). Name and family come from the same
+  match. `colorSatisfies()` / `stashMatchFor()` decide "is brown on hand" (family or ΔE ≤ 15 +
+  material words); prompts send `color: Dirt (Brown, dark, #hex)` and a rule to match by family.
+- Pack photos: `findSwatches()` finds sheets by stripe position first (pack order), else
+  `findColors()` groups. Photos are white-balanced on load (`autoWhiteGains`: white label, else
+  capped gray-world), applied to measurements only. Taps sample a 9×9 median. Similar shades in a
+  pack are named Light/–/Dark + warm/cool/muted (`distinctNames`), never numbers.
+- The crafter's editable list (`setup.colorList`, Settings → Color names) migrates via
+  `colorListBase`; ColorNameCheck prompts to add/teach; saving teaches renamed shades. The real
+  Recollections neutral photo isn't recorded yet (stand-in: tests/fixtures/photos/neutral-pack-standin.png).
+- Never Coolors (license forbids reuse). xkcd list kept only for migration.
 
 ## Invariants
 

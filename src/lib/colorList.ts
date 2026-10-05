@@ -4,12 +4,14 @@
 // (compared with CIEDE2000), with plain names preferred unless a fancier one is clearly closer.
 // New shades can be added or taught to an existing name.
 import xkcd from '../data/xkcdColors.json'
-import { familyOfHex, isPlainColor, nameOfHex } from './colorGuess'
+import { isPlainColor, nameOfHex, type ColorFamily } from './colorGuess'
 
 export interface ColorEntry {
   name: string
   /** Sample shades for this name; picks close to any of them get this name. */
   hexes: string[]
+  /** Which basic color it is (Olive green → Green). Colors the crafter adds get it from the nearest standard color. */
+  family?: ColorFamily
 }
 
 const D = (name: string, ...hexes: string[]): ColorEntry => ({ name, hexes })
@@ -34,14 +36,63 @@ export const LEGACY_COLORS: ColorEntry[] = [
   D('Rose gold', '#b76e79'),
 ]
 
-/** The standard list: plain colors with light/dark shades, and familiar expanded colors. */
-export const DEFAULT_COLORS: ColorEntry[] = [
+/** The standard list from 2026-10-06 (basic-2), kept to move saved lists off it. */
+export const BASIC2_COLORS: ColorEntry[] = [
   ...LEGACY_COLORS,
   D('Light brown', '#a87a52'), D('Sand', '#e2ca76'), D('Khaki', '#c3b091'), D('Taupe', '#9c8a7a'), D('Mauve', '#b784a7'),
   D('Light red', '#e57373'), D('Light purple', '#b39ddb'), D('Seafoam', '#9fe2bf'), D('Light teal', '#7fcdcd'), D('Dark pink', '#c2185b'),
 ]
+
+const F = (name: string, family: ColorFamily, ...hexes: string[]): ColorEntry => ({ name, family, hexes })
+
+/**
+ * The standard list: plain colors with light/dark shades, familiar expanded colors, and the muted
+ * colors crafters buy (sage, slate, espresso…). Every name says which basic color it is, so a
+ * color's family never depends on hue cutoffs.
+ */
+export const DEFAULT_COLORS: ColorEntry[] = [
+  // Black, gray, white
+  F('Black', 'Black', '#1a1a1a', '#222222'), F('Charcoal', 'Gray', '#3a3a3a', '#404244'), F('Dark gray', 'Gray', '#555555'), F('Gray', 'Gray', '#8a8a8a'), F('Light gray', 'Gray', '#c0c0c0'),
+  F('Pale gray', 'Gray', '#dedede'), F('Silver', 'Gray', '#c0c0c8'), F('Slate gray', 'Gray', '#708090', '#6b7680'),
+  F('White', 'White', '#ffffff', '#f7f7f5'), F('Off-white', 'White', '#f4f1e8'), F('Ivory', 'White', '#f8f3e3'), F('Cream', 'White', '#f3e9cc', '#efe4c4'),
+  // Browns and tans
+  F('Beige', 'Brown', '#e3d3b4', '#dccdb0'), F('Sand', 'Brown', '#d8c08c', '#dcc69a', '#c2b280'), F('Tan', 'Brown', '#d2b48c', '#c9ad84'), F('Khaki', 'Brown', '#c3b091', '#bdb07a'),
+  F('Camel', 'Brown', '#c19a6b', '#b88a58'), F('Kraft', 'Brown', '#c8a47e', '#b98f63'), F('Taupe', 'Brown', '#9c8a7a', '#8b7d6b'), F('Light brown', 'Brown', '#a87a52', '#b08860'),
+  F('Brown', 'Brown', '#7b4b2a', '#8a5a35', '#9c5e34'), F('Mocha', 'Brown', '#6f4e37', '#7b5a46'), F('Dark brown', 'Brown', '#4a2e1c'), F('Chocolate', 'Brown', '#5a3622'),
+  F('Espresso', 'Brown', '#3b2a1e', '#4a3428', '#3b3328'), F('Copper', 'Brown', '#b8733a', '#a8652e'), F('Bronze', 'Brown', '#a97142'), F('Rust', 'Brown', '#b7410e', '#a5492a'),
+  F('Terracotta', 'Orange', '#c86f4f', '#b8623f'), F('Clay', 'Brown', '#b66a50'),
+  // Reds
+  F('Dark red', 'Red', '#8b1a1a'), F('Red', 'Red', '#c62828', '#d32f2f'), F('Light red', 'Red', '#e57373'), F('Cherry', 'Red', '#c21e3a'), F('Brick', 'Red', '#a33a2a'),
+  F('Burgundy', 'Red', '#7a1f33'), F('Wine', 'Red', '#722f37'), F('Maroon', 'Red', '#6e1a2a'),
+  // Pinks
+  F('Pink', 'Pink', '#f58cb5'), F('Light pink', 'Pink', '#f8b7cd'), F('Pale pink', 'Pink', '#fbe3ea'), F('Dark pink', 'Pink', '#c2185b'), F('Hot pink', 'Pink', '#ff4fa0'),
+  F('Magenta', 'Pink', '#d0308f'), F('Fuchsia', 'Pink', '#d633a8'), F('Rose', 'Pink', '#e0607e'), F('Blush', 'Pink', '#f2b8c0', '#e8b4b8'), F('Dusty rose', 'Pink', '#c4848e', '#b87f87'),
+  F('Bubble gum', 'Pink', '#ffc1cc'), F('Berry', 'Pink', '#990f4b'), F('Mauve', 'Purple', '#b784a7', '#a87c96'), F('Rose gold', 'Pink', '#b76e79'),
+  // Oranges
+  F('Coral', 'Orange', '#ff7f60'), F('Salmon', 'Orange', '#f59a80'), F('Red-orange', 'Orange', '#e8501e'), F('Orange', 'Orange', '#f57c00'), F('Dark orange', 'Orange', '#c45a0a'),
+  F('Light orange', 'Orange', '#f8b070'), F('Peach', 'Orange', '#f4c4a0'), F('Pale peach', 'Orange', '#f8e0d0'), F('Pumpkin', 'Orange', '#e8761e'), F('Tangerine', 'Orange', '#f68b1f'),
+  F('Tawny', 'Orange', '#cd5700'),
+  // Yellows
+  F('Gold', 'Yellow', '#c9a227', '#d4af37'), F('Mustard', 'Yellow', '#c8a415', '#d4a72c', '#b8901f'), F('Goldenrod', 'Yellow', '#daa520'), F('Yellow', 'Yellow', '#f9d71c', '#ffe135'),
+  F('Light yellow', 'Yellow', '#f3e28a', '#fbe98f'), F('Pale yellow', 'Yellow', '#f8f0c0'), F('Butter', 'Yellow', '#f6e7a1', '#f3e3a0'), F('Lemon', 'Yellow', '#fff44f'),
+  // Greens
+  F('Chartreuse', 'Green', '#c7ba36', '#b5c935', '#c2c94a'), F('Lime green', 'Green', '#8bc34a'), F('Light lime green', 'Green', '#c5e384'), F('Olive', 'Green', '#808000', '#6b6b2a', '#7a7a3a'),
+  F('Olive green', 'Green', '#677a2e', '#5a6b32'), F('Sage', 'Green', '#9caf88', '#8a9a78', '#7b7e5f'), F('Mint', 'Green', '#98e0c0', '#aee6c8'), F('Seafoam', 'Green', '#9fe2bf', '#93d8c0'),
+  F('Dark green', 'Green', '#1e5631'), F('Green', 'Green', '#2e8b3e'), F('Light green', 'Green', '#90d090'), F('Pale green', 'Green', '#d4efd4'), F('Forest green', 'Green', '#2e5e3a'),
+  F('Kelly green', 'Green', '#2ca02c'), F('Emerald', 'Green', '#1f9d55'), F('Jade', 'Green', '#00a86b'),
+  // Blues (teals and aquas included)
+  F('Teal', 'Blue', '#1b8a8a'), F('Dark teal', 'Blue', '#0e5555'), F('Light teal', 'Blue', '#7fcdcd'), F('Slate teal', 'Blue', '#7f9a99', '#6d8b8a'), F('Turquoise', 'Blue', '#30c5c0'),
+  F('Aqua', 'Blue', '#40d0e0'), F('Light aqua', 'Blue', '#b8e4e4'), F('Pale aqua', 'Blue', '#ddf2f2', '#cce0e0'), F('Navy', 'Blue', '#1f2a56'), F('Dark blue', 'Blue', '#1a3a7a'),
+  F('Blue', 'Blue', '#1e6fd0'), F('Royal blue', 'Blue', '#2446a8'), F('Cobalt', 'Blue', '#1f4fbf'), F('Denim', 'Blue', '#3d5a80'), F('Slate blue', 'Blue', '#6a7fa0', '#5b6f8f'),
+  F('Dusty blue', 'Blue', '#8aa4bd', '#7d98b0'), F('Light blue', 'Blue', '#a7c4e8'), F('Pale blue', 'Blue', '#dde8f6'), F('Sky blue', 'Blue', '#87ceeb'), F('Baby blue', 'Blue', '#a7c7e7'),
+  F('Periwinkle', 'Purple', '#8c9ce8'),
+  // Purples
+  F('Indigo', 'Purple', '#3f3f9f'), F('Purple', 'Purple', '#6a3fa0'), F('Dark purple', 'Purple', '#3e2160'), F('Light purple', 'Purple', '#b39ddb'), F('Violet', 'Purple', '#7f4fc9'),
+  F('Grape', 'Purple', '#6f2da8'), F('Plum', 'Purple', '#6e3a6e'), F('Lavender', 'Purple', '#b8a2d8'), F('Pale lavender', 'Purple', '#e4dcf0'), F('Lilac', 'Purple', '#c8a2c8'),
+  F('Orchid', 'Purple', '#da70d6'),
+]
 /** Which standard list a saved list was built on; older saved lists are moved onto this one. */
-export const COLOR_LIST_BASE = 'basic-2'
+export const COLOR_LIST_BASE = 'named-3'
 
 // ----- color science: compare colors the way people see them -----
 
@@ -106,7 +157,7 @@ export function deltaE(hexA: string, hexB: string, kL = 1): number {
 }
 
 /** Close enough to a color on the list to just use its name. */
-export const CLOSE = 12
+export const CLOSE = 10
 
 // ----- the current list (set from the crafter's settings when the app loads) -----
 
@@ -114,7 +165,10 @@ let current: ColorEntry[] = DEFAULT_COLORS
 const nameCache = new Map<string, string>()
 export function setColorList(list: ColorEntry[] | undefined) {
   const next = list?.length ? list : DEFAULT_COLORS
-  if (next !== current) nameCache.clear()
+  if (next !== current) {
+    nameCache.clear()
+    familyCache.clear()
+  }
   current = next
 }
 export const getColorList = () => current
@@ -124,32 +178,48 @@ export interface ColorMatch {
   distance: number
 }
 
-const familyCache = new Map<string, string>()
-const familyOf = (hex: string) => {
-  let f = familyCache.get(hex)
-  if (!f) familyCache.set(hex, (f = familyOfHex(hex)))
-  return f
-}
 /** Plain names (Red, Light blue, Dark brown) win over fancier ones unless those are clearly closer. */
 const PLAIN = /^((light|pale|dark|hot) )?(red|orange|yellow|green|blue|purple|pink|brown|gray|black|white|tan|navy|teal)$/i
-const PLAIN_BONUS = 0.75
+const PLAIN_BONUS = 0.85
 
-/**
- * Colors on the list, closest first. Only shades of the same basic color (brown, blue…) compete,
- * so a pale aqua is never "Light gray" and a mid brown never "Leather"; if the list has nothing
- * of that color, everything competes.
- */
+/** Colors on the list, closest first (plain names get a small head start). */
 export function closestColors(hex: string, list = current): ColorMatch[] {
-  const fam = familyOf(hex)
-  const score = (entry: ColorEntry, hexes: string[]) => {
-    const d = Math.min(...hexes.map((h) => deltaE(h, hex)))
-    return { entry, distance: d, rank: PLAIN.test(entry.name) ? d * PLAIN_BONUS : d }
-  }
-  const sameColor = list.map((e) => ({ e, hexes: e.hexes.filter((h) => familyOf(h) === fam) })).filter((x) => x.hexes.length)
-  const pool = sameColor.length ? sameColor.map((x) => score(x.e, x.hexes)) : list.map((e) => score(e, e.hexes))
-  // Other colors follow, for "Or it's really…" choices.
-  const rest = sameColor.length ? list.filter((e) => !sameColor.some((x) => x.e === e)).map((e) => ({ ...score(e, e.hexes), rank: Infinity })) : []
-  return [...pool.sort((a, b) => a.rank - b.rank), ...rest.sort((a, b) => a.distance - b.distance)].map(({ entry, distance }) => ({ entry, distance }))
+  return list
+    .map((entry) => {
+      const distance = Math.min(...entry.hexes.map((h) => deltaE(h, hex)))
+      return { entry, distance, rank: PLAIN.test(entry.name) ? distance * PLAIN_BONUS : distance }
+    })
+    .sort((a, b) => a.rank - b.rank)
+    .map(({ entry, distance }) => ({ entry, distance }))
+}
+
+/** The basic color of a list entry: its own, or the nearest standard color's for added ones. */
+export function entryFamily(e: ColorEntry): ColorFamily {
+  if (e.family) return e.family
+  const std = DEFAULT_COLORS.map((d) => ({ d, dist: Math.min(...d.hexes.map((h) => deltaE(h, e.hexes[0] ?? '#808080'))) })).sort((x, y) => x.dist - y.dist)[0]
+  return std.d.family!
+}
+
+const familyCache = new Map<string, ColorFamily>()
+/**
+ * Which basic color a hex is: the family of the color it's named after (on the crafter's list, so
+ * a shade they taught counts), never hue cutoffs.
+ */
+export function colorFamilyOf(hex: string, list = current): ColorFamily {
+  const key = list === current ? hex : ''
+  const hit = key ? familyCache.get(key) : undefined
+  if (hit) return hit
+  // The same top match that names the color, so the name and its family always agree.
+  const top = closestColors(hex, list)[0]
+  const fam = top ? entryFamily(top.entry) : 'Gray'
+  if (key) familyCache.set(key, fam)
+  return fam
+}
+
+/** Light, medium or dark (Lab lightness). */
+export function shadeOf(hex: string): 'light' | 'medium' | 'dark' {
+  const L = lab(hex)[0]
+  return L >= 72 ? 'light' : L < 42 ? 'dark' : 'medium'
 }
 
 /** The list color a pick is close to, or null when nothing on the list is close. */
@@ -216,7 +286,9 @@ export function learnFromNames(list: ColorEntry[], pairs: { name: string; hex?: 
     const base = name.trim().replace(/\s+\d+$/, '') // "Light yellow 2" is still Light yellow
     if (!hex || !base) continue
     const match = matchColor(hex, next)
-    if (match && same(base, match.entry.name)) continue // the list already names it this
+    // The list already names it this, or it's one of the app's "Light tan / Warm tan" variants of it.
+    const core = base.replace(/^((warm|cool|muted|bright|soft|deep|dusty|other)\s+)?((light|dark)\s+)?/i, '')
+    if (match && (same(base, match.entry.name) || same(core, match.entry.name))) continue
     const entry = next.find((e) => same(e.name, base))
     if (entry) {
       if (Math.min(...entry.hexes.map((h) => deltaE(h, hex))) < 2) continue // already knows this shade
@@ -231,7 +303,7 @@ export function learnFromNames(list: ColorEntry[], pairs: { name: string; hex?: 
 }
 
 /** The standard list each older base was, to tell what the crafter changed on it. */
-const OLD_STANDARD: Record<string, ColorEntry[]> = { legacy: LEGACY_COLORS, 'xkcd-1': XKCD_COLORS }
+const OLD_STANDARD: Record<string, ColorEntry[]> = { legacy: LEGACY_COLORS, 'xkcd-1': XKCD_COLORS, 'basic-2': BASIC2_COLORS }
 
 /**
  * Move a list saved on an older standard list onto the current one, keeping what the crafter
@@ -251,4 +323,52 @@ export function migrateColorList(saved: ColorEntry[] | undefined, base: string |
     }
   }
   return changed ? next : undefined
+}
+
+// ----- telling a pack's similar colors apart -----
+
+const TONE = /^(light|pale|dark|deep)\s+/i
+const QUALIFIERS = ['warm', 'cool', 'muted', 'bright', 'soft', 'deep', 'dusty']
+const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
+const upper = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+/**
+ * Names for colors that would otherwise share one ("Tan, Tan 2, Tan 3"): ranked by lightness into
+ * Light tan / Tan / Dark tan, and any still tied told apart by warm / cool / muted. Never numbers.
+ * Names that are already unique are kept.
+ */
+export function distinctNames(items: { name: string; hex: string }[]): string[] {
+  const out = items.map((i) => i.name)
+  const groups = new Map<string, number[]>()
+  items.forEach((it, i) => groups.set(it.name.toLowerCase(), [...(groups.get(it.name.toLowerCase()) ?? []), i]))
+  for (const idx of groups.values()) {
+    if (idx.length < 2) continue
+    const base = items[idx[0]].name
+    const toned = TONE.test(base) // "Light yellow" ×2: don't make "Light light yellow"
+    const byLight = [...idx].sort((a, b) => lab(items[b].hex)[0] - lab(items[a].hex)[0])
+    // Tiers: the lightest is Light, the darkest Dark, the rest plain.
+    const tiers = new Map<number, string>()
+    byLight.forEach((i, rank) => {
+      const t = toned ? 1 : rank === 0 ? 0 : rank === byLight.length - 1 ? 2 : 1
+      tiers.set(i, t === 0 ? `Light ${lower(base)}` : t === 2 ? `Dark ${lower(base)}` : base)
+    })
+    // Still tied within a tier: warm / cool / muted…, by warmth (a* + b*) and then strength.
+    const byTier = new Map<string, number[]>()
+    for (const i of idx) byTier.set(tiers.get(i)!, [...(byTier.get(tiers.get(i)!) ?? []), i])
+    for (const [name, members] of byTier) {
+      if (members.length < 2) {
+        out[members[0]] = name
+        continue
+      }
+      const warmth = (i: number) => lab(items[i].hex)[1] + lab(items[i].hex)[2]
+      const chroma = (i: number) => Math.hypot(lab(items[i].hex)[1], lab(items[i].hex)[2])
+      const sorted = [...members].sort((a, b) => warmth(b) - warmth(a))
+      // warm = warmest, cool = coolest; the rest by how strong the color is.
+      const order = [sorted[0], sorted[sorted.length - 1], ...sorted.slice(1, -1).sort((a, b) => chroma(a) - chroma(b))]
+      order.forEach((i, q) => {
+        out[i] = `${upper(QUALIFIERS[q] ?? 'other')} ${lower(name)}`
+      })
+    }
+  }
+  return out
 }

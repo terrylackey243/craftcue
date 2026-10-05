@@ -139,6 +139,13 @@ export default function Suggest() {
               ))}
             </ul>
           )}
+          {c.warnings.length > 0 && (
+            <ul className="rounded-xl bg-sky-50 p-3 text-sm text-sky-900">
+              {c.warnings.map((w) => (
+                <li key={w}>• {w}</li>
+              ))}
+            </ul>
+          )}
           {s.toolsNeeded.length > 0 && <p className="text-sm text-stone-600">Tools: {s.toolsNeeded.map((t) => getTool(t)?.name ?? t).join(', ')}</p>}
           {s.equipmentNeeded.length > 0 && <p className="text-sm text-stone-600">Equipment: {s.equipmentNeeded.map((e) => EQUIPMENT.find((x) => x.id === e)?.name ?? e).join(', ')}</p>}
           <div className="mt-auto flex flex-wrap gap-2 pt-2">

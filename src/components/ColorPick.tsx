@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { loadBitmap } from '../lib/images'
-import { findColors, isBackground, type FoundColor } from '../lib/colorClusters'
+import { applyGains, autoWhiteGains, findColors, findSwatches, isBackground, medianAt, rgbHex, type FoundColor } from '../lib/colorClusters'
 import PhotoDrop from './PhotoDrop'
 import { Button, Sheet } from './ui'
 
@@ -71,10 +71,6 @@ export function whiteBalance(data: Uint8ClampedArray, white: [number, number, nu
   return out
 }
 
-const rgbOfHex = (hex: string): [number, number, number] => {
-  const n = parseInt(hex.slice(1), 16)
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
-}
 
 /** A round swatch that picks a color: eyedropper in Chrome, the photo/color-wheel sheet elsewhere. */
 export function ColorSwatch({ value, onChange, label }: { value?: string; onChange: (hex: string | undefined) => void; label: string }) {
@@ -137,19 +133,33 @@ export function ColorPickSheet({
   const [sample, setSample] = useState<{ hex: string; x: number; y: number } | null>(null)
   const [index, setIndex] = useState(startAt)
   const [added, setAdded] = useState<string[]>([])
-  // The photo as loaded, so the lighting fix can be redone or undone.
+  // The photo as loaded. Colors are measured on a lighting-corrected copy; the photo shown stays as taken.
   const original = useRef<ImageData | null>(null)
-  const [lighting, setLighting] = useState<'off' | 'tapWhite' | 'fixed'>('off')
-  // Colors found automatically: which are ticked, and how strictly similar shades are merged.
+  const [lighting, setLighting] = useState<{ gains: [number, number, number]; from: 'white' | 'average' | 'tapped' | 'none'; on: boolean }>({ gains: [1, 1, 1], from: 'none', on: false })
+  const [tapWhite, setTapWhite] = useState(false)
+  const measuredCache = useRef<{ key: string; data: Uint8ClampedArray } | null>(null)
+  /** The pixels colors are measured from: corrected for lighting unless that's switched off. */
+  function measured(): Uint8ClampedArray | null {
+    const o = original.current
+    if (!o) return null
+    if (!lighting.on) return o.data
+    const key = lighting.gains.join()
+    if (measuredCache.current?.key !== key) measuredCache.current = { key, data: applyGains(o.data, lighting.gains) }
+    return measuredCache.current.data
+  }
+  // Colors found automatically: by stripe position (a pack shot edge-on) or by grouping colors.
   const [found, setFound] = useState<(FoundColor & { on: boolean })[] | null>(null)
+  const [foundBy, setFoundBy] = useState<'stripes' | 'groups'>('stripes')
   const [mergeAt, setMergeAt] = useState(7)
 
-  function detect(merge = mergeAt) {
+  function detect(by: 'stripes' | 'groups' = 'stripes', merge = mergeAt) {
     const c = canvas.current
-    const ctx = c?.getContext('2d', { willReadFrequently: true })
-    if (!c || !ctx) return
+    const data = measured()
+    if (!c || !data) return
     setMergeAt(merge)
-    setFound(findColors(ctx.getImageData(0, 0, c.width, c.height).data, c.width, c.height, merge).map((f) => ({ ...f, on: !isBackground(f) })))
+    const stripes = by === 'stripes' ? findSwatches(data, c.width, c.height) : null
+    setFoundBy(stripes ? 'stripes' : 'groups')
+    setFound((stripes ?? findColors(data, c.width, c.height, merge)).map((f) => ({ ...f, on: !isBackground(f) })))
   }
   const single = !collect && targets.length === 1
 
@@ -173,25 +183,29 @@ export function ColorPickSheet({
     const ctx = c.getContext('2d', { willReadFrequently: true })
     ctx?.drawImage(img, 0, 0, c.width, c.height)
     original.current = ctx ? ctx.getImageData(0, 0, c.width, c.height) : null
-    setLighting('off')
+    measuredCache.current = null
+    // Correct the lighting straight away: from a white label if there is one, else gently.
+    const auto = original.current ? autoWhiteGains(original.current.data, c.width, c.height) : { gains: [1, 1, 1] as [number, number, number], from: 'none' as const }
+    const changes = auto.gains.some((g) => Math.abs(g - 1) > 0.02)
+    setLighting({ gains: auto.gains, from: changes ? auto.from : 'none', on: changes })
+    setTapWhite(false)
     setFound(null)
   }, [img, open])
 
-  function fixLighting(white: string) {
-    const c = canvas.current
-    const ctx = c?.getContext('2d', { willReadFrequently: true })
-    if (!c || !ctx || !original.current) return
-    ctx.putImageData(new ImageData(whiteBalance(original.current.data, rgbOfHex(white)), c.width, c.height), 0, 0)
-    setLighting('fixed')
+  function setLightingOn(on: boolean) {
+    setLighting((l) => ({ ...l, on }))
     setSample(null)
     setFound(null)
   }
 
-  function undoLighting() {
-    const ctx = canvas.current?.getContext('2d', { willReadFrequently: true })
-    if (ctx && original.current) ctx.putImageData(original.current, 0, 0)
-    setLighting('off')
+  /** The crafter tapped something white: correct from that instead. */
+  function whiteFromTap(white: [number, number, number]) {
+    const ref = Math.max(...white)
+    const gains = white.map((v) => Math.min(1.7, Math.max(0.6, ref / Math.max(1, v)))) as [number, number, number]
+    setLighting({ gains, from: 'tapped', on: true })
+    setTapWhite(false)
     setSample(null)
+    setFound(null)
   }
 
   async function openPhoto(f: File) {
@@ -206,13 +220,15 @@ export function ColorPickSheet({
     const rect = c.getBoundingClientRect()
     const x = Math.round(((e.clientX - rect.left) / rect.width) * c.width)
     const y = Math.round(((e.clientY - rect.top) / rect.height) * c.height)
-    if (lighting === 'tapWhite' && original.current) {
-      // Measure white on the photo as it was taken, then correct the whole photo.
-      fixLighting(averageAt(original.current.data, c.width, c.height, x, y, 6))
+    if (tapWhite && original.current) {
+      // Measure white on the photo as it was taken.
+      whiteFromTap(medianAt(original.current.data, c.width, c.height, x, y, 6))
       return
     }
-    const data = ctx.getImageData(0, 0, c.width, c.height).data
-    setSample({ hex: averageAt(data, c.width, c.height, x, y), x: (x / c.width) * 100, y: (y / c.height) * 100 })
+    const data = measured()
+    if (!data) return
+    // The median of a 9×9 patch: texture and stray pixels don't move it.
+    setSample({ hex: rgbHex(medianAt(data, c.width, c.height, x, y)), x: (x / c.width) * 100, y: (y / c.height) * 100 })
   }
 
   function accept(hex: string | undefined) {
@@ -272,29 +288,41 @@ export function ColorPickSheet({
         )}
         {img && (
           <div className="flex flex-col gap-1">
-            {lighting === 'tapWhite' ? (
+            {tapWhite ? (
               <p className="font-semibold text-brand-700">Now tap something white in the photo: white paper, a label, a wall.</p>
             ) : (
               <p className="text-sm text-stone-600">Tap the middle of a color, away from shadows and shine.</p>
             )}
-            <div className="flex flex-wrap gap-2">
-              {lighting === 'fixed' ? (
-                <>
-                  <span className="self-center text-sm font-semibold text-green-800">✓ Lighting fixed</span>
-                  <Button variant="ghost" onClick={undoLighting}>
-                    Undo lighting fix
-                  </Button>
-                </>
-              ) : lighting === 'tapWhite' ? (
-                <Button variant="ghost" onClick={() => setLighting('off')}>
+            <div className="flex flex-wrap items-center gap-2">
+              {lighting.from !== 'none' &&
+                (lighting.on ? (
+                  <>
+                    <span className="text-sm font-semibold text-green-800">
+                      ✓ Colors corrected for lighting{lighting.from === 'white' ? ' (using the white in the photo)' : lighting.from === 'tapped' ? ' (using the white you tapped)' : ''}
+                    </span>
+                    <Button variant="ghost" onClick={() => setLightingOn(false)}>
+                      Undo
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-sm text-stone-600">Colors not corrected for lighting.</span>
+                    <Button variant="ghost" onClick={() => setLightingOn(true)}>
+                      Correct them
+                    </Button>
+                  </>
+                ))}
+              {tapWhite ? (
+                <Button variant="ghost" onClick={() => setTapWhite(false)}>
                   Cancel
                 </Button>
               ) : (
-                <Button variant="ghost" onClick={() => setLighting('tapWhite')}>
-                  ⚪ Photo looks yellow or blue? Fix the lighting
+                <Button variant="ghost" onClick={() => setTapWhite(true)}>
+                  ⚪ Colors look off? Tap something white
                 </Button>
               )}
             </div>
+            <p className="text-sm text-stone-500">Tip: shoot in daylight, no flash, with something white in the picture.</p>
           </div>
         )}
         {collect && img && !found && (
@@ -305,7 +333,10 @@ export function ColorPickSheet({
         {collect && found && (
           <div className="flex flex-col gap-2 rounded-xl bg-stone-50 p-3">
             <p className="font-semibold">
-              Found {found.length} color{found.length === 1 ? '' : 's'}. Tap any that aren't the material (like the table) to leave them out.
+              {foundBy === 'stripes'
+                ? `Found ${found.length} sheets, in the pack's order.`
+                : `Found ${found.length} color${found.length === 1 ? '' : 's'}.`}{' '}
+              Tap any that aren't the material (like the table) to leave them out.
             </p>
             <ul className="flex flex-wrap gap-2" aria-label="Colors found in the photo">
               {found.map((f, i) => (
@@ -323,15 +354,23 @@ export function ColorPickSheet({
                 </li>
               ))}
             </ul>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button variant="ghost" onClick={() => detect(Math.min(16, mergeAt + 3))}>
-                Fewer colors
-              </Button>
-              <Button variant="ghost" onClick={() => detect(Math.max(2, mergeAt - 2))}>
-                More colors
-              </Button>
-              <span className="text-sm text-stone-600">Two papers merged into one? Tap “More colors”. Shadows showing as extra colors? “Fewer colors”.</span>
-            </div>
+            {foundBy === 'stripes' ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="ghost" onClick={() => detect('groups')}>
+                  Not right? Group by color instead
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="ghost" onClick={() => detect('groups', Math.min(16, mergeAt + 3))}>
+                  Fewer colors
+                </Button>
+                <Button variant="ghost" onClick={() => detect('groups', Math.max(2, mergeAt - 2))}>
+                  More colors
+                </Button>
+                <span className="text-sm text-stone-600">Two papers merged into one? Tap “More colors”. Shadows showing as extra colors? “Fewer colors”.</span>
+              </div>
+            )}
             <Button
               className="self-start"
               disabled={!found.some((f) => f.on)}

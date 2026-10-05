@@ -4,6 +4,7 @@ import { getTool } from '../../data'
 import { EQUIPMENT, type MissingItem, type Supply, type SupplyUse, type UserSetup } from '../../types'
 import { isReusable, toSupplyUnit } from '../units'
 import type { RawSuggestion } from './schemas'
+import { stashMatchFor } from '../colorMatch'
 
 export type Bucket = 'now' | 'needs'
 
@@ -22,8 +23,21 @@ export function checkSuggestion(raw: RawSuggestion, supplies: Supply[], setup: U
   const byId = new Map(supplies.map((s) => [s.id, s]))
   const issues: string[] = []
   const warnings: string[] = []
-  const missing: MissingItem[] = [...raw.missing]
   const uses: SupplyUse[] = []
+  // A "missing" color the stash has under another name ("brown cardstock" → Dirt) is on hand.
+  const missing: MissingItem[] = []
+  let stillMissing = 0
+  for (const m of raw.missing) {
+    const have = /^more\b/i.test(m.item) ? null : stashMatchFor(m.item, supplies)
+    if (!have || uses.some((u) => u.supplyId === have.id) || raw.uses.some((u) => u.supplyId === have.id)) {
+      missing.push(m)
+      stillMissing++
+      continue
+    }
+    const unit = ['in', 'ft', 'yd', 'roll'].includes(have.unit) ? 'in' : have.unit
+    uses.push({ supplyId: have.id, amount: unit === 'in' ? 12 : 1, unit })
+    warnings.push(`${m.item} → you have ${[have.color, have.name].filter(Boolean).join(' ')} (close match). Check how much it needs.`)
+  }
 
   // 1. Supplies must exist. Unknown ids are dropped and recorded as a missing item.
   for (const u of raw.uses) {
@@ -78,7 +92,7 @@ export function checkSuggestion(raw: RawSuggestion, supplies: Supply[], setup: U
     }
   }
 
-  if (raw.missing.length) issues.push(`Needs ${raw.missing.length} thing${raw.missing.length === 1 ? '' : 's'} you don't have`)
+  if (stillMissing) issues.push(`Needs ${stillMissing} thing${stillMissing === 1 ? '' : 's'} you don't have`)
 
   const bucket: Bucket = missing.length === 0 && issues.length === 0 ? 'now' : 'needs'
   return { suggestion: { ...raw, uses, missing }, bucket, issues: dedupe(issues), warnings: dedupe(warnings) }

@@ -3,6 +3,7 @@ import { LARGE_INVENTORY } from '../../config'
 import { effectiveMachine, getTool, machineLabel } from '../../data'
 import { formatMoney } from '../money'
 import { EQUIPMENT, type Category, type GoalRequest, type Person, type Supply, type UserSetup } from '../../types'
+import { colorFacts } from '../colorGuess'
 
 export const SYSTEM_RULES = `You are CraftCue, a friendly helper for people who make things with a home cutting machine (like a Cricut). You suggest projects the crafter can make using the supplies, tools and equipment they already own.
 
@@ -16,7 +17,8 @@ Rules you must always follow:
 7. "designTips" suggests search terms and operations to use in the design software (cut, draw, score, engrave, deboss, foil, Print Then Cut, attach, weld, slice, offset). Describe images generically; never name or copy specific copyrighted artwork.
 8. In SELL mode, never suggest licensed characters, sports teams, brand logos, or copyrighted quotes, lyrics or catchphrases. If the requested theme implies one, pick an original alternative and explain why briefly in "note". Fill in "sellInfo" with a per-item material cost estimate and a realistic price range for the stated venue. In other modes "sellInfo" is null.
 9. Add "safetyNotes" whenever relevant: food or drink contact (vinyl is not food-safe; keep designs away from lip areas), heat and burns, sharp blades, small parts for children under 3, ventilation for sprays and heat, and washing instructions for shirts.
-10. Make each suggestion genuinely different. Avoid repeating any title listed under AVOID.`
+10. Make each suggestion genuinely different. Avoid repeating any title listed under AVOID.
+11. Match colors by family and hex, not by name. Color names in the inventory are often brand or made-up names ("Dirt", "Rocket Red"); the family in brackets is the real color. A supply in the Brown family satisfies "brown", whatever it is called.`
 
 export interface InventoryLine {
   id: string
@@ -28,7 +30,8 @@ function fmtQty(n: number): string {
 }
 
 export function supplyLine(s: Supply, catName: string): string {
-  const parts = [s.id, s.name, catName, s.color || '-', `${fmtQty(s.quantity)} ${s.unit}`, s.dimensions || '-']
+  const facts = colorFacts(s)
+  const parts = [s.id, s.name, catName, facts ? `color: ${facts}` : s.color ? `color: ${s.color}` : '-', `${fmtQty(s.quantity)} ${s.unit}`, s.dimensions || '-']
   const cost = s.unitCost !== undefined ? `cost ${formatMoney(s.unitCost)}/${s.unit}` : ''
   const extra = [s.subtype, s.finish, s.adhesive && s.adhesive !== 'none' ? s.adhesive : '', s.brand, cost].filter(Boolean).join(', ')
   return parts.join(' | ') + (extra ? ` | ${extra}` : '')

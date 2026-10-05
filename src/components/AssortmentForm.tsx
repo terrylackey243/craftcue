@@ -17,7 +17,7 @@ import BarcodeField from './BarcodeField'
 import { Button, Chip, Field, Notice, Spinner, Stepper, fieldClass, inputClass } from './ui'
 import PhotoDrop from './PhotoDrop'
 import { ColorPickSheet, ColorSwatch, hasEyeDropper } from './ColorPick'
-import { nameForHex } from '../lib/colorList'
+import { distinctNames, nameForHex } from '../lib/colorList'
 import ColorNameCheck from './ColorNameCheck'
 import { isReplaceableName } from '../lib/colorGuess'
 import { learnAndTell } from './Toast'
@@ -37,6 +37,19 @@ export interface AssortmentInitial {
 
 interface Row extends PackColor {
   key: number
+  /** The color-list name the app gave it (from a picked shade); cleared when the crafter types a name. */
+  auto?: string
+}
+
+/** Give app-named rows names that tell similar shades apart (Light tan / Tan / Dark tan), never numbers. */
+function renameAuto(rows: Row[]): Row[] {
+  const named = distinctNames(rows.map((r) => ({ name: r.auto ?? r.color, hex: r.hex ?? '#808080' })))
+  const typed = new Set(rows.filter((r) => !r.auto).map((r) => r.color.trim().toLowerCase()))
+  return rows.map((r, i) => {
+    if (!r.auto || !r.hex) return r
+    const name = named[i]
+    return { ...r, color: typed.has(name.toLowerCase()) ? `Other ${name.charAt(0).toLowerCase()}${name.slice(1)}` : name }
+  })
 }
 
 let rowKey = 0
@@ -82,7 +95,9 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
   const one = unitLabel(f.unit, 1)
   const many = unitLabel(f.unit)
 
-  const setRow = (key: number, patch: Partial<PackColor>) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)))
+  // Typing a name makes it the crafter's own (no longer renamed to tell shades apart).
+  const setRow = (key: number, patch: Partial<Row>) =>
+    setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch, ...(patch.color !== undefined && !('auto' in patch) ? { auto: undefined } : {}) } : r)))
 
   // Drag handles: finger (iPad), mouse, or keyboard (space to pick up, arrows to move).
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }))
@@ -101,12 +116,8 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
   /** A color tapped on a photo with no names yet: add it as a row with a plain suggested name. */
   function addPicked(hex: string) {
     setRows((rs) => {
-      const named = rs.filter((r) => r.color.trim())
-      const taken = new Set(named.map((r) => r.color.trim().toLowerCase()))
       const base = nameForHex(hex)
-      let name = base
-      for (let n = 2; taken.has(name.toLowerCase()); n++) name = `${base} ${n}`
-      return [...named, { color: name, hex, count: same || 1, key: ++rowKey }]
+      return renameAuto([...rs.filter((r) => r.color.trim()), { color: base, auto: base, hex, count: same || 1, key: ++rowKey }])
     })
     setNamesAreGuesses(true)
   }
@@ -398,7 +409,7 @@ export default function AssortmentForm({ initial = {}, onSaved, onCancel }: { in
         <p className="text-sm text-stone-600">
           Tap 💧 by a color to pick its exact shade{hasEyeDropper() ? ' from anywhere on your screen, like a photo of the paper' : ''}. Or use “Pick colors from a photo”: with names typed in, you tap each one in order; with no names, each color you tap is added to the list.
         </p>
-        {namesAreGuesses && <p className="text-sm font-medium text-amber-900">⚠ Names like “Orange 2” are suggestions from the color. Change them to the names on the pack if it has them.</p>}
+        {namesAreGuesses && <p className="text-sm font-medium text-amber-900">⚠ Names like “Light tan” are suggestions from the color. Change them to the names on the pack if it has them.</p>}
         <ColorPickSheet
           open={picking !== false}
           onClose={() => setPicking(false)}

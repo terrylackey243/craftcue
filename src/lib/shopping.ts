@@ -1,6 +1,7 @@
 // Shopping list (spec 5.8): missing items from saved projects + low/out-of-stock supplies.
 import type { Project, Supply } from '../types'
 import { colorLabel } from './colorGuess'
+import { stashMatchFor } from './colorMatch'
 
 export interface ShoppingLine {
   key: string
@@ -28,6 +29,8 @@ export function buildShoppingList(projects: Project[], supplies: Supply[]): Shop
   for (const p of projects) {
     if (p.status !== 'idea' && p.status !== 'planned') continue
     for (const m of p.missing) {
+      // A color the stash already has under another name isn't something to buy.
+      if (!/^more\b/i.test(m.item) && stashMatchFor(m.item, supplies)) continue
       const key = `p:${norm(m.item)}`
       const existing = lines.get(key)
       if (existing) {

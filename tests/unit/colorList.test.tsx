@@ -17,7 +17,9 @@ describe('the color list', () => {
     expect(deltaE('#ffffff', '#ffffff')).toBe(0)
     expect(nameForHex('#a05c30')).toBe('Brown') // was "Leather"
     expect(nameForHex('#cce0e0')).toBe('Pale aqua') // was "Light gray"
-    expect(nameForHex('#e0c878')).toBe('Sand') // was "Light yellow"
+    // Terry's "tan" swatch was picked from a warm-lit photo, so its hex really is a light yellow;
+    // automatic white balance now corrects photos before measuring, and taught shades override.
+    expect(nameForHex('#e0c878')).toBe('Light yellow')
     expect(nameForHex('#f0e08a')).toBe('Light yellow') // was "Peach"
     expect(nameForHex('#b0c4e0')).toBe('Light blue')
     expect(nameForHex('#f4c4a0')).toBe('Peach')
@@ -114,5 +116,45 @@ describe('moving a saved list onto the new standard list', () => {
     const moved = migrateColorList(saved, 'xkcd-1')!
     expect(moved.some((e) => e.name === 'Leather')).toBe(false)
     expect(moved.find((e) => e.name === 'Sparkle mint')?.hexes).toEqual(['#98e0c0'])
+  })
+})
+
+describe('telling a pack’s similar colors apart', () => {
+  it('ranks by lightness instead of numbering, and breaks ties with warm / cool / muted', async () => {
+    const { distinctNames } = await import('../../src/lib/colorList')
+    // Four "Tan" picks, light to dark, plus one Red.
+    const names = distinctNames([
+      { name: 'Tan', hex: '#b8a07a' },
+      { name: 'Tan', hex: '#e2d0b0' },
+      { name: 'Red', hex: '#c62828' },
+      { name: 'Tan', hex: '#8a7050' },
+      { name: 'Tan', hex: '#cdb894' },
+    ])
+    expect(names[2]).toBe('Red')
+    expect(names.every((n) => !/\d/.test(n))).toBe(true)
+    expect(new Set(names).size).toBe(5)
+    expect(names[1]).toBe('Light tan')
+    expect(names[3]).toBe('Dark tan')
+    expect(distinctNames([{ name: 'Tan', hex: '#e2d0b0' }, { name: 'Tan', hex: '#8a7050' }])).toEqual(['Light tan', 'Dark tan'])
+    // Already toned: "Light yellow" ×2 → warm / cool, not "Light light yellow".
+    expect(distinctNames([{ name: 'Light yellow', hex: '#f6e08a' }, { name: 'Light yellow', hex: '#e8e49a' }])).toEqual(['Warm light yellow', 'Cool light yellow'])
+  })
+
+  it('doesn’t learn its own variant names as new colors', async () => {
+    const { learnFromNames } = await import('../../src/lib/colorList')
+    const r = learnFromNames(DEFAULT_COLORS, [{ name: 'Light tan', hex: '#d6bc96' }, { name: 'Warm tan', hex: '#d2b48c' }])
+    expect(r.learned).toEqual([])
+    expect(r.ask).toEqual([])
+  })
+})
+
+describe('moving lists saved on the previous standard list', () => {
+  it('keeps a shade taught on the basic list', async () => {
+    const { BASIC2_COLORS, migrateColorList, COLOR_LIST_BASE: base } = await import('../../src/lib/colorList')
+    expect(base).toBe('named-3')
+    const saved = BASIC2_COLORS.map((e) => (e.name === 'Brown' ? { ...e, hexes: [...e.hexes, '#a05c30'] } : e))
+    const moved = migrateColorList(saved, 'basic-2')!
+    expect(nameForHex('#a05c30', moved)).toBe('Brown')
+    expect(moved.find((e) => e.name === 'Espresso')?.family).toBe('Brown')
   })
 })

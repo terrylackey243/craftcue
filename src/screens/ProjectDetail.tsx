@@ -18,6 +18,7 @@ import { formatMoney } from '../lib/money'
 import { GOAL_LABEL, STATUS_LABEL } from './Projects'
 import PhotoDrop from '../components/PhotoDrop'
 import { colorLabel } from '../lib/colorGuess'
+import { stashMatchFor } from '../lib/colorMatch'
 
 export default function ProjectDetail() {
   const { id } = useParams()
@@ -123,6 +124,9 @@ export default function ProjectDetail() {
             {p.missing.map((m, i) => (
               <li key={i}>
                 <span className="font-semibold">{m.item}</span>
+                {stashMatchFor(m.item, supplies) && (
+                  <span className="ml-1 text-sm font-semibold text-leaf-600">→ you have {[stashMatchFor(m.item, supplies)!.color, stashMatchFor(m.item, supplies)!.name].filter(Boolean).join(' ')} (close match)</span>
+                )}
                 {m.estCost && <span className="text-stone-600"> (~{m.estCost})</span>}
                 {m.why && <span className="block text-sm text-stone-600">{m.why}</span>}
               </li>

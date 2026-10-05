@@ -13,7 +13,12 @@ function mk(i: number, category: string, quantity = 1): Supply {
 describe('inventory compaction (spec 9.2)', () => {
   it('writes one compact line per supply', () => {
     const line = supplyLine({ ...mk(1, 'adhesive-vinyl', 3), color: 'black', dimensions: '12 x 12 in', subtype: 'permanent' }, 'Adhesive vinyl')
-    expect(line).toBe('s1 | Item 1 | Adhesive vinyl | black | 3 sheet | 12 x 12 in | permanent')
+    expect(line).toBe('s1 | Item 1 | Adhesive vinyl | color: black (Black, dark, #1a1a1a) | 3 sheet | 12 x 12 in | permanent')
+  })
+
+  it('gives the real color of a made-up color name, from the picked swatch', () => {
+    const line = supplyLine({ ...mk(1, 'cardstock-paper', 3), color: 'Dirt', colorHex: '#6b4f2f' }, 'Cardstock')
+    expect(line).toContain('color: Dirt (Brown, dark, #6b4f2f)')
   })
 
   it('keeps everything, empty items included, for small stashes', () => {

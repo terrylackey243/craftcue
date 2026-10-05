@@ -1,6 +1,6 @@
 // A best guess at a hex color from a craft color name ("Rocket Red", "Sour Apple", "Rose Gold").
 // Used to prefill color pickers; the crafter can always correct it.
-import { nameForHex } from './colorList'
+import { colorFamilyOf, deltaE, nameForHex, shadeOf } from './colorList'
 
 
 // Longer, more specific words first so "rose gold" wins over "rose" and "gold".
@@ -122,7 +122,7 @@ export function supplyHex(s: { colorHex?: string; color?: string; name?: string 
 /** Color words that are really brand-style names, and the plain color to show instead. */
 const ALIASES: Record<string, string> = { 'sour apple': 'Lime green', sunshine: 'Yellow', fuchia: 'Fuchsia', bubblegum: 'Bubble gum', grey: 'Gray' }
 
-const MODIFIERS = new Set(['light', 'dark', 'pale', 'hot', 'deep', 'bright', 'pastel', 'neon', 'matte', 'glossy', 'gloss', 'glitter', 'metallic', 'shimmer', 'satin', 'holographic', 'off', 'and', 'with', 'clear'])
+const MODIFIERS = new Set(['light', 'dark', 'pale', 'hot', 'deep', 'bright', 'warm', 'cool', 'muted', 'soft', 'dusty', 'other', 'pastel', 'neon', 'matte', 'glossy', 'gloss', 'glitter', 'metallic', 'shimmer', 'satin', 'holographic', 'off', 'and', 'with', 'clear'])
 const COLOR_WORDS = new Set([...WORDS.filter(([w]) => !(w in ALIASES)).flatMap(([w]) => w.split(' ')), 'grey', 'off-white', 'transparent', 'multicolor', 'multi', 'rainbow'])
 
 const cap = (x: string) => x.replace(/\b\w/g, (c) => c.toUpperCase())
@@ -179,13 +179,39 @@ export function familyOfHex(hex: string): ColorFamily {
 
 /** A supply's basic color family, or null if neither a swatch nor a color word says. */
 export function supplyFamily(s: { colorHex?: string; color?: string }): ColorFamily | null {
-  if (s.colorHex) return familyOfHex(s.colorHex)
+  if (s.colorHex) return colorFamilyOf(s.colorHex)
   const plain = plainColor(s)
-  return plain ? familyOfHex(guessHex(plain.name)) : null
+  return plain ? colorFamilyOf(guessHex(plain.name)) : null
 }
 
 /** True when a color name is empty or plain (one the app could have suggested), so it may be replaced. */
 export function isReplaceableName(name: string | undefined): boolean {
   const n = (name ?? '').trim().replace(/\s+\d+$/, '')
   return !n || isPlainColor(n)
+}
+
+/** The color word in some text ("brown cardstock", "Light pink vinyl"), as hex; null if none. */
+export function wantedHex(text: string): string | null {
+  const word = colorWordIn(text)
+  return word ? word[1] : null
+}
+
+/** A supply's color as the model and the crafter should see it: "Dirt (Brown, dark, #6b4f2f)". */
+export function colorFacts(s: { colorHex?: string; color?: string }): string | null {
+  const hex = s.colorHex ?? (plainColor(s) ? guessHex(plainColor(s)!.name) : null)
+  if (!hex) return null
+  const shown = (s.color ?? '').trim() || plainColor(s)?.name || nameForHex(hex)
+  return `${shown} (${colorFamilyOf(hex)}, ${shadeOf(hex)}, ${hex})`
+}
+
+/**
+ * Does this supply give the color a project asks for? Same basic color, or close enough to look
+ * alike (CIEDE2000 ≤ 15). Never decided by the supply's name: "Dirt" in a brown satisfies "brown".
+ * Null when the request names no color or the supply's color can't be told.
+ */
+export function colorSatisfies(wanted: string, s: { colorHex?: string; color?: string }): boolean | null {
+  const want = wantedHex(wanted)
+  const have = s.colorHex ?? (plainColor(s) ? guessHex(plainColor(s)!.name) : null)
+  if (!want || !have) return null
+  return colorFamilyOf(want) === colorFamilyOf(have) || deltaE(want, have) <= 15
 }
